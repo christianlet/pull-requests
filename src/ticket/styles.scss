@@ -1,0 +1,93 @@
+$green: #44b700;
+
+.ticket-container {
+    width: 400px;
+    margin: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background-color: rgb(230, 230, 230);
+
+        .title {
+            color: rgba(0, 0, 0, .5);
+            font-weight: bold;
+        }
+    }
+
+    .repo-container {
+        height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border-left: solid 1px lightgray;
+        border-right: solid 1px lightgray;
+        border-bottom: solid 1px lightgray;
+        border-bottom-left-radius: 5px;
+        border-bottom-right-radius: 5px;
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+
+            &:not(:first-child) {
+                border-top: solid thin lightgray;
+            }
+
+            .icon {
+                cursor: pointer;
+                color: rgba(0,0,0,.3);
+                width: 16px;
+                height: 16px;
+                margin-left: 5px
+            }
+
+            .repo-name {
+                font-size: 14px;
+            }
+
+            .users {
+                display: flex;
+                gap: 10px;
+                margin-right: 5px;
+
+                .user-badge {
+                    background-color: white;
+
+                    &.approved {
+                        color: #44b700;
+                    }
+
+                    &.change {
+                        color: red;
+                    }
+                }
+            }
+        }
+    }
+
+
+    .repo-review {
+        margin: 0 1px;
+        padding: 1px;
+        border-color: rgba(0,0,0,.3);
+        border-width: 1px;
+        color: rgba(0,0,0,.6);
+    }
+
+    .footer {
+        padding: 5px;
+        background-color: rgba(255,166,0,0.575);
+
+        .text {
+            text-transform: uppercase;
+            text-align: center;
+            color: rgba(0,0,0,0.7)
+        }
+    }
+}
