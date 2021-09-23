@@ -20,7 +20,7 @@ $green: #44b700;
     }
 
     .repo-container {
-        height: 200px;
+        max-height: 150px;
         overflow-y: auto;
         overflow-x: hidden;
         border-left: solid 1px lightgray;
@@ -30,42 +30,15 @@ $green: #44b700;
         border-bottom-right-radius: 5px;
 
         .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 5px;
+            .user-badge {
+                background-color: white;
 
-            &:not(:first-child) {
-                border-top: solid thin lightgray;
-            }
+                &.approved {
+                    color: #44b700;
+                }
 
-            .icon {
-                cursor: pointer;
-                color: rgba(0,0,0,.3);
-                width: 16px;
-                height: 16px;
-                margin-left: 5px
-            }
-
-            .repo-name {
-                font-size: 14px;
-            }
-
-            .users {
-                display: flex;
-                gap: 10px;
-                margin-right: 5px;
-
-                .user-badge {
-                    background-color: white;
-
-                    &.approved {
-                        color: #44b700;
-                    }
-
-                    &.change {
-                        color: red;
-                    }
+                &.change {
+                    color: red;
                 }
             }
         }
