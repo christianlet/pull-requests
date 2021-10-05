@@ -1,9 +1,12 @@
-import { ArrowRightAlt, ChangeCircle, CheckCircle, Close, Launch, MoreHoriz } from '@mui/icons-material'
+import { ArrowRightAlt, ChangeCircle, CheckCircle, Close, Code, CompareArrows, Launch, MoreHoriz } from '@mui/icons-material'
 import { Avatar, Badge, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
 import { Box, styled } from '@mui/system'
 import { useState } from 'react'
+import moment from 'moment'
 import { PullRequest } from '../utilities/github-api'
 import './styles.scss'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTerminal, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 
 interface TicketProps {
     title: string
@@ -15,6 +18,8 @@ interface TicketProps {
 export const Ticket = (props: TicketProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const menuOpen = Boolean(anchorEl)
+    const created = moment(props.data[props.data.length-1].created_at)
+    const authorData = props.data[props.data.length-1].user
     const SmallAvatar = styled(Avatar)(() => ({
         width: 16,
         height: 16,
@@ -31,39 +36,63 @@ export const Ticket = (props: TicketProps) => {
         props.openTicketDetail(action)
     }
 
-
     return (
         <div className="ticket-container">
             <Box className="header">
-                <Typography className="title">{props.title}</Typography>
-                {
-                    props.prType === 'created' && (
-                        <>
-                            <IconButton
-                                onClick={handleMenuClick}
+                <div>
+                    <Typography className="title">{props.title}</Typography>
+                    <Typography className="subtitle">
+                        {created.fromNow()} by {authorData.name ?? authorData.login}
+                    </Typography>
+                </div>
+                <IconButton
+                    onClick={handleMenuClick}
+                >
+                    <MoreHoriz fontSize="small" />
+                </IconButton>
+                <Menu
+                    anchorEl={anchorEl}
+                    open={menuOpen}
+                    onClose={handleMenuClose}
+                    sx={{
+                        width: 300
+                    }}
+                >
+                    {
+                        props.prType === 'created' && (
+                            <MenuItem
+                                onClick={() => openTicketDialog('delete')}
+                                divider={true}
                             >
-                                <MoreHoriz fontSize="small" />
-                            </IconButton>
-                            <Menu
-                                anchorEl={anchorEl}
-                                open={menuOpen}
-                                onClose={handleMenuClose}
-                                sx={{
-                                    width: 300
-                                }}
+                                <ListItemIcon>
+                                    <FontAwesomeIcon icon={faTimesCircle} />
+                                </ListItemIcon>
+                                <ListItemText>Close Branches</ListItemText>
+                            </MenuItem>
+                        )
+                    }
+                    {
+                        props.prType === 'created' && (
+                            <MenuItem
+                                onClick={() => openTicketDialog('dev-branch')}
+                                divider={true}
                             >
-                                <MenuItem
-                                    onClick={() => openTicketDialog('delete')}
-                                >
-                                    <ListItemIcon>
-                                        <Close />
-                                    </ListItemIcon>
-                                    <ListItemText>Close Branches</ListItemText>
-                                </MenuItem>
-                            </Menu>
-                        </>
-                    )
-                }
+                                <ListItemIcon>
+                                    <FontAwesomeIcon icon={faTerminal} />
+                                </ListItemIcon>
+                                <ListItemText>Update Base Branch</ListItemText>
+                            </MenuItem>
+                        )
+                    }
+                    <MenuItem
+                        onClick={() => openTicketDialog('diff')}
+                    >
+                        <ListItemIcon>
+                            <CompareArrows />
+                        </ListItemIcon>
+                        <ListItemText>Diff Tool</ListItemText>
+                    </MenuItem>
+                </Menu>
             </Box>
             <div className="repo-container">
                 {
@@ -73,6 +102,7 @@ export const Ticket = (props: TicketProps) => {
 
                         return (
                                 <ListItem
+                                    key={ticket.id.toString()}
                                     className="list-item"
                                     divider={true}
                                     dense={true}
@@ -96,7 +126,7 @@ export const Ticket = (props: TicketProps) => {
                                                 title="Base branch"
                                             >
                                                 <ArrowRightAlt />
-                                                <div>{ticket.branches.base}</div>
+                                                <p>{ticket.branches.base}</p>
                                             </Box>
                                         }
                                         secondaryTypographyProps={{

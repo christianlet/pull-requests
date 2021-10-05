@@ -14,11 +14,11 @@ export const storePR = (id: number, data: any) => {
         PRs.push(data)
     }
 
-    localStorage.setItem('peerReviews', JSON.stringify(PRs))
+    sessionStorage.setItem('peerReviews', JSON.stringify(PRs))
 }
 
 export const getLocalPRs = (): {[index:string]: any}[]|null => {
-    const data = localStorage.getItem('peerReviews')
+    const data = sessionStorage.getItem('peerReviews')
 
     if(data) {
         return JSON.parse(data)
@@ -28,7 +28,7 @@ export const getLocalPRs = (): {[index:string]: any}[]|null => {
 }
 
 export const getPR = (id: number): {[index:string]: any}|null => {
-    let peerReviews = localStorage.getItem('peerReviews')
+    let peerReviews = sessionStorage.getItem('peerReviews')
 
     if( peerReviews ) {
         const peerReviewsArray: any[] = JSON.parse(peerReviews)
@@ -59,6 +59,6 @@ export const removeClosedPeerReviews = (fetchedPRs: any[]) => {
             i++
         }
 
-        localStorage.setItem('peerReviews', JSON.stringify(newStoredPRs))
+        sessionStorage.setItem('peerReviews', JSON.stringify(newStoredPRs))
     }
 }

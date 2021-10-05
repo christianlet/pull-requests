@@ -1,10 +1,14 @@
-import { CircularProgress, Dialog, DialogTitle, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Refresh } from '@mui/icons-material'
+import { CircularProgress, IconButton, SelectChangeEvent, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router'
 import { Ticket } from '../ticket'
 import { PullRequest, usePullRequestsHook } from '../utilities/github-api'
 import { ClosePulls } from './action-dialogs/close-pulls'
+import { DevBranch } from './action-dialogs/dev-branch'
+import { Diffs } from './action-dialogs/diffs'
+import { AuthorsSelect } from './authors-select'
 import './styles.scss'
 
 export interface TicketsState {
@@ -19,36 +23,21 @@ type DialogActionState = {
 
 export const Tickets = (props: any) => {
     const currentUrlParams = new URLSearchParams(window.location.search)
-    const [tickets, setTickets] = useState<TicketsState[]>([])
     const [ticketDialogData, setTicketDialogData] = useState<DialogActionState>(null)
     const [prType, setPrType] = useState(currentUrlParams.get('pr_type') ?? 'created')
     const history = useHistory()
-    const pullRequests = usePullRequestsHook(prType !== 'created')
-
-    useEffect(() => {
-        const groupedPRs: TicketsState[] = []
-
-        pullRequests?.forEach(pr => {
-            const ticket  = pr.branches.head.split('/').pop() ?? ''
-            const prIndex = groupedPRs.findIndex(repo => repo.ticket === ticket)
-
-            if(prIndex === -1) {
-                groupedPRs.push({
-                    ticket,
-                    repos: []
-                })
-            }
-
-            groupedPRs[groupedPRs.length - 1].repos.push(pr)
-        })
-
-        setTickets(groupedPRs)
-    }, [pullRequests])
+    const [author, setAuthor] = useState<string>(prType === 'created' ? '@me' : '')
+    const [refresh, setRefresh] = useState(0)
+    const tickets = usePullRequestsHook(prType !== 'created', author, refresh)
 
     useEffect(() => {
         currentUrlParams.set('pr_type', prType)
 
         history.push({ search: currentUrlParams.toString() })
+
+        if(prType === 'created') {
+            setAuthor('@me')
+        }
     }, [prType])
 
     const handlePrType = (event: React.MouseEvent<HTMLElement>, value: string | null) => {
@@ -63,33 +52,55 @@ export const Tickets = (props: any) => {
     })
     const handleDialogClose = () => setTicketDialogData(null)
 
+    const handleSelect = ({ target: { value } }: SelectChangeEvent) => {
+        setAuthor(value)
+    }
+
     return (
         <>
-            <Dialog
-                open={ticketDialogData !== null}
-                onClose={handleDialogClose}
-            >
-                {
-                    ticketDialogData?.action === 'delete' && <ClosePulls ticket={ticketDialogData.ticket} />
-                }
-            </Dialog>
+            {
+                ticketDialogData?.action === 'delete' && <ClosePulls ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
+            }
+            {
+                ticketDialogData?.action === 'diff' && <Diffs ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
+            }
+            {
+                ticketDialogData?.action === 'dev-branch' && <DevBranch ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
+            }
             <Box paddingX="50px" paddingY="25px">
                 <Box className="filter-container">
                     <div>
-                        <ToggleButtonGroup
-                            color="primary"
-                            size="small"
-                            value={prType}
-                            exclusive={true}
-                            onChange={handlePrType}
-                            disabled={pullRequests === null}
-                            sx={{
-                                backgroundColor: 'white'
-                            }}
-                        >
-                            <ToggleButton value="created">My Peer Reviews</ToggleButton>
-                            <ToggleButton value="assigned">Assigned Peer Reviews</ToggleButton>
-                        </ToggleButtonGroup>
+                        <AuthorsSelect
+                            value={author}
+                            onChange={handleSelect}
+                            disabled={prType !== 'created' || tickets === null}
+                        />
+                    </div>
+                    <div>
+                        <div>
+                            <ToggleButtonGroup
+                                color="primary"
+                                size="small"
+                                value={prType}
+                                exclusive={true}
+                                onChange={handlePrType}
+                                disabled={tickets === null}
+                                sx={{
+                                    backgroundColor: 'white'
+                                }}
+                            >
+                                <ToggleButton value="created">Created</ToggleButton>
+                                <ToggleButton value="assigned">Review Requested</ToggleButton>
+                            </ToggleButtonGroup>
+                            <IconButton
+                                sx={{ marginLeft: 1 }}
+                                onClick={() => setRefresh(refresh+1)}
+                            >
+                                <Refresh />
+                            </IconButton>
+                        </div>
+                        <div>
+                        </div>
                     </div>
                 </Box>
                 <Box sx={{
@@ -99,7 +110,7 @@ export const Tickets = (props: any) => {
                     justifyContent: 'center'
                 }}>
                     {
-                        !pullRequests
+                        !tickets
                         ? (
                             <Box sx={{
                                 display: 'flex',

@@ -8,6 +8,7 @@ const formatter = new Intl.NumberFormat(undefined, {
 })
 
 export const RateLimit = (props: any) => {
+    const [refreshValue, setRefreshValue] = useState(0)
     const [core, setCore] = useState({
         limit: 0,
         remaining: 0,
@@ -18,7 +19,15 @@ export const RateLimit = (props: any) => {
         remaining: 0,
         used: 0
     })
-    const rateLimitData = useRateLimitHook()
+    const rateLimitData = useRateLimitHook(refreshValue)
+
+    useEffect(() => {
+        const interval = setTimeout(() => {
+            setRefreshValue(refreshValue+1)
+        }, 60000)
+
+        return () => clearInterval(interval)
+    }, [refreshValue])
 
     useEffect(() => {
         if(rateLimitData) {
@@ -30,7 +39,6 @@ export const RateLimit = (props: any) => {
     return (
         <Box style={{
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'flex-end'
         }}>
             <div className="rate-limit-container">

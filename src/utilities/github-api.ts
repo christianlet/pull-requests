@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { Octokit } from '@octokit/rest'
 import { PersonalAccessToken } from './authorizations/personal-access-token'
 import { getPR, storePR } from './local-storage'
+import { TicketsState } from '../tickets'
 
 export interface PullRequest {
     id: number
     pull_request: {
         html_url: string
+        diff_url: string
     }
     branches: {
         head: string
@@ -21,21 +23,26 @@ export interface PullRequest {
         state: string
         avatar_url: string
     }[]
+    owner: string
     repo: string
+    number: number
+    state: string
+    created_at: string
     user: {
         [index: string]: any
     }
 }
 
-export const usePullRequestsHook = (reviewing: boolean) => {
-    const octokit = new PersonalAccessToken().generate()
-    const [pullRequests, setPullRequests] = useState<null|PullRequest[]>(null)
+const octokit = new PersonalAccessToken().generate()
+
+export const usePullRequestsHook = (reviewing: boolean, author: string, refresh: number = 0) => {
+    const [pullRequests, setPullRequests] = useState<null|TicketsState[]>(null)
 
     useEffect(() => {
         setPullRequests(null)
 
         const getPRs = async () => {
-            const openPullRequests = await searchOpenPullRequests(octokit, reviewing)
+            const openPullRequests = await searchOpenPullRequests(octokit, reviewing, author).catch(e => ([]))
 
             const results: any = await Promise.all(openPullRequests.map(async (item) => {
                 const repositoryUrl = item.repository_url.split('/')
@@ -44,6 +51,8 @@ export const usePullRequestsHook = (reviewing: boolean) => {
                 const pullNumber = parseInt(item.pull_request?.url?.split('/').pop() ?? '0', 10)
                 let reviewers: any[] = []
                 let newItem: any = item
+
+                newItem.user = await fetchUserInfo(item.user?.login ?? '')
 
                 try {
                     if (repo && owner && pullNumber && item.pull_request?.url ) {
@@ -55,7 +64,7 @@ export const usePullRequestsHook = (reviewing: boolean) => {
                         reviewers = await Promise.all(reviews
                             .filter(r => r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED')
                             .map(async r => {
-                                const user = await fetchUserInfo(octokit!, r.user?.login ?? '')
+                                const user = await fetchUserInfo(r.user?.login ?? '')
 
                                 return {
                                     ...user,
@@ -77,7 +86,9 @@ export const usePullRequestsHook = (reviewing: boolean) => {
 
                     newItem = {
                         ...newItem,
+                        owner,
                         repo,
+                        pullNumber
                     }
 
                     storePR(item.id, newItem)
@@ -90,33 +101,109 @@ export const usePullRequestsHook = (reviewing: boolean) => {
                 return newItem
             }))
 
-            setPullRequests(results)
+            setPullRequests(groupPeerReviews(results))
 
-            localStorage.setItem('lastSearched', new Date().toUTCString())
+            sessionStorage.setItem('lastSearched', new Date().toUTCString())
         }
 
         getPRs()
-    }, [reviewing])
+    }, [reviewing, author, refresh])
 
 
     return pullRequests
 }
 
-const searchOpenPullRequests = async (octokit: Octokit, reviewing: boolean) => {
-    let query = '+author:@me'
+const groupPeerReviews = (prs: any[]) => {
+    const groupedPRs: any[] = []
+
+    prs?.forEach((pr: any) => {
+        const ticket  = pr.branches.head.split('/').pop() ?? ''
+        const prIndex = groupedPRs.findIndex(repo => repo.ticket === ticket)
+
+        if(prIndex === -1) {
+            groupedPRs.push({
+                ticket,
+                repos: []
+            })
+        }
+
+        groupedPRs[groupedPRs.length - 1].repos.push(pr)
+    })
+
+    return groupedPRs
+}
+
+
+export const useAuthorsHook = () => {
+    const [authors, setAuthors] = useState<null|{ username: string, name?: string }[]>([])
+
+    useEffect(() => {
+        setAuthors(null)
+
+        const getUsers = async () => {
+            const { data: authenticatedUser } = await octokit.users.getAuthenticated()
+            const { data } = await octokit.request('GET /user/teams')
+            let members: string[] = []
+            let users: any[] = []
+
+            for(let team of data) {
+                const { data } = await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
+                    org: team.organization.login,
+                    team_slug: team.slug
+                })
+
+                for(let member of data) {
+                    if(!members.includes(member.login)) {
+                        members.push(member.login)
+
+                        let user
+
+                        if(member.login === authenticatedUser.login) {
+                            user = {
+                                ...authenticatedUser,
+                                login: '@me'
+                            }
+                        } else {
+                            user = await fetchUserInfo(member.login)
+
+                        }
+
+                        users.push({
+                            username: user.login,
+                            name: user?.name ?? member.login
+                        })
+                    }
+                }
+            }
+
+            setAuthors(
+                users.sort(
+                    (a, b) => (a.name.toLowerCase() > b.name.toLowerCase())
+                        ? 1
+                        : (
+                            (b.name.toLowerCase() > a.name.toLowerCase())
+                                ? -1
+                                : 0)
+                        )
+            )
+        }
+
+        getUsers()
+    }, [])
+
+
+    return authors
+}
+
+const searchOpenPullRequests = async (octokit: Octokit, reviewing: boolean, author: string) => {
+    let query = `author:${author}`
 
     if(reviewing) {
-        const { data } = await octokit.request('GET /user/teams')
-
-        query = ''
-
-        data.forEach(team => {
-            query += `+team:${team.organization.login}/${team.slug}`
-        })
+        query = 'review-requested:@me'
     }
 
     const { data } = await octokit.search.issuesAndPullRequests({
-        q: `is:pr${query}+is:open`,
+        q: `${query}+is:pr+is:open`,
         sort: 'created',
         per_page: 50
     })
@@ -125,7 +212,7 @@ const searchOpenPullRequests = async (octokit: Octokit, reviewing: boolean) => {
 }
 
 const fetchPullRequestInfo = async (octokit: Octokit, owner: string, repo: string, pullNumber: number, hasLocalStorage: boolean) => {
-    const lastSearched = localStorage.getItem('lastSearched')
+    const lastSearched = sessionStorage.getItem('lastSearched')
 
     const { data } = await octokit.pulls.get({
         owner,
@@ -150,20 +237,66 @@ const fetchPullRequestReviews = async (octokit: Octokit, owner: string, repo: st
     const filteredReviews: typeof data = []
 
     data.forEach(review => {
-        if(!filteredReviews.filter(filteredReview => filteredReview.user?.login === review.user?.login).length) {
+        const index = filteredReviews.findIndex(r => r.user?.login === review.user?.login)
+
+        if(index === -1) {
             filteredReviews.push(review)
+        } else {
+            filteredReviews[index] = review
         }
     })
 
     return filteredReviews
 }
 
-const fetchUserInfo = async (octokit: Octokit, login: string) => {
+const fetchUserInfo = async (login: string) => {
     const { data } = await octokit.users.getByUsername({
         username: login
     })
 
     return data
+}
+
+export const fetchBranch = async (owner: string, repo: string, branch: string) => {
+    let exists = false
+
+    await octokit.repos.getBranch({
+        owner,
+        repo,
+        branch
+    })
+    .then(results => exists = results.status === 200)
+    .catch(e => {})
+
+    return exists
+}
+
+export const createBranch = async (owner: string, repo: string, branch: string) => {
+    let response
+
+    try {
+        response = await octokit.repos.getBranch({ owner, repo, branch: 'master' })
+    } catch (error) {
+        console.log('Master branch does not exist')
+    }
+
+    if(!response) {
+        try {
+            response = await octokit.repos.getBranch({ owner, repo, branch: 'main' })
+        } catch (error) {
+            console.log('Main branch does not exist')
+            return false
+        }
+    }
+
+    const res = await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+        owner,
+        repo,
+        ref: `refs/heads/${branch}`,
+        sha: response.data.commit.sha
+    })
+
+    return res.status === 201
 }
 
 export const useRateLimitHook = (refresh: number = 0) => {
@@ -184,13 +317,22 @@ export const useRateLimitHook = (refresh: number = 0) => {
 }
 
 export const closePullRequest = async (owner: string, repo: string, pullNumber: number) => {
+    const response = await updatePullRequest(owner, repo, pullNumber, {
+        state: 'closed'
+    })
+
+    return response
+}
+
+export const updatePullRequest = async (owner: string, repo: string, pullNumber: number, params: Object) => {
     const octokit = new PersonalAccessToken().generate()
 
     const response = await octokit.pulls.update({
         owner,
         repo,
         pull_number: pullNumber,
-        state: 'closed'
+        ...params,
+        maintainer_can_modify: false
     })
 
     return response.status === 200
