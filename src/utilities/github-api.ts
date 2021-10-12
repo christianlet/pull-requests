@@ -18,10 +18,13 @@ export interface PullRequest {
     mergeable: boolean
     reviewers: {
         id: number
-        login: string
-        name?: string
         state: string
         avatar_url: string
+        submitted_at: string
+        user: {
+            name?: string
+            login: string
+        }
     }[]
     owner: string
     repo: string
@@ -52,13 +55,10 @@ export const usePullRequestsHook = (reviewing: boolean, author: string, refresh:
                 let reviewers: any[] = []
                 let newItem: any = item
 
-                newItem.user = await fetchUserInfo(item.user?.login ?? '')
-
                 try {
                     if (repo && owner && pullNumber && item.pull_request?.url ) {
                         const hasLocalStorage = getPR(item.id) !== null
                         const info = await fetchPullRequestInfo(octokit, owner, repo, pullNumber, hasLocalStorage)
-
                         const reviews = await fetchPullRequestReviews(octokit, owner, repo, pullNumber)
 
                         reviewers = await Promise.all(reviews
@@ -67,8 +67,10 @@ export const usePullRequestsHook = (reviewing: boolean, author: string, refresh:
                                 const user = await fetchUserInfo(r.user?.login ?? '')
 
                                 return {
-                                    ...user,
-                                    state: r.state
+                                    ...r,
+                                    id: user.id,
+                                    name: user.name,
+                                    avatar_url: user.avatar_url
                                 }
                             }))
 
@@ -111,6 +113,73 @@ export const usePullRequestsHook = (reviewing: boolean, author: string, refresh:
 
 
     return pullRequests
+}
+
+export const getPullRequests = async (author: string, reviewing: boolean): Promise<TicketsState[]> => {
+    const openPullRequests = await searchOpenPullRequests(octokit, reviewing, author).catch(e => ([]))
+
+    const results: any = await Promise.all(openPullRequests.map(async (item) => {
+        const repositoryUrl = item.repository_url.split('/')
+        const repo = repositoryUrl.pop()
+        const owner = repositoryUrl.pop()
+        const pullNumber = parseInt(item.pull_request?.url?.split('/').pop() ?? '0', 10)
+        let reviewers: any[] = []
+        let newItem: any = item
+
+        newItem.user = await fetchUserInfo(item.user?.login ?? '')
+
+        try {
+            if (repo && owner && pullNumber && item.pull_request?.url ) {
+                const hasLocalStorage = getPR(item.id) !== null
+                const info = await fetchPullRequestInfo(octokit, owner, repo, pullNumber, hasLocalStorage)
+
+                const reviews = await fetchPullRequestReviews(octokit, owner, repo, pullNumber)
+
+                reviewers = await Promise.all(reviews
+                    .filter(r => r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED')
+                    .map(async r => {
+                        const user = await fetchUserInfo(r.user?.login ?? '')
+
+                        return {
+                            ...r,
+                            id: user.id,
+                            name: user.name,
+                            avatar_url: user.avatar_url
+                        }
+                    }))
+
+                newItem = {
+                    ...newItem,
+                    branches: {
+                        head: info.head.ref,
+                        base: info.base.ref
+                    },
+                    merged: info.merged,
+                    mergeable: info.mergeable_state === 'clean',
+                    reviewers
+                }
+            }
+
+            newItem = {
+                ...newItem,
+                owner,
+                repo,
+                pullNumber
+            }
+
+            storePR(item.id, newItem)
+        } catch (error: any) {
+            if(error.status === 304) {
+                return await getPR(item.id)
+            }
+        }
+
+        return newItem
+    }))
+
+    sessionStorage.setItem('lastSearched', new Date().toUTCString())
+
+    return groupPeerReviews(results)
 }
 
 const groupPeerReviews = (prs: any[]) => {
@@ -200,6 +269,10 @@ const searchOpenPullRequests = async (octokit: Octokit, reviewing: boolean, auth
 
     if(reviewing) {
         query = 'review-requested:@me'
+
+        if(author !== '') {
+            query += `+author:${author}`
+        }
     }
 
     const { data } = await octokit.search.issuesAndPullRequests({
@@ -301,7 +374,33 @@ export const createBranch = async (owner: string, repo: string, branch: string) 
 
 export const useRateLimitHook = (refresh: number = 0) => {
     const octokit = new PersonalAccessToken().generate()
-    const [data, setData] = useState<null|{[index: string]: any}>(null)
+    const [data, setData] = useState<{
+        core: {
+            limit: number
+            remaining: number
+            reset: number
+            used: number
+        }
+        search: {
+            limit: number;
+            remaining: number;
+            reset: number;
+            used: number;
+        }
+    }>({
+        core: {
+            limit: 0,
+            remaining: 0,
+            reset: 0,
+            used: 0,
+        },
+        search: {
+            limit: 0,
+            remaining: 0,
+            reset: 0,
+            used: 0,
+        }
+    })
 
     useEffect(() => {
         const getRateLimit = async () => {

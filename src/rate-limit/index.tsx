@@ -1,4 +1,6 @@
+import { Tooltip } from '@mui/material'
 import { Box } from '@mui/system'
+import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useRateLimitHook } from '../utilities/github-api'
 import './styles.scss'
@@ -9,17 +11,10 @@ const formatter = new Intl.NumberFormat(undefined, {
 
 export const RateLimit = (props: any) => {
     const [refreshValue, setRefreshValue] = useState(0)
-    const [core, setCore] = useState({
-        limit: 0,
-        remaining: 0,
-        used: 0
-    })
-    const [search, setSearch] = useState({
-        limit: 0,
-        remaining: 0,
-        used: 0
-    })
-    const rateLimitData = useRateLimitHook(refreshValue)
+    const { core, search } = useRateLimitHook(refreshValue)
+
+    moment.relativeTimeThreshold('m', 100)
+    moment.relativeTimeThreshold('ss', 0)
 
     useEffect(() => {
         const interval = setTimeout(() => {
@@ -29,13 +24,6 @@ export const RateLimit = (props: any) => {
         return () => clearInterval(interval)
     }, [refreshValue])
 
-    useEffect(() => {
-        if(rateLimitData) {
-            setCore(rateLimitData.core)
-            setSearch(rateLimitData.search)
-        }
-    }, [rateLimitData])
-
     return (
         <Box style={{
             display: 'flex',
@@ -43,15 +31,23 @@ export const RateLimit = (props: any) => {
         }}>
             <div className="rate-limit-container">
                 <span>Core Rate Limit</span>
-                <div
-                    className={`badge ${badgeColor(core.limit, core.used)}`}
-                >{core.limit ? formatter.format(core.used / core.limit) : '0%'}</div>
+                <Tooltip
+                    title={`Resets ${moment.unix(core.reset).fromNow()}`}
+                >
+                    <div
+                        className={`badge ${badgeColor(core.limit, core.used)}`}
+                    >{core.limit ? formatter.format(core.used / core.limit) : '0%'}</div>
+                </Tooltip>
             </div>
             <div className="rate-limit-container">
                 <span>Search Rate Limit</span>
-                <div
-                    className={`badge ${badgeColor(search.limit, search.used)}`}
-                >{core.limit ? formatter.format(search.used / search.limit) : '0%'}</div>
+                <Tooltip
+                    title={`Resets ${moment.unix(search.reset).fromNow()}`}
+                >
+                    <div
+                        className={`badge ${badgeColor(search.limit, search.used)}`}
+                    >{core.limit ? formatter.format(search.used / search.limit) : '0%'}</div>
+                </Tooltip>
             </div>
         </Box>
     )

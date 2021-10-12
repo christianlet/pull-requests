@@ -3,8 +3,10 @@ import { CircularProgress, IconButton, SelectChangeEvent, ToggleButton, ToggleBu
 import { Box } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router'
+import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
+import { peerReviewSlice } from '../redux/reducers/peer-reviews-reducer'
 import { Ticket } from '../ticket'
-import { PullRequest, usePullRequestsHook } from '../utilities/github-api'
+import { getPullRequests, PullRequest } from '../utilities/github-api'
 import { ClosePulls } from './action-dialogs/close-pulls'
 import { DevBranch } from './action-dialogs/dev-branch'
 import { Diffs } from './action-dialogs/diffs'
@@ -21,14 +23,15 @@ type DialogActionState = {
     ticket: TicketsState
 } | null
 
-export const Tickets = (props: any) => {
+export const Tickets = () => {
     const currentUrlParams = new URLSearchParams(window.location.search)
     const [ticketDialogData, setTicketDialogData] = useState<DialogActionState>(null)
     const [prType, setPrType] = useState(currentUrlParams.get('pr_type') ?? 'created')
     const history = useHistory()
     const [author, setAuthor] = useState<string>(prType === 'created' ? '@me' : '')
     const [refresh, setRefresh] = useState(0)
-    const tickets = usePullRequestsHook(prType !== 'created', author, refresh)
+    const dispatch = useAppDispatch()
+    const tickets = useAppSelector(state => state.peerReviews.value)
 
     useEffect(() => {
         currentUrlParams.set('pr_type', prType)
@@ -37,8 +40,37 @@ export const Tickets = (props: any) => {
 
         if(prType === 'created') {
             setAuthor('@me')
+        } else {
+            setAuthor('')
         }
     }, [prType])
+
+    useEffect(() => {
+        getPeerReviews()
+    }, [prType])
+
+    useEffect(() => {
+        if(ticketDialogData) {
+            tickets?.forEach(ticket => {
+                if(ticket.ticket === ticketDialogData.ticket.ticket) {
+                    setTicketDialogData({
+                        ...ticketDialogData,
+                        ticket: {
+                            ...ticket,
+                            repos: [...ticket.repos]
+                        }
+                    })
+                }
+            })
+
+        }
+    }, [tickets])
+
+    const getPeerReviews = async () => {
+        const t = await getPullRequests(author, prType !== 'created')
+
+        dispatch(peerReviewSlice.actions.set(t))
+    }
 
     const handlePrType = (event: React.MouseEvent<HTMLElement>, value: string | null) => {
         const type = value ?? 'created'
@@ -73,7 +105,7 @@ export const Tickets = (props: any) => {
                         <AuthorsSelect
                             value={author}
                             onChange={handleSelect}
-                            disabled={prType !== 'created' || tickets === null}
+                            disabled={tickets === null}
                         />
                     </div>
                     <div>
@@ -95,6 +127,7 @@ export const Tickets = (props: any) => {
                             <IconButton
                                 sx={{ marginLeft: 1 }}
                                 onClick={() => setRefresh(refresh+1)}
+                                disabled={tickets === null}
                             >
                                 <Refresh />
                             </IconButton>

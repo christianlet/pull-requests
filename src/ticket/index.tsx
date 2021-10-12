@@ -97,9 +97,6 @@ export const Ticket = (props: TicketProps) => {
             <div className="repo-container">
                 {
                     props.data.map(ticket => {
-                        const approved = ticket.reviewers.filter(user => user.state === 'APPROVED').length >= 2
-                        const validBaseBranch = ticket.branches.base.match(/^(collab)/)
-
                         return (
                                 <ListItem
                                     key={ticket.id.toString()}
@@ -135,45 +132,51 @@ export const Ticket = (props: TicketProps) => {
                                     />
                                     <ListItemAvatar sx={{ textAlign: 'right' }}>
                                     {
-                                            ticket.reviewers.map(user => (
-                                                <Tooltip
-                                                    key={user.id}
-                                                    arrow={true}
-                                                    title={`${user.name ?? user.login} - ${user.state.toLowerCase().replace(/(-|_)/, ' ')}`}
-                                                >
-                                                    <Badge
-                                                        sx={{ marginLeft: '5px' }}
-                                                        overlap="circular"
-                                                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                                                        badgeContent={
-                                                            <SmallAvatar>
-                                                                {
-                                                                    user.state === "APPROVED" && (
-                                                                        <CheckCircle
-                                                                            className="user-badge approved"
-                                                                            fontSize="small"
-                                                                        />
-                                                                    )
-                                                                }
-                                                                {
-                                                                    user.state === "CHANGES_REQUESTED" && (
-                                                                        <ChangeCircle
-                                                                            className="user-badge change"
-                                                                            fontSize="small"
-                                                                        />
-                                                                    )
-                                                                }
-                                                            </SmallAvatar>
-                                                        }
+                                            ticket.reviewers.map(review => {
+                                                const reviewState = review.state.toLowerCase().replace(/(-|_)/, ' ')
+                                                const name = review.user?.name ?? review.user.login
+                                                const time = moment(review.submitted_at).fromNow()
+
+                                                return (
+                                                    <Tooltip
+                                                        key={review.id}
+                                                        arrow={true}
+                                                        title={`${name} - ${reviewState} (${time})`}
                                                     >
-                                                        <Avatar
-                                                            alt={user.name ?? user.login}
-                                                            src={user.avatar_url}
-                                                            sx={{ width: 24, height: 24, border: 'solid thin rgba(0,0,0,.2)' }}
-                                                        />
-                                                    </Badge>
-                                                </Tooltip>
-                                            ))
+                                                        <Badge
+                                                            sx={{ marginLeft: '5px' }}
+                                                            overlap="circular"
+                                                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                                            badgeContent={
+                                                                <SmallAvatar>
+                                                                    {
+                                                                        review.state === "APPROVED" && (
+                                                                            <CheckCircle
+                                                                                className="user-badge approved"
+                                                                                fontSize="small"
+                                                                            />
+                                                                        )
+                                                                    }
+                                                                    {
+                                                                        review.state === "CHANGES_REQUESTED" && (
+                                                                            <ChangeCircle
+                                                                                className="user-badge change"
+                                                                                fontSize="small"
+                                                                            />
+                                                                        )
+                                                                    }
+                                                                </SmallAvatar>
+                                                            }
+                                                        >
+                                                            <Avatar
+                                                                alt={name}
+                                                                src={review.avatar_url}
+                                                                sx={{ width: 24, height: 24, border: 'solid thin rgba(0,0,0,.2)' }}
+                                                            />
+                                                        </Badge>
+                                                    </Tooltip>
+                                                )
+                                            })
                                         }
                                     </ListItemAvatar>
                                 </ListItem>

@@ -17,13 +17,23 @@ export const AuthorsSelect = (props: AuthorsSelectProps) => {
             onChange={props.onChange}
             disabled={props.disabled || teamMembers === null}
             size="small"
-            renderValue={data => teamMembers?.filter(m => m.username === data).pop()?.name}
+            renderValue={data => {
+                if(data === '') {
+                    return "All"
+                }
+
+                return teamMembers?.filter(m => m.username === data).pop()?.name
+            }}
+            displayEmpty={true}
             MenuProps={{
                 style: {
                     maxHeight: 300
                 }
             }}
         >
+            <MenuItem key="all" value="" divider={true}>
+                All
+            </MenuItem>
             {
                 teamMembers && teamMembers.map((user, index) => (
                     <MenuItem key={user.username} value={user.username} divider={true}>

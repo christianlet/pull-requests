@@ -5,6 +5,8 @@ import { Box } from '@mui/system'
 import React, { useState } from 'react'
 import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
+import { useAppDispatch } from '../../hooks/redux-hooks'
+import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { createBranch, updatePullRequest } from '../../utilities/github-api'
 import './styles.scss'
 
@@ -16,11 +18,12 @@ interface Repo {
 }
 
 export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
-    const [repos, setRepos] = useState(ticket.repos)
+    const repos = ticket.repos
     const [aip, setAip] = useState(false)
     const [baseBranch, setBaseBranch] = useState('')
     const [selectedRepos, setSelectedRepos] = useState<number[]>([])
     const [longPressInProgress, setLongPressInProgress] = useState(false)
+    const dispatch = useAppDispatch()
     const longPress = useLongPress(() => handleSubmit(), {
         onStart: () => setLongPressInProgress(true),
         onFinish: () => setLongPressInProgress(false),
@@ -38,8 +41,6 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const id = parseInt(event.target.id, 10)
 
-
-
         if(event.target.checked) {
             setSelectedRepos([...selectedRepos, id])
         } else {
@@ -56,7 +57,7 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
     const handleSubmit = async () => {
         setAip(true)
 
-        const reposCopy = await Promise.all([...repos].map( async repo => {
+        await Promise.all([...repos].map( async repo => {
             if(selectedRepos.indexOf(repo.id) > -1) {
                 let created = await createBranch(repo.owner, repo.repo, baseBranch)
                     .catch(e => {
@@ -77,6 +78,8 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
                                 base: baseBranch
                             }
                         }
+
+                        dispatch(update(repo))
                     }
                 }
             }
@@ -84,7 +87,6 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
             return repo
         }))
 
-        setRepos(reposCopy)
         setSelectedRepos([])
         setBaseBranch('')
         setAip(false)

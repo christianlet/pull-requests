@@ -1,17 +1,19 @@
 import { AccountTree } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
-import { Chip, Dialog, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
-import { Box } from '@mui/system'
+import { Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import React, { useState } from 'react'
 import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
+import { useAppDispatch } from '../../hooks/redux-hooks'
+import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { closePullRequest } from '../../utilities/github-api'
 import './styles.scss'
 
 export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
-    const [repos, setRepos] = useState(ticket.repos)
+    const repos = ticket.repos
     const [aip, setAip] = useState(false)
     const [longPressInProgress, setLongPressInProgress] = useState(false)
+    const dispatch = useAppDispatch()
     const longPress = useLongPress(() => handleSubmit(), {
         onStart: () => setLongPressInProgress(true),
         onFinish: () => setLongPressInProgress(false),
@@ -30,15 +32,10 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
             const response = await closePullRequest(repo.owner, repo.repo, repo.number)
 
             if(response) {
-                repos.map(repoState => {
-                    if(repo.id === repoState.id) {
-                        repo.state = 'closed'
-                    }
-
-                    return repo
-                })
-
-                setRepos([...repos])
+                dispatch(update({
+                    ...repo,
+                    state: 'closed'
+                }))
             }
 
             setAip(false)
@@ -50,16 +47,18 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
             open={true}
             onClose={closeDialog}
             maxWidth={false}
-            scroll="body"
+            scroll="paper"
         >
             <DialogTitle>Repositories Associated with Ticket {ticket.ticket}</DialogTitle>
             <Divider />
-            <DialogContent>
+            <DialogTitle>
                 <DialogContentText>This will close the pull request(s) associated with this ticket from the following repositories:</DialogContentText>
-                <List dense={true}>
+            </DialogTitle>
+            <DialogContent sx={{ backgroundColor: 'lightgray' }}>
+                <List dense={true} sx={{ backgroundColor: 'white', padding: 0, marginTop: 2 }}>
                     {
                         ticket.repos.map(repo => (
-                            <ListItem key={repo.id}>
+                            <ListItem key={repo.id} divider={true}>
                                 <ListItemIcon>
                                     <AccountTree fontSize="small" />
                                 </ListItemIcon>
@@ -83,19 +82,19 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
                         ))
                     }
                 </List>
-                <Box marginTop="25px">
-                    <LoadingButton
-                        className={longPressInProgress ? 'pressing' : ''}
-                        variant="contained"
-                        color="error"
-                        loading={aip}
-                        disabled={repos.filter(r => r.state === 'open').length === 0}
-                        disableRipple={true}
-                        {...longPress}
-                        fullWidth={true}
-                    >Close the pull request{repos.length > 1 && 's'}</LoadingButton>
-                </Box>
             </DialogContent>
+            <DialogActions>
+                <LoadingButton
+                    className={longPressInProgress ? 'pressing' : ''}
+                    variant="contained"
+                    color="error"
+                    loading={aip}
+                    disabled={repos.filter(r => r.state === 'open').length === 0}
+                    disableRipple={true}
+                    {...longPress}
+                    fullWidth={true}
+                >Close the pull request{repos.length > 1 && 's'}</LoadingButton>
+            </DialogActions>
         </Dialog>
     )
 }
