@@ -1,6 +1,6 @@
 import { AccountTree } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
-import { Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
+import { Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import React, { useState } from 'react'
 import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
@@ -13,6 +13,7 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
     const repos = ticket.repos
     const [aip, setAip] = useState(false)
     const [longPressInProgress, setLongPressInProgress] = useState(false)
+    const [selectedRepos, setSelectedRepos] = useState<number[]>([])
     const dispatch = useAppDispatch()
     const longPress = useLongPress(() => handleSubmit(), {
         onStart: () => setLongPressInProgress(true),
@@ -24,22 +25,38 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
         detect: LongPressDetectEvents.BOTH
     })
 
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const id = parseInt(event.target.id, 10)
+
+        if(event.target.checked) {
+            setSelectedRepos([...selectedRepos, id])
+        } else {
+            const newSelectedRepos = [...selectedRepos]
+            const index = selectedRepos.findIndex(sr => sr === id)
+
+            newSelectedRepos.splice(index, 1)
+
+            setSelectedRepos(newSelectedRepos)
+        }
+    }
 
     const handleSubmit = async () => {
-        repos.forEach(async repo => {
-            setAip(true)
+        setAip(true)
 
-            const response = await closePullRequest(repo.owner, repo.repo, repo.number)
+        await Promise.all(repos.map(async repo => {
+            if(selectedRepos.indexOf(repo.id) > -1) {
+                const response = await closePullRequest(repo.owner, repo.repo, repo.number)
 
-            if(response) {
-                dispatch(update({
-                    ...repo,
-                    state: 'closed'
-                }))
+                if(response) {
+                    dispatch(update({
+                        ...repo,
+                        state: 'closed'
+                    }))
+                }
             }
+        }))
 
-            setAip(false)
-        })
+        setAip(false)
     }
 
     return (
@@ -59,9 +76,11 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
                     {
                         ticket.repos.map(repo => (
                             <ListItem key={repo.id} divider={true}>
-                                <ListItemIcon>
-                                    <AccountTree fontSize="small" />
-                                </ListItemIcon>
+                                <Checkbox
+                                    id={repo.id.toString()}
+                                    checked={selectedRepos.indexOf(repo.id) > -1}
+                                    onChange={handleCheckboxChange}
+                                />
                                 <ListItemText
                                     primary={repo.repo}
                                     secondary={repo.branches.head}
@@ -89,7 +108,7 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
                     variant="contained"
                     color="error"
                     loading={aip}
-                    disabled={repos.filter(r => r.state === 'open').length === 0}
+                    disabled={repos.filter(r => r.state === 'open').length === 0 || !selectedRepos.length}
                     disableRipple={true}
                     {...longPress}
                     fullWidth={true}

@@ -38,85 +38,17 @@ export interface PullRequest {
 
 const octokit = new PersonalAccessToken().generate()
 
-export const usePullRequestsHook = (reviewing: boolean, author: string, refresh: number = 0) => {
-    const [pullRequests, setPullRequests] = useState<null|TicketsState[]>(null)
-
-    useEffect(() => {
-        setPullRequests(null)
-
-        const getPRs = async () => {
-            const openPullRequests = await searchOpenPullRequests(octokit, reviewing, author).catch(e => ([]))
-
-            const results: any = await Promise.all(openPullRequests.map(async (item) => {
-                const repositoryUrl = item.repository_url.split('/')
-                const repo = repositoryUrl.pop()
-                const owner = repositoryUrl.pop()
-                const pullNumber = parseInt(item.pull_request?.url?.split('/').pop() ?? '0', 10)
-                let reviewers: any[] = []
-                let newItem: any = item
-
-                try {
-                    if (repo && owner && pullNumber && item.pull_request?.url ) {
-                        const hasLocalStorage = getPR(item.id) !== null
-                        const info = await fetchPullRequestInfo(octokit, owner, repo, pullNumber, hasLocalStorage)
-                        const reviews = await fetchPullRequestReviews(octokit, owner, repo, pullNumber)
-
-                        reviewers = await Promise.all(reviews
-                            .filter(r => r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED')
-                            .map(async r => {
-                                const user = await fetchUserInfo(r.user?.login ?? '')
-
-                                return {
-                                    ...r,
-                                    id: user.id,
-                                    name: user.name,
-                                    avatar_url: user.avatar_url
-                                }
-                            }))
-
-                        newItem = {
-                            ...newItem,
-                            branches: {
-                                head: info.head.ref,
-                                base: info.base.ref
-                            },
-                            merged: info.merged,
-                            mergeable: info.mergeable_state === 'clean',
-                            reviewers
-                        }
-                    }
-
-                    newItem = {
-                        ...newItem,
-                        owner,
-                        repo,
-                        pullNumber
-                    }
-
-                    storePR(item.id, newItem)
-                } catch (error: any) {
-                    if(error.status === 304) {
-                        return await getPR(item.id)
-                    }
-                }
-
-                return newItem
-            }))
-
-            setPullRequests(groupPeerReviews(results))
-
-            sessionStorage.setItem('lastSearched', new Date().toUTCString())
-        }
-
-        getPRs()
-    }, [reviewing, author, refresh])
-
-
-    return pullRequests
+interface PullRequestWithPagination {
+    tickets: TicketsState[],
+    totalCount: number
 }
 
-export const getPullRequests = async (author: string, reviewing: boolean): Promise<TicketsState[]> => {
-    const openPullRequests = await searchOpenPullRequests(octokit, reviewing, author).catch(e => ([]))
+export const getPullRequests = async (author: string, reviewing: boolean, page: number): Promise<PullRequestWithPagination> => {
+    const { total_count, items: openPullRequests } = await searchOpenPullRequests(octokit, reviewing, author, page)
+        .catch(e => ({
+            total_count: 0,
+            items: []
+        }))
 
     const results: any = await Promise.all(openPullRequests.map(async (item) => {
         const repositoryUrl = item.repository_url.split('/')
@@ -132,7 +64,6 @@ export const getPullRequests = async (author: string, reviewing: boolean): Promi
             if (repo && owner && pullNumber && item.pull_request?.url ) {
                 const hasLocalStorage = getPR(item.id) !== null
                 const info = await fetchPullRequestInfo(octokit, owner, repo, pullNumber, hasLocalStorage)
-
                 const reviews = await fetchPullRequestReviews(octokit, owner, repo, pullNumber)
 
                 reviewers = await Promise.all(reviews
@@ -177,9 +108,12 @@ export const getPullRequests = async (author: string, reviewing: boolean): Promi
         return newItem
     }))
 
-    sessionStorage.setItem('lastSearched', new Date().toUTCString())
+    sessionStorage.setItem('lastSearched', new Date().toISOString())
 
-    return groupPeerReviews(results)
+    return {
+        tickets: groupPeerReviews(results),
+        totalCount: total_count
+    }
 }
 
 const groupPeerReviews = (prs: any[]) => {
@@ -192,11 +126,12 @@ const groupPeerReviews = (prs: any[]) => {
         if(prIndex === -1) {
             groupedPRs.push({
                 ticket,
-                repos: []
+                repos: [pr]
             })
+        } else {
+            groupedPRs[prIndex].repos.push(pr)
         }
 
-        groupedPRs[groupedPRs.length - 1].repos.push(pr)
     })
 
     return groupedPRs
@@ -264,7 +199,7 @@ export const useAuthorsHook = () => {
     return authors
 }
 
-const searchOpenPullRequests = async (octokit: Octokit, reviewing: boolean, author: string) => {
+const searchOpenPullRequests = async (octokit: Octokit, reviewing: boolean, author: string, page: number) => {
     let query = `author:${author}`
 
     if(reviewing) {
@@ -278,10 +213,11 @@ const searchOpenPullRequests = async (octokit: Octokit, reviewing: boolean, auth
     const { data } = await octokit.search.issuesAndPullRequests({
         q: `${query}+is:pr+is:open`,
         sort: 'created',
-        per_page: 50
+        per_page: 50,
+        page,
     })
 
-    return data.items
+    return data
 }
 
 const fetchPullRequestInfo = async (octokit: Octokit, owner: string, repo: string, pullNumber: number, hasLocalStorage: boolean) => {
@@ -293,7 +229,7 @@ const fetchPullRequestInfo = async (octokit: Octokit, owner: string, repo: strin
         pull_number: pullNumber,
         headers:
             lastSearched && hasLocalStorage
-            ? { "If-Modified-Since": new Date(lastSearched).toUTCString() }
+            ? { "If-Modified-Since": lastSearched }
             : {}
     })
 
@@ -435,4 +371,18 @@ export const updatePullRequest = async (owner: string, repo: string, pullNumber:
     })
 
     return response.status === 200
+}
+
+export const mergePullRequest = async (owner: string, repo: string, pullNumber: number, params?: Object) => {
+    const octokit = new PersonalAccessToken().generate()
+
+    const response = await octokit.pulls.merge({
+        owner,
+        repo,
+        pull_number: pullNumber,
+        ...params,
+        maintainer_can_modify: true
+    })
+
+    return response.data.merged
 }

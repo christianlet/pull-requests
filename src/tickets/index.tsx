@@ -1,7 +1,7 @@
 import { Refresh } from '@mui/icons-material'
 import { CircularProgress, IconButton, SelectChangeEvent, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box } from '@mui/system'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { peerReviewSlice } from '../redux/reducers/peer-reviews-reducer'
@@ -10,6 +10,7 @@ import { getPullRequests, PullRequest } from '../utilities/github-api'
 import { ClosePulls } from './action-dialogs/close-pulls'
 import { DevBranch } from './action-dialogs/dev-branch'
 import { Diffs } from './action-dialogs/diffs'
+import { MergePRs } from './action-dialogs/merge-prs'
 import { AuthorsSelect } from './authors-select'
 import './styles.scss'
 
@@ -23,31 +24,37 @@ type DialogActionState = {
     ticket: TicketsState
 } | null
 
+type FilterState = {
+    prType: string
+    author: string
+    page: number
+}
+
 export const Tickets = () => {
-    const currentUrlParams = new URLSearchParams(window.location.search)
+    const currentUrlParams = useMemo(() =>
+        new URLSearchParams(window.location.search),
+        []
+    )
     const [ticketDialogData, setTicketDialogData] = useState<DialogActionState>(null)
-    const [prType, setPrType] = useState(currentUrlParams.get('pr_type') ?? 'created')
+    const [filters, setFilters] = useState<FilterState>({
+        prType: currentUrlParams.get('pr_type') ?? 'created',
+        author: currentUrlParams.get('author') ?? '@me',
+        page: parseInt(currentUrlParams.get('page') ?? '1', 10)
+    })
     const history = useHistory()
-    const [author, setAuthor] = useState<string>(prType === 'created' ? '@me' : '')
     const [refresh, setRefresh] = useState(0)
     const dispatch = useAppDispatch()
     const tickets = useAppSelector(state => state.peerReviews.value)
 
     useEffect(() => {
-        currentUrlParams.set('pr_type', prType)
+        currentUrlParams.set('pr_type', filters.prType)
+        currentUrlParams.set('author', filters.author)
+        currentUrlParams.set('page', filters.page.toString())
 
         history.push({ search: currentUrlParams.toString() })
 
-        if(prType === 'created') {
-            setAuthor('@me')
-        } else {
-            setAuthor('')
-        }
-    }, [prType])
-
-    useEffect(() => {
         getPeerReviews()
-    }, [prType])
+    }, [filters, history, currentUrlParams, refresh])
 
     useEffect(() => {
         if(ticketDialogData) {
@@ -67,15 +74,23 @@ export const Tickets = () => {
     }, [tickets])
 
     const getPeerReviews = async () => {
-        const t = await getPullRequests(author, prType !== 'created')
+        dispatch(peerReviewSlice.actions.set(null))
 
-        dispatch(peerReviewSlice.actions.set(t))
+        const reviewing = filters.prType !== 'created'
+        const response  = await getPullRequests(filters.author, reviewing, filters.page)
+
+        dispatch(peerReviewSlice.actions.set(response.tickets))
     }
 
     const handlePrType = (event: React.MouseEvent<HTMLElement>, value: string | null) => {
         const type = value ?? 'created'
+        const author = type === 'created' ? '@me' : ''
 
-        setPrType(type)
+        setFilters({
+            ...filters,
+            prType: type,
+            author
+        })
     }
 
     const handleDialogOpen = (action: string, ticket: TicketsState) => setTicketDialogData({
@@ -84,9 +99,10 @@ export const Tickets = () => {
     })
     const handleDialogClose = () => setTicketDialogData(null)
 
-    const handleSelect = ({ target: { value } }: SelectChangeEvent) => {
-        setAuthor(value)
-    }
+    const handleSelect = ({ target: { value } }: SelectChangeEvent) => setFilters({
+        ...filters,
+        author: value
+    })
 
     return (
         <>
@@ -99,11 +115,19 @@ export const Tickets = () => {
             {
                 ticketDialogData?.action === 'dev-branch' && <DevBranch ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
             }
+            {
+                ticketDialogData?.action === 'merge-prs' &&
+                    <MergePRs
+                        ticket={ticketDialogData.ticket}
+                        closeDialog={handleDialogClose}
+                        refresh={() => setRefresh(refresh+1)}
+                    />
+            }
             <Box paddingX="50px" paddingY="25px">
                 <Box className="filter-container">
                     <div>
                         <AuthorsSelect
-                            value={author}
+                            value={filters.author}
                             onChange={handleSelect}
                             disabled={tickets === null}
                         />
@@ -113,7 +137,7 @@ export const Tickets = () => {
                             <ToggleButtonGroup
                                 color="primary"
                                 size="small"
-                                value={prType}
+                                value={filters.prType}
                                 exclusive={true}
                                 onChange={handlePrType}
                                 disabled={tickets === null}
@@ -162,7 +186,7 @@ export const Tickets = () => {
                                 key={index}
                                 title={ticket.ticket}
                                 data={ticket.repos}
-                                prType={prType}
+                                prType={filters.prType}
                                 openTicketDetail={action => handleDialogOpen(action, ticket)}
                             />
                         ))

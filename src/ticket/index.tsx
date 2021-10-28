@@ -6,7 +6,7 @@ import moment from 'moment'
 import { PullRequest } from '../utilities/github-api'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTerminal, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
+import { faCopy, faProjectDiagram, faTerminal, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 
 interface TicketProps {
     title: string
@@ -81,6 +81,38 @@ export const Ticket = (props: TicketProps) => {
                                     <FontAwesomeIcon icon={faTerminal} />
                                 </ListItemIcon>
                                 <ListItemText>Update Base Branch</ListItemText>
+                            </MenuItem>
+                        )
+                    }
+                    {
+                        props.prType === 'created' && (
+                            <MenuItem
+                                onClick={() => {
+                                    const items = props.data.map(pr => (`* [${pr.repo} PR|${pr.pull_request.html_url}]`))
+
+                                    navigator.clipboard.writeText(items.join("\n"))
+
+                                    handleMenuClose()
+                                }}
+                                divider={true}
+                            >
+                                <ListItemIcon>
+                                    <FontAwesomeIcon icon={faCopy} />
+                                </ListItemIcon>
+                                <ListItemText>Copy For Jira Comment</ListItemText>
+                            </MenuItem>
+                        )
+                    }
+                    {
+                        props.prType === 'created' && (
+                            <MenuItem
+                                onClick={() => openTicketDialog('merge-prs')}
+                                divider={true}
+                            >
+                                <ListItemIcon>
+                                    <FontAwesomeIcon icon={faProjectDiagram} />
+                                </ListItemIcon>
+                                <ListItemText>Merge PRs</ListItemText>
                             </MenuItem>
                         )
                     }
