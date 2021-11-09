@@ -1,8 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { TicketsState } from '../../tickets';
-import { PullRequest } from '../../utilities/github-api';
-
+import { PullRequest, TicketsState } from '../../types/api-types';
 
 interface PeerReviewState {
     value: null|TicketsState[]

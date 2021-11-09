@@ -1,19 +1,20 @@
-import { AccountTree } from '@mui/icons-material'
+import { CheckBox } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
-import { Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
+import { Dialog, DialogTitle, Divider, DialogContentText, DialogContent, List, ListItem, Checkbox, ListItemText, ListItemIcon, Chip, DialogActions, Select, MenuItem, OutlinedInput, SelectChangeEvent } from '@mui/material'
 import React, { useState } from 'react'
 import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
 import { useAppDispatch } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
-import { closePullRequest } from '../../utilities/github-api'
-import './styles.scss'
+import { closePullRequest, getUsers, useAuthorsHook } from '../../utilities/github-api'
 
-export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
+export const AddReviewers = ({ ticket, closeDialog }: ActionDialogProps) => {
     const repos = ticket.repos
     const [aip, setAip] = useState(false)
     const [longPressInProgress, setLongPressInProgress] = useState(false)
     const [selectedRepos, setSelectedRepos] = useState<number[]>([])
+    const [reviewers, setReviewers] = useState<string>('')
+    const teamMembers = useAuthorsHook()
     const dispatch = useAppDispatch()
     const longPress = useLongPress(() => handleSubmit(), {
         onStart: () => setLongPressInProgress(true),
@@ -38,6 +39,14 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
 
             setSelectedRepos(newSelectedRepos)
         }
+    }
+
+    const handleSelectChange = (event: SelectChangeEvent<string>) => {
+        const {
+            target: { value }
+        } = event
+
+        setReviewers(value)
     }
 
     const handleSubmit = async () => {
@@ -66,16 +75,40 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
             maxWidth={false}
             scroll="paper"
         >
-            <DialogTitle>Repositories Associated with Ticket {ticket.ticket}</DialogTitle>
+            <DialogTitle>Modify Reviewers for {ticket.ticket}</DialogTitle>
             <Divider />
             <DialogTitle>
-                <DialogContentText>This will close the pull request(s) associated with this ticket from the following repositories:</DialogContentText>
+                <DialogContentText>Reviewers:</DialogContentText>
+                <DialogContentText>
+                    <Select
+                        fullWidth
+                        value={reviewers}
+                        input={<OutlinedInput />}
+                        onChange={handleSelectChange}
+                        displayEmpty={true}
+                        MenuProps={{
+                            style: {
+                                maxHeight: 300
+                            }
+                        }}
+                    >
+                        {(teamMembers ?? []).map(user => (
+                            <MenuItem key={user.username} value={user.username}>
+                                <CheckBox />
+                                <ListItemText primary={user?.name ?? user.username} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </DialogContentText>
             </DialogTitle>
-            <DialogContent sx={{ bgcolor: 'background.paper' }}>
-                <List dense={true} sx={{ padding: 0, marginTop: 2 }}>
+            <DialogTitle>
+                <DialogContentText>Repositories:</DialogContentText>
+            </DialogTitle>
+            <DialogContent sx={{ backgroundColor: 'lightgray' }}>
+                <List dense={true} sx={{ backgroundColor: 'white', padding: 0, marginTop: 2 }}>
                     {
-                        ticket.repos.map((repo, i) => (
-                            <ListItem key={repo.id} divider={i < (ticket.repos.length - 1)}>
+                        ticket.repos.map(repo => (
+                            <ListItem key={repo.id} divider={true}>
                                 <Checkbox
                                     id={repo.id.toString()}
                                     checked={selectedRepos.indexOf(repo.id) > -1}
@@ -112,7 +145,7 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
                     disableRipple={true}
                     {...longPress}
                     fullWidth={true}
-                >Close the pull request{repos.length > 1 && 's'}</LoadingButton>
+                >Submit reviewer{repos.length > 1 && 's'}</LoadingButton>
             </DialogActions>
         </Dialog>
     )

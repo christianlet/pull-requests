@@ -1,4 +1,4 @@
-import { Tooltip } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
@@ -29,26 +29,36 @@ export const RateLimit = (props: any) => {
             display: 'flex',
             alignItems: 'flex-end'
         }}>
-            <div className="rate-limit-container">
-                <span>Core Rate Limit</span>
+            <Box
+                className="rate-limit-container"
+                sx={{
+                    display: 'flex'
+                }}
+            >
+                <Typography sx={{ color: 'text.primary'}}>Core Rate Limit</Typography>
                 <Tooltip
                     title={`Resets ${moment.unix(core.reset).fromNow()}`}
                 >
-                    <div
+                    <Typography
                         className={`badge ${badgeColor(core.limit, core.used)}`}
-                    >{core.limit ? formatter.format(core.used / core.limit) : '0%'}</div>
+                    >{core.limit ? formatter.format(core.used / core.limit) : '0%'}</Typography>
                 </Tooltip>
-            </div>
-            <div className="rate-limit-container">
-                <span>Search Rate Limit</span>
+            </Box>
+            <Box
+                className="rate-limit-container"
+                sx={{
+                    display: 'flex'
+                }}
+            >
+                <Typography sx={{ color: 'text.primary'}}>Search Rate Limit</Typography>
                 <Tooltip
                     title={`Resets ${moment.unix(search.reset).fromNow()}`}
                 >
-                    <div
+                    <Typography
                         className={`badge ${badgeColor(search.limit, search.used)}`}
-                    >{core.limit ? formatter.format(search.used / search.limit) : '0%'}</div>
+                    >{core.limit ? formatter.format(search.used / search.limit) : '0%'}</Typography>
                 </Tooltip>
-            </div>
+            </Box>
         </Box>
     )
 }

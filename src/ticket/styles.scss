@@ -11,15 +11,12 @@ $green: #44b700;
         justify-content: space-between;
         align-items: center;
         padding: 10px;
-        background-color: rgb(230, 230, 230);
 
         .title {
-            color: rgba(0, 0, 0, .5);
             font-weight: bold;
         }
 
         .subtitle {
-            color: rgba(0, 0, 0, .4);
             font-size: 12px;
         }
     }
@@ -28,23 +25,12 @@ $green: #44b700;
         max-height: 150px;
         overflow-y: auto;
         overflow-x: hidden;
-        border-left: solid 1px lightgray;
-        border-right: solid 1px lightgray;
-        border-bottom: solid 1px lightgray;
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
 
         .list-item {
             .user-badge {
                 background-color: white;
-
-                &.approved {
-                    color: #44b700;
-                }
-
-                &.change {
-                    color: red;
-                }
             }
         }
     }

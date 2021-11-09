@@ -1,12 +1,14 @@
 import { Refresh } from '@mui/icons-material'
 import { CircularProgress, IconButton, SelectChangeEvent, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import { Box } from '@mui/system'
+import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { peerReviewSlice } from '../redux/reducers/peer-reviews-reducer'
 import { Ticket } from '../ticket'
-import { getPullRequests, PullRequest } from '../utilities/github-api'
+import { TicketsState } from '../types/api-types'
+import { getPullRequests } from '../utilities/github-api'
+import { AddReviewers } from './action-dialogs/add-reviewers'
 import { ClosePulls } from './action-dialogs/close-pulls'
 import { DevBranch } from './action-dialogs/dev-branch'
 import { Diffs } from './action-dialogs/diffs'
@@ -14,10 +16,6 @@ import { MergePRs } from './action-dialogs/merge-prs'
 import { AuthorsSelect } from './authors-select'
 import './styles.scss'
 
-export interface TicketsState {
-    ticket: string
-    repos: PullRequest[]
-}
 
 type DialogActionState = {
     action: string
@@ -44,6 +42,7 @@ export const Tickets = () => {
     const history = useHistory()
     const [refresh, setRefresh] = useState(0)
     const dispatch = useAppDispatch()
+    const theme = useTheme()
     const tickets = useAppSelector(state => state.peerReviews.value)
 
     useEffect(() => {
@@ -124,25 +123,30 @@ export const Tickets = () => {
                     />
             }
             <Box paddingX="50px" paddingY="25px">
-                <Box className="filter-container">
+                <Box
+                    className="filter-container"
+                    sx={{
+                        bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : 'grey.300'
+                    }}
+                >
                     <div>
                         <AuthorsSelect
                             value={filters.author}
                             onChange={handleSelect}
-                            disabled={tickets === null}
+                            disabled={tickets === null || filters.prType !== 'created'}
                         />
                     </div>
                     <div>
                         <div>
                             <ToggleButtonGroup
-                                color="primary"
                                 size="small"
+                                color="info"
                                 value={filters.prType}
                                 exclusive={true}
                                 onChange={handlePrType}
                                 disabled={tickets === null}
                                 sx={{
-                                    backgroundColor: 'white'
+                                    bgcolor: 'background.paper'
                                 }}
                             >
                                 <ToggleButton value="created">Created</ToggleButton>

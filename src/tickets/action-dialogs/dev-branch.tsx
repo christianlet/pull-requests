@@ -137,15 +137,15 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
                     </ListItem>
                 </DialogContentText>
             </DialogTitle>
-            <DialogContent sx={{ backgroundColor: 'lightgray' }}>
-                <List dense={true} sx={{ backgroundColor: 'white', marginTop: 2, padding: 0 }}>
+            <DialogContent sx={{ bgcolor: 'background.paper' }}>
+                <List dense={true} sx={{ marginTop: 2, padding: 0 }}>
                     {
-                        repos.map((repo) => {
+                        repos.map((repo, i) => {
                             const selected = selectedRepos.indexOf(repo.id) > -1
                             const branch   = selected && baseBranch !== '' ? baseBranch : repo.branches.base
 
                             return (
-                                <ListItem key={repo.id} divider={true}>
+                                <ListItem key={repo.id} divider={i < (repos.length - 1)}>
                                     <Checkbox
                                         id={repo.id.toString()}
                                         checked={selected}

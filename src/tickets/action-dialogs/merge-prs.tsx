@@ -1,12 +1,10 @@
 import { ErrorOutline, KeyboardBackspace } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
-import { Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
+import { Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemText, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import React, { useState } from 'react'
 import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
-import { useAppDispatch } from '../../hooks/redux-hooks'
-import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { mergePullRequest } from '../../utilities/github-api'
 import './styles.scss'
 
@@ -20,7 +18,6 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
     const [selectedRepos, setSelectedRepos] = useState<number[]>([])
     const [toggleSelect, setToggleSelect] = useState(false)
     const [longPressInProgress, setLongPressInProgress] = useState(false)
-    const dispatch = useAppDispatch()
     const longPress = useLongPress(() => handleSubmit(), {
         onStart: () => setLongPressInProgress(true),
         onFinish: () => setLongPressInProgress(false),
@@ -99,16 +96,17 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
                     </ListItem>
                 </DialogContentText>
             </DialogTitle>
-            <DialogContent sx={{ backgroundColor: 'lightgray' }}>
-                <List dense={true} sx={{ backgroundColor: 'white', marginTop: 2, padding: 0 }}>
+            <DialogContent sx={{ bgcolor: 'background.paper' }}>
+                <List dense={true} sx={{ marginTop: 2, padding: 0 }}>
                     {
-                        repos.map((repo) => {
+                        repos.map((repo, i) => {
                             const selected = selectedRepos.indexOf(repo.id) > -1
+                            const mergable = repo.mergeable && repo.mergeable_state === 'clean' && !repo.merged
 
                             return (
-                                <ListItem key={repo.id} divider={true}>
+                                <ListItem key={repo.id} divider={i < (repos.length - 1)}>
                                     {
-                                        repo.mergeable && !repo.merged && (
+                                        mergable && (
                                             <Checkbox
                                                 id={repo.id.toString()}
                                                 checked={selected}

@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest'
 import { AuthorizationConstructor } from './authorization-interface';
 
-export class PersonalAccessToken implements AuthorizationConstructor {
+export class Oauth implements AuthorizationConstructor {
     protected accessToken: string
 
     constructor() {
@@ -13,9 +13,7 @@ export class PersonalAccessToken implements AuthorizationConstructor {
             throw new Error("Missing token");
         }
     }
-    /**
-     * generate
-     */
+
     public generate() {
         return new Octokit({
             auth: this.accessToken

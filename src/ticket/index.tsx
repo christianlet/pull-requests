@@ -1,16 +1,20 @@
 import { ArrowRightAlt, ChangeCircle, CheckCircle, Close, Code, CompareArrows, Launch, MoreHoriz } from '@mui/icons-material'
-import { Avatar, Badge, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
-import { Box, styled } from '@mui/system'
+import { Avatar, Badge, Chip, Divider, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
+import { Box, color, styled, useTheme } from '@mui/system'
 import { useState } from 'react'
 import moment from 'moment'
-import { PullRequest } from '../utilities/github-api'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCopy, faProjectDiagram, faTerminal, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
+import { faCopy, faProjectDiagram, faTerminal, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
+import { TicketsState } from '../types/api-types'
+import { requestDevBranch } from '../utilities/github-api'
+import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
+import { update } from '../redux/reducers/peer-reviews-reducer'
+import { text } from '@fortawesome/fontawesome-svg-core'
 
 interface TicketProps {
     title: string
-    data: PullRequest[]
+    data: TicketsState["repos"]
     openTicketDetail: (action: string) => void
     prType: string
 }
@@ -20,6 +24,13 @@ export const Ticket = (props: TicketProps) => {
     const menuOpen = Boolean(anchorEl)
     const created = moment(props.data[props.data.length-1].created_at)
     const authorData = props.data[props.data.length-1].user
+    const theme = useTheme()
+    const dispatch = useAppDispatch()
+    const user = useAppSelector(state => state.user.value)
+    const myPR = user?.login === props.data[0]?.user.login
+    const devBranchRequested = props.data.filter(repo =>
+        (repo.requested_reviewers?.filter(reviewer => reviewer.login === 'ashleymendez') ?? []).length > 0
+    ).length > 0
     const SmallAvatar = styled(Avatar)(() => ({
         width: 16,
         height: 16,
@@ -36,17 +47,53 @@ export const Ticket = (props: TicketProps) => {
         props.openTicketDetail(action)
     }
 
+    const devBranch = async () => {
+        handleMenuClose()
+
+        for (const repo of props.data) {
+            const response = await requestDevBranch(repo.owner, repo.repo, repo.number)
+
+            if(response) {
+                dispatch(
+                    update({
+                        ...repo,
+                        requested_reviewers: response
+                    })
+                )
+            }
+        }
+    }
+
     return (
-        <div className="ticket-container">
-            <Box className="header">
+        <Box
+            className="ticket-container"
+        >
+            <Box
+                className="header"
+                sx={{
+                    bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300',
+                    color: 'text.primary'
+                }}
+            >
                 <div>
-                    <Typography className="title">{props.title}</Typography>
-                    <Typography className="subtitle">
+                    <Typography
+                        className="title"
+                        sx={{
+                            color: 'text.secondary'
+                        }}
+                    >{props.title}</Typography>
+                    <Typography
+                        className="subtitle"
+                        sx={{
+                            color: 'text.disabled'
+                        }}
+                    >
                         {created.fromNow()} by {authorData.name ?? authorData.login}
                     </Typography>
                 </div>
                 <IconButton
                     onClick={handleMenuClick}
+                    color="inherit"
                 >
                     <MoreHoriz fontSize="small" />
                 </IconButton>
@@ -59,7 +106,7 @@ export const Ticket = (props: TicketProps) => {
                     }}
                 >
                     {
-                        props.prType === 'created' && (
+                        myPR && (
                             <MenuItem
                                 onClick={() => openTicketDialog('delete')}
                                 divider={true}
@@ -72,23 +119,23 @@ export const Ticket = (props: TicketProps) => {
                         )
                     }
                     {
-                        props.prType === 'created' && (
+                        myPR && (
                             <MenuItem
                                 onClick={() => openTicketDialog('dev-branch')}
                                 divider={true}
                             >
                                 <ListItemIcon>
-                                    <FontAwesomeIcon icon={faTerminal} />
+                                    <FontAwesomeIcon icon={faWrench} />
                                 </ListItemIcon>
                                 <ListItemText>Update Base Branch</ListItemText>
                             </MenuItem>
                         )
                     }
                     {
-                        props.prType === 'created' && (
+                        myPR && (
                             <MenuItem
                                 onClick={() => {
-                                    const items = props.data.map(pr => (`* [${pr.repo} PR|${pr.pull_request.html_url}]`))
+                                    const items = props.data.map(pr => (`* [${pr.repo} PR|${pr.html_url}]`))
 
                                     navigator.clipboard.writeText(items.join("\n"))
 
@@ -104,7 +151,7 @@ export const Ticket = (props: TicketProps) => {
                         )
                     }
                     {
-                        props.prType === 'created' && (
+                        myPR && (
                             <MenuItem
                                 onClick={() => openTicketDialog('merge-prs')}
                                 divider={true}
@@ -113,6 +160,19 @@ export const Ticket = (props: TicketProps) => {
                                     <FontAwesomeIcon icon={faProjectDiagram} />
                                 </ListItemIcon>
                                 <ListItemText>Merge PRs</ListItemText>
+                            </MenuItem>
+                        )
+                    }
+                    {
+                        myPR && !devBranchRequested && (
+                            <MenuItem
+                                onClick={() => devBranch()}
+                                divider={true}
+                            >
+                                <ListItemIcon>
+                                    <FontAwesomeIcon icon={faUserClock} />
+                                </ListItemIcon>
+                                <ListItemText>Request Dev Branch</ListItemText>
                             </MenuItem>
                         )
                     }
@@ -126,26 +186,62 @@ export const Ticket = (props: TicketProps) => {
                     </MenuItem>
                 </Menu>
             </Box>
-            <div className="repo-container">
+            <Divider />
+            <Box
+                className="repo-container"
+                sx={{
+                    bgcolor: 'background.paper',
+                    color: 'text.primary',
+                    borderColor: 'divider',
+                    borderStyle: 'solid',
+                    borderWidth: 1,
+                    borderTopWidth: 0,
+                }}
+            >
                 {
-                    props.data.map(ticket => {
+                    props.data.map((ticket, i) => {
                         return (
                                 <ListItem
                                     key={ticket.id.toString()}
                                     className="list-item"
-                                    divider={true}
+                                    divider={i < (props.data.length - 1)}
                                     dense={true}
                                 >
                                     <ListItemIcon>
                                         <IconButton
-                                            onClick={() => window.open(ticket.pull_request.html_url, '_blank')}
+                                            onClick={() => window.open(ticket.html_url, '_blank')}
                                             size="small"
+                                            sx={{
+                                                color: 'text.primary'
+                                            }}
                                         >
                                             <Launch fontSize="small" />
                                         </IconButton>
                                     </ListItemIcon>
                                     <ListItemText
-                                        primary={ticket.repo}
+                                        primary={
+                                            <>
+                                                {ticket.repo}
+                                                {
+                                                    ticket.draft && (
+                                                        <Chip
+                                                            label="Draft"
+                                                            size="small"
+                                                            variant="outlined"
+                                                            color="warning"
+                                                            sx={{
+                                                                marginLeft: '5px',
+                                                                height: '18px',
+                                                                fontSize: 12,
+                                                                '.MuiChip-labelSmall': {
+                                                                    lineHeight: 1
+                                                                }
+                                                            }}
+                                                        />
+                                                    )
+                                                }
+                                            </>
+                                        }
                                         secondary={
                                             <Box
                                                 display="flex"
@@ -153,6 +249,9 @@ export const Ticket = (props: TicketProps) => {
                                                 padding="0"
                                                 marginTop="-5px"
                                                 title="Base branch"
+                                                sx={{
+                                                    color: 'text.primary'
+                                                }}
                                             >
                                                 <ArrowRightAlt />
                                                 <p>{ticket.branches.base}</p>
@@ -186,6 +285,9 @@ export const Ticket = (props: TicketProps) => {
                                                                             <CheckCircle
                                                                                 className="user-badge approved"
                                                                                 fontSize="small"
+                                                                                sx={{
+                                                                                    color: 'success.light'
+                                                                                }}
                                                                             />
                                                                         )
                                                                     }
@@ -194,6 +296,9 @@ export const Ticket = (props: TicketProps) => {
                                                                             <ChangeCircle
                                                                                 className="user-badge change"
                                                                                 fontSize="small"
+                                                                                sx={{
+                                                                                    color: 'error.light'
+                                                                                }}
                                                                             />
                                                                         )
                                                                     }
@@ -202,7 +307,7 @@ export const Ticket = (props: TicketProps) => {
                                                         >
                                                             <Avatar
                                                                 alt={name}
-                                                                src={review.avatar_url}
+                                                                src={review.user.avatar_url}
                                                                 sx={{ width: 24, height: 24, border: 'solid thin rgba(0,0,0,.2)' }}
                                                             />
                                                         </Badge>
@@ -215,7 +320,7 @@ export const Ticket = (props: TicketProps) => {
                         )
                     })
                 }
-            </div>
-        </div>
+            </Box>
+        </Box>
     )
 }

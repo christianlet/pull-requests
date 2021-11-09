@@ -60,7 +60,7 @@ export const Diffs = (props: ActionDialogProps) => {
                 </IconButton>
             </DialogTitle>
             <Divider />
-            <DialogContent sx={{ backgroundColor: theme.palette.grey[50]}}>
+            <DialogContent>
                 <Tabs
                     value={tab}
                     onChange={(e, val) => setTab(val)}
@@ -73,7 +73,7 @@ export const Diffs = (props: ActionDialogProps) => {
                                 value={repo.id}
                                 label={repo.repo}
                                 sx={{
-                                    backgroundColor: theme.palette.grey[300]
+                                    bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : 'grey.300'
                                 }}
                             />
                         ))
@@ -91,7 +91,7 @@ export const Diffs = (props: ActionDialogProps) => {
                                 <AccordionSummary
                                     expandIcon={<ExpandMore />}
                                     sx={{
-                                        backgroundColor: theme.palette.grey[300],
+                                        bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : 'grey.300'
                                     }}
                                 >
                                     <Typography>{file.filename}</Typography>
@@ -108,7 +108,8 @@ export const Diffs = (props: ActionDialogProps) => {
                                                 <Typography sx={{
                                                     overflow: 'visible',
                                                     whiteSpace: 'pre-wrap',
-                                                    backgroundColor: bgColor
+                                                    backgroundColor: bgColor,
+                                                    color: 'black'
                                                 }}>
                                                     {line.replace(/@@/g, '\n')}
                                                 </Typography>
