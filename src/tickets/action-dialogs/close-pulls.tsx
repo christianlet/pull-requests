@@ -6,7 +6,7 @@ import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
 import { useAppDispatch } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
-import { closePullRequest } from '../../utilities/github-api'
+import { closePullRequest } from '../../utilities/git-api/pulls/close-pull-request'
 import './styles.scss'
 
 export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {

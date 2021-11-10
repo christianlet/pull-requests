@@ -1,33 +1,24 @@
+import React, { useEffect, useState } from 'react'
 import { Close, ExpandMore } from '@mui/icons-material'
-import { Accordion, AccordionDetails, AccordionSummary, createStyles, Dialog, DialogContent, DialogTitle, Divider, IconButton, makeStyles, Slide, Tab, Tabs, Theme, Typography, useTheme } from '@mui/material'
+import { Accordion, AccordionDetails, AccordionSummary, Dialog, DialogContent, DialogTitle, Divider, IconButton, Tab, Tabs, Typography, useTheme } from '@mui/material'
 import { green, pink } from '@mui/material/colors'
 import { Box } from '@mui/system'
-import { Octokit } from '@octokit/rest'
-import React, { useEffect, useState } from 'react'
 import { ActionDialogProps } from '.'
+import { useListFiles } from '../../hooks/list-files'
 
 export const Diffs = (props: ActionDialogProps) => {
-    const octokit = new Octokit({ auth: process.env.REACT_APP_PAT })
     const [tab, setTab] = useState(props.ticket.repos[0].id)
-    const [files, setFiles] = useState<any[]>([])
+    const [repo, setRepo] = useState(props.ticket.repos.filter(r => r.id === tab).pop())
+    const files = useListFiles(repo!.owner, repo!.repo, repo!.number)
     const theme = useTheme()
 
     useEffect(() => {
-        const repo = props.ticket.repos.filter(r => r.id === tab).pop()
+        const r = props.ticket.repos.filter(r => r.id === tab).pop()
 
-        if(repo) {
-            octokit.pulls.listFiles({
-                owner: repo.owner,
-                repo: repo.repo,
-                pull_number: repo.number
-            })
-                .then(({ data }) => setFiles(data))
+        if(r) {
+            setRepo(r)
         }
-
-        return () => {
-            setFiles([])
-        }
-    }, [tab])
+    }, [tab, props.ticket.repos])
 
     return (
         <Dialog
@@ -86,7 +77,7 @@ export const Diffs = (props: ActionDialogProps) => {
                     }}
                 >
                     {
-                        files.filter(f => f.patch).map(file => (
+                        files?.filter(f => f.patch).map(file => (
                             <Accordion>
                                 <AccordionSummary
                                     expandIcon={<ExpandMore />}

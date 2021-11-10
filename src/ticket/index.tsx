@@ -1,16 +1,15 @@
-import { ArrowRightAlt, ChangeCircle, CheckCircle, Close, Code, CompareArrows, Launch, MoreHoriz } from '@mui/icons-material'
+import { ArrowRightAlt, ChangeCircle, CheckCircle, CompareArrows, Launch, MoreHoriz } from '@mui/icons-material'
 import { Avatar, Badge, Chip, Divider, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
-import { Box, color, styled, useTheme } from '@mui/system'
+import { Box, styled, useTheme } from '@mui/system'
 import { useState } from 'react'
 import moment from 'moment'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCopy, faProjectDiagram, faTerminal, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
+import { faCopy, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
 import { TicketsState } from '../types/api-types'
-import { requestDevBranch } from '../utilities/github-api'
 import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { update } from '../redux/reducers/peer-reviews-reducer'
-import { text } from '@fortawesome/fontawesome-svg-core'
+import { requestDevBranch } from '../utilities/git-api/pulls/request-reviewer'
 
 interface TicketProps {
     title: string

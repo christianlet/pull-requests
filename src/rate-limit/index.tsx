@@ -2,7 +2,7 @@ import { Tooltip, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
-import { useRateLimitHook } from '../utilities/github-api'
+import { useRateLimitHook } from '../hooks/rate-limit'
 import './styles.scss'
 
 const formatter = new Intl.NumberFormat(undefined, {

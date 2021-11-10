@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import peerReviewsReducer from './redux/reducers/peer-reviews-reducer';
 import tokenReducer from './redux/reducers/token-reducer';
+import peerReviewsReducer from './redux/reducers/peer-reviews-reducer';
 import userReducer from './redux/reducers/user-reducer';
 
 export const store = configureStore({

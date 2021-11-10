@@ -5,7 +5,7 @@ import { Box } from '@mui/system'
 import React, { useState } from 'react'
 import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
-import { mergePullRequest } from '../../utilities/github-api'
+import { mergePullRequest } from '../../utilities/git-api/pulls/merge-pull-request'
 import './styles.scss'
 
 interface MergePRsProps extends ActionDialogProps {

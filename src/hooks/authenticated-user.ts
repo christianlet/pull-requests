@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AuthenticatedUser } from '../types/api-types'
-import { getAuthenticatedUser } from '../utilities/github-api'
+import { getAuthenticatedUser } from '../utilities/git-api/users/get-authenticated-user'
 
 
 export const useAuthenticatedUser = () => {
@@ -10,9 +10,13 @@ export const useAuthenticatedUser = () => {
         setUser(null)
 
         const getUser = async () => {
-            const user = await getAuthenticatedUser()
+            try {
+                const user = await getAuthenticatedUser()
 
-            setUser(user)
+                if(user) {
+                    setUser(user)
+                }
+            } catch(e){}
         }
 
         getUser()

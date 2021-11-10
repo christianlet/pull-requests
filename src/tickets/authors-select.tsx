@@ -1,6 +1,6 @@
 import React from 'react'
 import { MenuItem, Select } from '@mui/material'
-import { useAuthorsHook } from '../utilities/github-api'
+import { useAuthorsHook } from '../hooks/authors-hook'
 
 interface AuthorsSelectProps {
     value: string

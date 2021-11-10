@@ -16,7 +16,7 @@ export class PersonalAccessToken implements AuthorizationConstructor {
     /**
      * generate
      */
-    public generate() {
+    public async generate() {
         return new Octokit({
             auth: this.accessToken
         })

@@ -7,7 +7,8 @@ import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
 import { useAppDispatch } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
-import { createBranch, updatePullRequest } from '../../utilities/github-api'
+import { createBranch } from '../../utilities/git-api/branches/create-branch'
+import { updatePullRequest } from '../../utilities/git-api/pulls/update-pull-request'
 import './styles.scss'
 
 interface Repo {

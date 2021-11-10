@@ -1,22 +1,41 @@
+import { createOAuthAppAuth, createOAuthUserAuth } from '@octokit/auth-oauth-app';
 import { Octokit } from '@octokit/rest'
 import { AuthorizationConstructor } from './authorization-interface';
 
 export class Oauth implements AuthorizationConstructor {
-    protected accessToken: string
+    protected code: string
+    protected id: string
+    protected secret: string
 
-    constructor() {
-        const token = process.env?.REACT_APP_PAT
+    constructor(code: string) {
+        this.code = code
 
-        if(token) {
-            this.accessToken = token
+        if(process.env.REACT_APP_CLIENT_ID && process.env.REACT_APP_CLIENT_SECRET) {
+            this.id   = process.env.REACT_APP_CLIENT_ID
+            this.secret = process.env.REACT_APP_CLIENT_SECRET
         } else {
-            throw new Error("Missing token");
+            throw new Error("App credentials not set");
         }
     }
 
-    public generate() {
-        return new Octokit({
-            auth: this.accessToken
+    public async generate() {
+        const appOctokit = new Octokit({
+            authStrategy: createOAuthAppAuth,
+            auth: {
+                clientId: this.id,
+                clientSecret: this.secret
+            }
         })
+
+        return await appOctokit.auth({
+            type: 'oauth-user',
+            code: this.code,
+            factory: (options: any) => {
+                return new Octokit({
+                    authStrategy: createOAuthUserAuth,
+                    auth: options
+                })
+            }
+        }) as Octokit
     }
 }

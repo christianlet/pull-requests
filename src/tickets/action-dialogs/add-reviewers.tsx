@@ -4,9 +4,10 @@ import { Dialog, DialogTitle, Divider, DialogContentText, DialogContent, List, L
 import React, { useState } from 'react'
 import { LongPressDetectEvents, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
+import { useAuthorsHook } from '../../hooks/authors-hook'
 import { useAppDispatch } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
-import { closePullRequest, getUsers, useAuthorsHook } from '../../utilities/github-api'
+import { closePullRequest } from '../../utilities/git-api/pulls/close-pull-request'
 
 export const AddReviewers = ({ ticket, closeDialog }: ActionDialogProps) => {
     const repos = ticket.repos
