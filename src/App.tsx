@@ -15,7 +15,6 @@ import { Login } from './login';
 function App() {
     const [darkMode, setDarkMode] = useState(false)
     const user = useAuthenticatedUser()
-    const token = useAppSelector(state => state.token.value)
     const dispatch = useAppDispatch()
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
     const theme = React.useMemo(() =>
@@ -92,32 +91,27 @@ function App() {
                             bottom: 48,
                             overflow: 'auto'
                         }}>
-                            {
-                                token && <Tickets />
-                            }
-                            {
-                                !token && <Redirect to="/" />
-                            }
+                            <Tickets />
                         </Paper>
+                        <AppBar
+                            position="absolute"
+                            sx={{
+                                top: 'auto',
+                                bottom: 0,
+                                bgcolor: 'background.paper' ,
+                                borderTop: 'solid thin',
+                                borderTopColor: 'divider'
+                            }}
+                        >
+                            <Toolbar variant="dense">
+                                <RateLimit />
+                            </Toolbar>
+                        </AppBar>
                     </Route>
                     <Route path="/oauth-callback">
                         <OauthCallback />
                     </Route>
                 </Switch>
-                <AppBar
-                    position="absolute"
-                    sx={{
-                        top: 'auto',
-                        bottom: 0,
-                        bgcolor: 'background.paper' ,
-                        borderTop: 'solid thin',
-                        borderTopColor: 'divider'
-                    }}
-                >
-                    <Toolbar variant="dense">
-                        <RateLimit />
-                    </Toolbar>
-                </AppBar>
             </ThemeProvider>
         </BrowserRouter>
     );

@@ -5,7 +5,7 @@ import { useState } from 'react'
 import moment from 'moment'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCopy, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
+import { faCodeBranch, faCopy, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
 import { TicketsState } from '../types/api-types'
 import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { update } from '../redux/reducers/peer-reviews-reducer'
@@ -21,7 +21,7 @@ interface TicketProps {
 export const Ticket = (props: TicketProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const menuOpen = Boolean(anchorEl)
-    const created = moment(props.data[props.data.length-1].created_at)
+    const updated = moment(props.data[props.data.length-1].updated_at)
     const authorData = props.data[props.data.length-1].user
     const theme = useTheme()
     const dispatch = useAppDispatch()
@@ -87,7 +87,7 @@ export const Ticket = (props: TicketProps) => {
                             color: 'text.disabled'
                         }}
                     >
-                        {created.fromNow()} by {authorData.name ?? authorData.login}
+                        {updated.fromNow()} by {authorData.name ?? authorData.login}
                     </Typography>
                 </div>
                 <IconButton
@@ -252,8 +252,22 @@ export const Ticket = (props: TicketProps) => {
                                                     color: 'text.primary'
                                                 }}
                                             >
-                                                <ArrowRightAlt />
-                                                <p>{ticket.branches.base}</p>
+                                                {
+                                                    !ticket.merged ? (
+                                                        <ArrowRightAlt />
+                                                    ) : (
+                                                        <FontAwesomeIcon
+                                                            icon={faCodeBranch}
+                                                            transform={{
+                                                                rotate: 180
+                                                            }}
+                                                            style={{
+                                                                marginRight: 5
+                                                            }}
+                                                        />
+                                                    )
+                                                }
+                                                <p>{ticket.branches?.base}</p>
                                             </Box>
                                         }
                                         secondaryTypographyProps={{

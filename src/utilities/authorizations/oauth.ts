@@ -1,8 +1,8 @@
 import { createOAuthAppAuth, createOAuthUserAuth } from '@octokit/auth-oauth-app';
 import { Octokit } from '@octokit/rest'
-import { AuthorizationConstructor } from './authorization-interface';
+import { Authorization } from './auth';
 
-export class Oauth implements AuthorizationConstructor {
+export class Oauth implements Authorization {
     protected code: string
     protected id: string
     protected secret: string

@@ -1,15 +1,9 @@
 import { store } from '../../../store'
-import { Oauth } from '../../authorizations/oauth';
+import { Factory } from '../../authorizations/factory'
 
 export const updatePullRequest = async (owner: string, repo: string, pullNumber: number, params: Object) => {
-    const token = store.getState().token.value
-
-    if(!token) {
-        throw new Error("Octokit not configured");
-    }
-
-    const auth = new Oauth(token)
-    const octokit = await auth.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate()
 
     const response = await octokit.pulls.update({
         owner,

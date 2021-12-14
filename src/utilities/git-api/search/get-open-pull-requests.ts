@@ -1,15 +1,13 @@
-import { store } from '../../../store'
-import { Oauth } from '../../authorizations/oauth';
+import { Factory } from '../../authorizations/factory'
 
-export const getOpenPullRequests = async (reviewing: boolean, author: string, page: number) => {
-    const token = store.getState().token.value
-
-    if(!token) {
-        throw new Error("Octokit not configured");
-    }
-
-    const auth = new Oauth(token)
-    const octokit = await auth.generate()
+export const getOpenPullRequests = async (
+    reviewing: boolean,
+    author: string,
+    state: 'open' | 'closed',
+    page: number
+) => {
+    const factory = new Factory()
+    const octokit = await factory.generate()
 
     let query = `author:${author}`
 
@@ -22,9 +20,9 @@ export const getOpenPullRequests = async (reviewing: boolean, author: string, pa
     }
 
     const { data } = await octokit.search.issuesAndPullRequests({
-        q: `${query}+is:pr+is:open`,
-        sort: 'created',
-        per_page: 50,
+        q: `${query}+is:pr+is:${state}`,
+        sort: 'updated',
+        per_page: state === 'open' ? 50 : 100,
         page,
     })
 

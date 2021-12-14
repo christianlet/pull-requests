@@ -10,8 +10,13 @@ interface PullRequestWithPagination {
     totalCount: number
 }
 
-export const getPullRequests = async (author: string, reviewing: boolean, page: number): Promise<PullRequestWithPagination> => {
-    const { total_count, items: openPullRequests } = await getOpenPullRequests(reviewing, author, page)
+export const getPullRequests = async (
+    author: string,
+    reviewing: boolean,
+    state: 'open' | 'closed',
+    page: number
+): Promise<PullRequestWithPagination> => {
+    const { total_count, items: openPullRequests } = await getOpenPullRequests(reviewing, author, state, page)
         .catch(e => ({
             total_count: 0,
             items: []
@@ -86,7 +91,7 @@ const groupPeerReviews = (prs: any[]) => {
     const groupedPRs: any[] = []
 
     prs?.forEach((pr: any) => {
-        const ticket  = pr.branches.head.split('/').pop() ?? ''
+        const ticket  = pr.branches?.head.split('/').pop() ?? ''
         const prIndex = groupedPRs.findIndex(repo => repo.ticket === ticket)
 
         if(prIndex === -1) {

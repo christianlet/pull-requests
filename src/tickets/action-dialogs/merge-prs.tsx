@@ -79,7 +79,9 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
                             onChange={(event) => {
                                 if(event.target.checked) {
                                     const repos = ticket.repos
-                                        .filter(repo => repo.mergeable)
+                                        .filter(repo =>
+                                            repo.mergeable && repo.mergeable_state === 'clean' && !repo.merged
+                                        )
                                         .map(repo => repo.id)
 
                                     setSelectedRepos(repos)

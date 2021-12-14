@@ -25,6 +25,7 @@ type DialogActionState = {
 type FilterState = {
     prType: string
     author: string
+    state: 'open' | 'closed'
     page: number
 }
 
@@ -37,6 +38,7 @@ export const Tickets = () => {
     const [filters, setFilters] = useState<FilterState>({
         prType: currentUrlParams.get('pr_type') ?? 'created',
         author: currentUrlParams.get('author') ?? '@me',
+        state: (currentUrlParams.get('state') as ('open' | 'closed')) ?? 'open',
         page: parseInt(currentUrlParams.get('page') ?? '1', 10)
     })
     const history = useHistory()
@@ -48,6 +50,7 @@ export const Tickets = () => {
     useEffect(() => {
         currentUrlParams.set('pr_type', filters.prType)
         currentUrlParams.set('author', filters.author)
+        currentUrlParams.set('state', filters.state)
         currentUrlParams.set('page', filters.page.toString())
 
         history.push({ search: currentUrlParams.toString() })
@@ -76,7 +79,7 @@ export const Tickets = () => {
         dispatch(peerReviewSlice.actions.set(null))
 
         const reviewing = filters.prType !== 'created'
-        const response  = await getPullRequests(filters.author, reviewing, filters.page)
+        const response  = await getPullRequests(filters.author, reviewing, filters.state, filters.page)
 
         dispatch(peerReviewSlice.actions.set(response.tickets))
     }
@@ -89,6 +92,13 @@ export const Tickets = () => {
             ...filters,
             prType: type,
             author
+        })
+    }
+
+    const handlePrState = (event: React.MouseEvent<HTMLElement>, value: 'open' | 'closed') => {
+        setFilters({
+            ...filters,
+            state: value
         })
     }
 
@@ -138,6 +148,21 @@ export const Tickets = () => {
                     </div>
                     <div>
                         <div>
+                            <ToggleButtonGroup
+                                size="small"
+                                color="info"
+                                value={filters.state}
+                                exclusive={true}
+                                onChange={handlePrState}
+                                disabled={tickets === null}
+                                sx={{
+                                    bgcolor: 'background.paper',
+                                    marginRight: 1
+                                }}
+                            >
+                                <ToggleButton value="open">Open</ToggleButton>
+                                <ToggleButton value="closed">Closed</ToggleButton>
+                            </ToggleButtonGroup>
                             <ToggleButtonGroup
                                 size="small"
                                 color="info"

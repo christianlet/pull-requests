@@ -1,7 +1,7 @@
 import { Octokit } from '@octokit/rest'
-import { AuthorizationConstructor } from './authorization-interface';
+import { Authorization } from './auth';
 
-export class PersonalAccessToken implements AuthorizationConstructor {
+export class PersonalAccessToken implements Authorization {
     protected accessToken: string
 
     constructor() {

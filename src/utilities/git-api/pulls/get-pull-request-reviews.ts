@@ -1,15 +1,9 @@
 import { store } from '../../../store'
-import { Oauth } from '../../authorizations/oauth'
+import { Factory } from '../../authorizations/factory'
 
 export const getPullRequestReviews = async (owner: string, repo: string, pullNumber: number) => {
-    const token = store.getState().token.value
-
-    if(!token) {
-        throw new Error("Octokit not configured");
-    }
-
-    const auth = new Oauth(token)
-    const octokit = await auth.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate()
 
     const { data } = await octokit.pulls.listReviews({
         owner,
@@ -20,7 +14,9 @@ export const getPullRequestReviews = async (owner: string, repo: string, pullNum
     const filteredReviews: typeof data = []
 
     data.forEach(review => {
-        const index = filteredReviews.findIndex(r => r.user?.login === review.user?.login)
+        const index = filteredReviews
+            .filter(r => r.state === 'CHANGES_REQUESTED' || r.state === 'APPROVED')
+            .findIndex(r => r.user?.login === review.user?.login)
 
         if(index === -1) {
             filteredReviews.push(review)

@@ -1,15 +1,9 @@
 import { store } from '../../../store'
-import { Oauth } from '../../authorizations/oauth';
+import { Factory } from '../../authorizations/factory'
 
 export const getUserInfo = async (login: string) => {
-    const token = store.getState().token.value
-
-    if(!token) {
-        throw new Error("Octokit not configured");
-    }
-
-    const auth = new Oauth(token)
-    const octokit = await auth.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate()
 
     const { data } = await octokit.users.getByUsername({
         username: login

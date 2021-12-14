@@ -1,15 +1,9 @@
 import { store } from '../../../store';
-import { Oauth } from '../../authorizations/oauth';
+import { Factory } from '../../authorizations/factory';
 
 export const getFiles = async (owner: string, repo: string, number: number) => {
-    const token = store.getState().token.value
-
-    if(!token) {
-        throw new Error("Octokit not configured");
-    }
-
-    const auth = new Oauth(token)
-    const octokit = await auth.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate()
 
     const { data } = await octokit.pulls.listFiles({
         owner,
