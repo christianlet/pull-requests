@@ -1,16 +1,22 @@
-import { store } from '../../../store'
 import { Factory } from '../../authorizations/factory'
+
+// @todo Remove static ashleymendez to prevent spamming
 
 export const requestDevBranch = async (owner: string, repo: string, pullNumber: number) => {
     const factory = new Factory()
     const octokit = await factory.generate()
+    const devBranchManager = process.env.REACT_APP_DEV_BRANCH_MANAGER
+
+    if(!devBranchManager) {
+        return false
+    }
 
     const response = await octokit.pulls.requestReviewers({
         owner,
         repo,
         pull_number: pullNumber,
         reviewers: [
-            'ashleymendez'
+            devBranchManager
         ]
     })
 
