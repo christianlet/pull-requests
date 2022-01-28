@@ -11,6 +11,8 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { update } from '../redux/reducers/peer-reviews-reducer'
 import { requestDevBranch } from '../utilities/git-api/pulls/request-reviewer'
 
+const jiraLinkRegex = /(CPENY|LANDO|SPARK[A-Z]+)-[0-9]+/g
+
 interface TicketProps {
     title: string
     data: TicketsState["repos"]
@@ -27,8 +29,10 @@ export const Ticket = (props: TicketProps) => {
     const dispatch = useAppDispatch()
     const user = useAppSelector(state => state.user.value)
     const myPR = user?.login === props.data[0]?.user.login
+    const jiraLink = props.title.toUpperCase().match(jiraLinkRegex)?.pop()
+    const devBranchManager = process.env.REACT_APP_DEV_BRANCH_MANAGER
     const devBranchRequested = props.data.filter(repo =>
-        (repo.requested_reviewers?.filter(reviewer => reviewer.login === 'ashleymendez') ?? []).length > 0
+        (repo.requested_reviewers?.filter(reviewer => reviewer.login === devBranchManager) ?? []).length > 0
     ).length > 0
     const SmallAvatar = styled(Avatar)(() => ({
         width: 16,
@@ -75,12 +79,35 @@ export const Ticket = (props: TicketProps) => {
                 }}
             >
                 <div>
-                    <Typography
-                        className="title"
-                        sx={{
-                            color: 'text.secondary'
-                        }}
-                    >{props.title}</Typography>
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                    >
+                        <Typography
+                            className="title"
+                            sx={{
+                                color: 'text.secondary'
+                            }}
+                        >{props.title}</Typography>
+                        {
+                            jiraLink && (
+                                <IconButton
+                                    onClick={() =>
+                                        window.open(
+                                            `https://foxjira.praecipio.com/browse/${jiraLink}`,
+                                            '_blank'
+                                        )
+                                    }
+                                    size="small"
+                                    sx={{
+                                        color: 'text.primary'
+                                    }}
+                                >
+                                    <Launch fontSize="small" />
+                                </IconButton>
+                            )
+                        }
+                    </Box>
                     <Typography
                         className="subtitle"
                         sx={{
@@ -218,6 +245,9 @@ export const Ticket = (props: TicketProps) => {
                                         </IconButton>
                                     </ListItemIcon>
                                     <ListItemText
+                                        sx={{
+                                            alignItems: 'center'
+                                        }}
                                         primary={
                                             <>
                                                 {ticket.repo}
@@ -246,7 +276,6 @@ export const Ticket = (props: TicketProps) => {
                                                 display="flex"
                                                 alignItems="center"
                                                 padding="0"
-                                                marginTop="-5px"
                                                 title="Base branch"
                                                 sx={{
                                                     color: 'text.primary'
@@ -267,7 +296,7 @@ export const Ticket = (props: TicketProps) => {
                                                         />
                                                     )
                                                 }
-                                                <p>{ticket.branches?.base}</p>
+                                                <span>{ticket.branches?.base}</span>
                                             </Box>
                                         }
                                         secondaryTypographyProps={{

@@ -88,12 +88,12 @@ function App() {
                             top: 48,
                             left: 0,
                             right: 0,
-                            bottom: 48,
+                            bottom: 0,
                             overflow: 'auto'
                         }}>
                             <Tickets />
                         </Paper>
-                        <AppBar
+                        {/* <AppBar
                             position="absolute"
                             sx={{
                                 top: 'auto',
@@ -106,7 +106,7 @@ function App() {
                             <Toolbar variant="dense">
                                 <RateLimit />
                             </Toolbar>
-                        </AppBar>
+                        </AppBar> */}
                     </Route>
                     <Route path="/oauth-callback">
                         <OauthCallback />
