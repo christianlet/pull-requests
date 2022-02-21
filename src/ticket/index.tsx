@@ -1,15 +1,16 @@
-import { ArrowRightAlt, ChangeCircle, CheckCircle, CompareArrows, Launch, MoreHoriz } from '@mui/icons-material'
-import { Avatar, Badge, Chip, Divider, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material'
-import { Box, styled, useTheme } from '@mui/system'
+import { CompareArrows, Launch, MoreHoriz } from '@mui/icons-material'
+import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
+import { Box, useTheme } from '@mui/system'
 import { useState } from 'react'
 import moment from 'moment'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeBranch, faCopy, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
+import { faCopy, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
 import { TicketsState } from '../types/api-types'
 import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { update } from '../redux/reducers/peer-reviews-reducer'
 import { requestDevBranch } from '../utilities/git-api/pulls/request-reviewer'
+import { Repo } from './repo'
 
 const jiraLinkRegex = /(CPENY|LANDO|SPARK[A-Z]+)-[0-9]+/g
 
@@ -34,11 +35,6 @@ export const Ticket = (props: TicketProps) => {
     const devBranchRequested = props.data.filter(repo =>
         (repo.requested_reviewers?.filter(reviewer => reviewer.login === devBranchManager) ?? []).length > 0
     ).length > 0
-    const SmallAvatar = styled(Avatar)(() => ({
-        width: 16,
-        height: 16,
-        border: `1px solid white`,
-    }));
 
     const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => (
         setAnchorEl(event.currentTarget)
@@ -227,138 +223,11 @@ export const Ticket = (props: TicketProps) => {
                 {
                     props.data.map((ticket, i) => {
                         return (
-                                <ListItem
-                                    key={ticket.id.toString()}
-                                    className="list-item"
-                                    divider={i < (props.data.length - 1)}
-                                    dense={true}
-                                >
-                                    <ListItemIcon>
-                                        <IconButton
-                                            onClick={() => window.open(ticket.html_url, '_blank')}
-                                            size="small"
-                                            sx={{
-                                                color: 'text.primary'
-                                            }}
-                                        >
-                                            <Launch fontSize="small" />
-                                        </IconButton>
-                                    </ListItemIcon>
-                                    <ListItemText
-                                        sx={{
-                                            alignItems: 'center'
-                                        }}
-                                        primary={
-                                            <>
-                                                {ticket.repo}
-                                                {
-                                                    ticket.draft && (
-                                                        <Chip
-                                                            label="Draft"
-                                                            size="small"
-                                                            variant="outlined"
-                                                            color="warning"
-                                                            sx={{
-                                                                marginLeft: '5px',
-                                                                height: '18px',
-                                                                fontSize: 12,
-                                                                '.MuiChip-labelSmall': {
-                                                                    lineHeight: 1
-                                                                }
-                                                            }}
-                                                        />
-                                                    )
-                                                }
-                                            </>
-                                        }
-                                        secondary={
-                                            <Box
-                                                display="flex"
-                                                alignItems="center"
-                                                padding="0"
-                                                title="Base branch"
-                                                sx={{
-                                                    color: 'text.primary'
-                                                }}
-                                            >
-                                                {
-                                                    !ticket.merged ? (
-                                                        <ArrowRightAlt />
-                                                    ) : (
-                                                        <FontAwesomeIcon
-                                                            icon={faCodeBranch}
-                                                            transform={{
-                                                                rotate: 180
-                                                            }}
-                                                            style={{
-                                                                marginRight: 5
-                                                            }}
-                                                        />
-                                                    )
-                                                }
-                                                <span>{ticket.branches?.base}</span>
-                                            </Box>
-                                        }
-                                        secondaryTypographyProps={{
-                                            fontSize: '11px'
-                                        }}
-                                    />
-                                    <ListItemAvatar sx={{ textAlign: 'right' }}>
-                                    {
-                                            ticket.reviewers.map(review => {
-                                                const reviewState = review.state.toLowerCase().replace(/(-|_)/, ' ')
-                                                const name = review.user?.name ?? review.user.login
-                                                const time = moment(review.submitted_at).fromNow()
-
-                                                return (
-                                                    <Tooltip
-                                                        key={review.id}
-                                                        arrow={true}
-                                                        title={`${name} - ${reviewState} (${time})`}
-                                                    >
-                                                        <Badge
-                                                            sx={{ marginLeft: '5px' }}
-                                                            overlap="circular"
-                                                            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                                                            badgeContent={
-                                                                <SmallAvatar>
-                                                                    {
-                                                                        review.state === "APPROVED" && (
-                                                                            <CheckCircle
-                                                                                className="user-badge approved"
-                                                                                fontSize="small"
-                                                                                sx={{
-                                                                                    color: 'success.light'
-                                                                                }}
-                                                                            />
-                                                                        )
-                                                                    }
-                                                                    {
-                                                                        review.state === "CHANGES_REQUESTED" && (
-                                                                            <ChangeCircle
-                                                                                className="user-badge change"
-                                                                                fontSize="small"
-                                                                                sx={{
-                                                                                    color: 'error.light'
-                                                                                }}
-                                                                            />
-                                                                        )
-                                                                    }
-                                                                </SmallAvatar>
-                                                            }
-                                                        >
-                                                            <Avatar
-                                                                alt={name}
-                                                                src={review.user.avatar_url}
-                                                                sx={{ width: 24, height: 24, border: 'solid thin rgba(0,0,0,.2)' }}
-                                                            />
-                                                        </Badge>
-                                                    </Tooltip>
-                                                )
-                                            })
-                                        }
-                                    </ListItemAvatar>
-                                </ListItem>
+                            <Repo
+                                key={ticket.id}
+                                data={ticket}
+                                divider={i < (props.data.length - 1)}
+                            />
                         )
                     })
                 }

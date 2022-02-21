@@ -1,5 +1,5 @@
 import { Refresh } from '@mui/icons-material'
-import { CircularProgress, IconButton, SelectChangeEvent, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { CircularProgress, IconButton, Pagination, SelectChangeEvent, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
@@ -8,7 +8,6 @@ import { peerReviewSlice } from '../redux/reducers/peer-reviews-reducer'
 import { Ticket } from '../ticket'
 import { TicketsState } from '../types/api-types'
 import { getPullRequests } from '../utilities/git-api/pulls/get-pull-requests'
-import { AddReviewers } from './action-dialogs/add-reviewers'
 import { ClosePulls } from './action-dialogs/close-pulls'
 import { DevBranch } from './action-dialogs/dev-branch'
 import { Diffs } from './action-dialogs/diffs'
@@ -35,6 +34,7 @@ export const Tickets = () => {
         []
     )
     const [ticketDialogData, setTicketDialogData] = useState<DialogActionState>(null)
+    const [totalPeerReviewCount, setTotalPeerReviewCount] = useState(0)
     const [filters, setFilters] = useState<FilterState>({
         prType: currentUrlParams.get('pr_type') ?? 'created',
         author: currentUrlParams.get('author') ?? '@me',
@@ -73,7 +73,7 @@ export const Tickets = () => {
             })
 
         }
-    }, [tickets])
+    }, [tickets, ticketDialogData])
 
     const getPeerReviews = async () => {
         dispatch(peerReviewSlice.actions.set(null))
@@ -81,6 +81,7 @@ export const Tickets = () => {
         const reviewing = filters.prType !== 'created'
         const response  = await getPullRequests(filters.author, reviewing, filters.state, filters.page)
 
+        setTotalPeerReviewCount(response.totalCount)
         dispatch(peerReviewSlice.actions.set(response.tickets))
     }
 
@@ -111,6 +112,11 @@ export const Tickets = () => {
     const handleSelect = ({ target: { value } }: SelectChangeEvent) => setFilters({
         ...filters,
         author: value
+    })
+
+    const handlePageChange = (event: unknown, page: number) => setFilters({
+        ...filters,
+        page
     })
 
     return (
@@ -188,6 +194,20 @@ export const Tickets = () => {
                         <div>
                         </div>
                     </div>
+                </Box>
+                <Box
+                    display="flex"
+                    justifyContent="flex-end"
+                    marginBottom={2}
+                >
+                    <Pagination
+                        count={Math.ceil((totalPeerReviewCount / 25) ?? 0)}
+                        page={filters.page}
+                        color="primary"
+                        variant="outlined"
+                        shape="rounded"
+                        onChange={handlePageChange}
+                    />
                 </Box>
                 <Box sx={{
                     display: 'flex',
