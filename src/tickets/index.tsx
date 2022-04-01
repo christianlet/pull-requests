@@ -73,7 +73,7 @@ export const Tickets = () => {
             })
 
         }
-    }, [tickets, ticketDialogData])
+    }, [tickets])
 
     const getPeerReviews = async () => {
         dispatch(peerReviewSlice.actions.set(null))
