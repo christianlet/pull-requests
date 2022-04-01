@@ -198,14 +198,6 @@ export const Ticket = (props: TicketProps) => {
                             </MenuItem>
                         )
                     }
-                    <MenuItem
-                        onClick={() => openTicketDialog('diff')}
-                    >
-                        <ListItemIcon>
-                            <CompareArrows />
-                        </ListItemIcon>
-                        <ListItemText>Diff Tool</ListItemText>
-                    </MenuItem>
                 </Menu>
             </Box>
             <Divider />

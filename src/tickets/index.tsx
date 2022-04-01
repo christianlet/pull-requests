@@ -125,9 +125,6 @@ export const Tickets = () => {
                 ticketDialogData?.action === 'delete' && <ClosePulls ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
             }
             {
-                ticketDialogData?.action === 'diff' && <Diffs ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
-            }
-            {
                 ticketDialogData?.action === 'dev-branch' && <DevBranch ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
             }
             {
