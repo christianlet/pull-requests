@@ -149,7 +149,7 @@ export const Ticket = (props: TicketProps) => {
                                 <ListItemIcon>
                                     <FontAwesomeIcon icon={faWrench} />
                                 </ListItemIcon>
-                                <ListItemText>Update Base Branch</ListItemText>
+                                <ListItemText>Update Target Branch</ListItemText>
                             </MenuItem>
                         )
                     }
@@ -194,7 +194,7 @@ export const Ticket = (props: TicketProps) => {
                                 <ListItemIcon>
                                     <FontAwesomeIcon icon={faUserClock} />
                                 </ListItemIcon>
-                                <ListItemText>Request Dev Branch</ListItemText>
+                                <ListItemText>Request Target Branch</ListItemText>
                             </MenuItem>
                         )
                     }

@@ -102,7 +102,7 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
             maxWidth="md"
             scroll="paper"
         >
-            <DialogTitle>Base Branch For Repo</DialogTitle>
+            <DialogTitle>Target Branch For Repo(s)</DialogTitle>
             <Divider />
             <DialogTitle>
                 <TextField

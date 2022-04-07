@@ -1,46 +1,45 @@
-# Getting Started with Create React App
+# Pull Requests
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Getting started
 
-## Available Scripts
+Duplicate the `.env.local.sample` file with the name `.env.local`
 
-In the project directory, you can run:
+Add your PAT token to the config key `REACT_APP_PAT`
 
-### `npm start`
+Run `npm start` to start up the application
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Pull Requests
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The app groups pull requests by branch name. Links to each PR in github is available. If the branch name follows the Fox naming conventions a link to the Jira ticket will be provided. The app also allows you to see teammates pull requests. Viewing other users can simply be done by using the dropdown on the upper left side.
 
-### `npm test`
+The information display in the pull requests:
+- When the PR was created
+- The branch it is targeting
+- The peer reviews it receives. Shows:
+  - Approvals
+  - Changes requested
+  - Number of comments
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Actions
 
-### `npm run build`
+When you are viewing pull requests you have created, you have access to actions that can be run.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Close Pull Requests
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Allows you to close any open pull requests in the grouping you selected.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Update Target Branch
 
-### `npm run eject`
+Allows you to set all grouped pull requests target branch.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Copy For Jira Comment
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Copies the grouped pull requests to your local clipboard to be pasted to a Jira comment.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Merge Pull Requests
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Merges pull requests into the specified target branch. Only allows merge if the pull request satisfies all the repo specifications.
 
-## Learn More
+### Request Target Branch
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+The current Fox Spark workflow requires a fix version and collab branch to be specified by our release manager. This action adds the release manager specified by the `REACT_APP_DEV_BRANCH_MANAGER` field in the `.env.local` file. If no branch manager is specified this action will not show up in the menu.
