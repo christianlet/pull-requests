@@ -1,4 +1,3 @@
-import { store } from '../../../store'
 import { Factory } from '../../authorizations/factory'
 import { getAuthenticatedUser } from './get-authenticated-user'
 import { getUserInfo } from './get-user-info'

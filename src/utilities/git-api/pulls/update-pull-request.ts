@@ -1,4 +1,3 @@
-import { store } from '../../../store'
 import { Factory } from '../../authorizations/factory'
 
 export const updatePullRequest = async (owner: string, repo: string, pullNumber: number, params: Object) => {

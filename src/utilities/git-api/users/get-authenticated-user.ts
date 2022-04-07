@@ -1,4 +1,3 @@
-import { store } from '../../../store'
 import { Factory } from '../../authorizations/factory'
 
 export const getAuthenticatedUser = async () => {

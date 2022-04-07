@@ -1,4 +1,3 @@
-import { store } from '../../../store'
 import { Factory } from '../../authorizations/factory'
 
 export const getPullRequestReviews = async (owner: string, repo: string, pullNumber: number) => {
