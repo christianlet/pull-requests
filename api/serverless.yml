@@ -1,0 +1,33 @@
+service: github-api
+
+frameworkVersion: ">=1.1.0 <3.0.0"
+
+provider:
+  name: aws
+  region: us-east-1
+  runtime: nodejs14.x
+functions:
+  # CMS APIs (to integrate/replace -int)
+  cmsReadTags:
+    handler: api/build/index.handler
+    events:
+      - http:
+          path: cms-tags
+          method: get
+          cors: true
+  contentWrite:
+    handler: api/build/index.handler
+    events:
+      - http:
+          path: napi
+          method: post
+          cors: true
+  layoutWrite:
+    handler: api/build/index.handler
+    events:
+      - http:
+          path: es-upsert
+          method: post
+          cors: true
+plugins:
+  - serverless-offline
