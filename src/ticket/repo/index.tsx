@@ -1,8 +1,8 @@
 import { PullRequest } from '../../types/api-types'
-import { Badge, BadgeProps, Box, Chip, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material'
+import { Badge, BadgeProps, Box, Chip, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import { ArrowRightAlt, Launch } from '@mui/icons-material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeBranch, faComment } from '@fortawesome/free-solid-svg-icons'
+import { faCodeBranch, faComment, faUser, faUserShield } from '@fortawesome/free-solid-svg-icons'
 import { styled } from '@mui/system'
 import { Reviewer } from './reviewer'
 
@@ -14,6 +14,9 @@ interface RepoProps {
 export const Repo = (props: RepoProps) => {
     const ticket = props.data
     const comments = ticket.comments + ticket.review_comments
+    const releaseManagerRequested = ticket.requested_reviewers?.filter(
+        r => r.login === process.env.REACT_APP_DEV_BRANCH_MANAGER
+    )
 
     return (
         <ListItem
@@ -40,6 +43,25 @@ export const Repo = (props: RepoProps) => {
                 primary={
                     <>
                         {ticket.repo}
+                        {
+                            releaseManagerRequested &&
+                            releaseManagerRequested.length > 0 && (
+                                <Tooltip
+                                    key="release-branch-manager"
+                                    arrow={true}
+                                    title={`Release branch manager ${process.env.REACT_APP_DEV_BRANCH_MANAGER} requested`}
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faUserShield}
+                                        style={{
+                                            fontSize: 16,
+                                            marginLeft: 5,
+                                            marginBottom: '-2px'
+                                        }}
+                                    />
+                                </Tooltip>
+                            )
+                        }
                         {
                             comments > 0 && (
                                 <StyledBadge
