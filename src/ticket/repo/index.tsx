@@ -2,7 +2,7 @@ import { PullRequest } from '../../types/api-types'
 import { Badge, BadgeProps, Box, Chip, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import { ArrowRightAlt, Launch } from '@mui/icons-material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeBranch, faComment, faUser, faUserShield } from '@fortawesome/free-solid-svg-icons'
+import { faCodeBranch, faComment, faUserShield } from '@fortawesome/free-solid-svg-icons'
 import { styled } from '@mui/system'
 import { Reviewer } from './reviewer'
 
@@ -42,7 +42,9 @@ export const Repo = (props: RepoProps) => {
                 }}
                 primary={
                     <>
-                        {ticket.repo}
+                        <Box>
+                            {ticket.repo}
+                        </Box>
                         {
                             releaseManagerRequested &&
                             releaseManagerRequested.length > 0 && (

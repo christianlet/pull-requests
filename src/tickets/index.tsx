@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh } from '@mui/icons-material'
 import { CircularProgress, IconButton, Pagination, SelectChangeEvent, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
@@ -10,7 +11,6 @@ import { TicketsState } from '../types/api-types'
 import { getPullRequests } from '../utilities/git-api/pulls/get-pull-requests'
 import { ClosePulls } from './action-dialogs/close-pulls'
 import { DevBranch } from './action-dialogs/dev-branch'
-import { Diffs } from './action-dialogs/diffs'
 import { MergePRs } from './action-dialogs/merge-prs'
 import { AuthorsSelect } from './authors-select'
 import './styles.scss'

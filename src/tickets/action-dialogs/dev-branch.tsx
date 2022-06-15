@@ -11,13 +11,6 @@ import { createBranch } from '../../utilities/git-api/branches/create-branch'
 import { updatePullRequest } from '../../utilities/git-api/pulls/update-pull-request'
 import './styles.scss'
 
-interface Repo {
-    id: number
-    branchExists: boolean
-    name: string|null
-    errorMessage?: string
-}
-
 export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
     const repos = ticket.repos
     const [aip, setAip] = useState(false)

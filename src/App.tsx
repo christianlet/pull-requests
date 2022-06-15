@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Switch, Route, BrowserRouter, Redirect } from "react-router-dom";
+import { Switch, Route, BrowserRouter } from "react-router-dom";
 import { Tickets } from './tickets';
 import { OauthCallback } from './oauth-callback';
 import { AppBar, CssBaseline, FormControlLabel, FormGroup, Paper, Toolbar, Typography, useMediaQuery } from '@mui/material';
 import { default as MuiSwitch } from '@mui/material/Switch'
-import { RateLimit } from './rate-limit';
-import { useAppDispatch, useAppSelector } from './hooks/redux-hooks';
+import { useAppDispatch } from './hooks/redux-hooks';
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { useAuthenticatedUser } from './hooks/authenticated-user';
 import { userSlice } from './redux/reducers/user-reducer';

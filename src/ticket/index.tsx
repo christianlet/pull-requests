@@ -1,4 +1,4 @@
-import { CompareArrows, Launch, MoreHoriz } from '@mui/icons-material'
+import { Launch, MoreHoriz } from '@mui/icons-material'
 import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import { useState } from 'react'

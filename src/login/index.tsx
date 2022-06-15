@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, CardMedia, Container, Paper } from '@mui/material'
+import { Button, Container } from '@mui/material'
 import { Box } from '@mui/system'
 import { GitHub } from '@mui/icons-material'
 import { Redirect } from 'react-router'
