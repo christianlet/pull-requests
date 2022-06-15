@@ -43,3 +43,4 @@ Merges pull requests into the specified target branch. Only allows merge if the 
 ### Request Target Branch
 
 The current Fox Spark workflow requires a fix version and collab branch to be specified by our release manager. This action adds the release manager specified by the `REACT_APP_DEV_BRANCH_MANAGER` field in the `.env.local` file. If no branch manager is specified this action will not show up in the menu.
+
