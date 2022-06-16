@@ -1,6 +1,6 @@
 service: github-api
 
-frameworkVersion: ">=1.1.0 <3.0.0"
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -9,21 +9,21 @@ provider:
 functions:
   # CMS APIs (to integrate/replace -int)
   cmsReadTags:
-    handler: api/build/index.handler
+    handler: build/index.handler
     events:
       - http:
           path: cms-tags
           method: get
           cors: true
   contentWrite:
-    handler: api/build/index.handler
+    handler: build/index.handler
     events:
       - http:
           path: napi
           method: post
           cors: true
   layoutWrite:
-    handler: api/build/index.handler
+    handler: build/index.handler
     events:
       - http:
           path: es-upsert

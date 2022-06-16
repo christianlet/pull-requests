@@ -3,15 +3,14 @@ services:
   app:
     build:
       dockerfile: Dockerfile
-    image: "node:14"
     container_name: github-api-app
-    user: "node"
-    working_dir: /home/node/app
+    user: "root"
+    working_dir: /app
     environment:
       - NODE_ENV=production
     volumes:
-      - ./:/home/node/app
-    expose:
+      - ./api:/app
+    ports:
       - "3000:3000"
     command: "node --inspect=0.0.0.0 /var/www/.npm-global/bin/serverless offline start --host 0.0.0.0 --httpPort 3000 --stage local --noPrependStageInUrl"
     networks:

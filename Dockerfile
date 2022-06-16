@@ -1,7 +1,12 @@
-FROM node:14
+FROM node:16
 
-ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
+ENV NPM_CONFIG_PREFIX=/var/www/.npm-global
+ENV PATH=$PATH:/var/www/.npm-global/bin
 
-RUN npm install -g serverless@^1.0 serverless-offline@^7.0 typescript@^4.0
+WORKDIR /app
 
-USER node
+RUN npm install -g serverless \
+    npm install -g serverless-offline \
+    npm install -g typescript
+
+EXPOSE 3000
