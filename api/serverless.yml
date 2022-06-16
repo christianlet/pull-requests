@@ -5,16 +5,17 @@ frameworkVersion: "3"
 provider:
   name: aws
   region: us-east-1
-  runtime: nodejs14.x
+  runtime: nodejs16.x
 functions:
-  # CMS APIs (to integrate/replace -int)
   cmsReadTags:
     handler: build/index.handler
     events:
-      - http:
-          path: cms-tags
+      - httpApi:
+          path: /cms-tags/{id}
           method: get
-          cors: true
+      - httpApi:
+          path: /cms-tags
+          method: get
   contentWrite:
     handler: build/index.handler
     events:
