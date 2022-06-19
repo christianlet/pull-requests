@@ -1,6 +1,7 @@
 import React from 'react'
-import { MenuItem, Select } from '@mui/material'
+import { MenuItem, OutlinedInput, Select } from '@mui/material'
 import { useAuthorsHook } from '../hooks/authors-hook'
+import { PersonOutline } from '@mui/icons-material'
 
 interface AuthorsSelectProps {
     value: string
@@ -25,6 +26,12 @@ export const AuthorsSelect = (props: AuthorsSelectProps) => {
                 return teamMembers?.filter(m => m.username === data).pop()?.name
             }}
             displayEmpty={true}
+            input={
+                <OutlinedInput
+
+                    startAdornment={<PersonOutline sx={{ marginRight: '10px' }} />}
+                />
+            }
             MenuProps={{
                 style: {
                     maxHeight: 300

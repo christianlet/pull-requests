@@ -1,5 +1,5 @@
 import { PullRequest } from '../../types/api-types'
-import { Badge, BadgeProps, Box, Chip, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
+import { Badge, BadgeProps, Box, Button, Chip, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import { ArrowRightAlt, Launch } from '@mui/icons-material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCodeBranch, faComment, faUserShield } from '@fortawesome/free-solid-svg-icons'
@@ -82,24 +82,6 @@ export const Repo = (props: RepoProps) => {
                                 </StyledBadge>
                             )
                         }
-                        {
-                            ticket.draft && (
-                                <Chip
-                                    label="Draft"
-                                    size="small"
-                                    variant="outlined"
-                                    color="warning"
-                                    sx={{
-                                        marginLeft: '5px',
-                                        height: '18px',
-                                        fontSize: 12,
-                                        '.MuiChip-labelSmall': {
-                                            lineHeight: 1
-                                        }
-                                    }}
-                                />
-                            )
-                        }
                     </>
                 }
                 secondary={
@@ -135,14 +117,25 @@ export const Repo = (props: RepoProps) => {
                 }}
             />
             <ListItemAvatar sx={{ textAlign: 'right' }}>
-            {
-                ticket.reviewers.map(reviewer => (
-                    <Reviewer
-                        key={reviewer.id}
-                        data={reviewer}
-                    />
-                ))
-            }
+                {
+                    ticket.draft && (
+                        <Button
+                            variant="outlined"
+                            color="warning"
+                            size="small"
+                        >
+                            Draft
+                        </Button>
+                    )
+                }
+                {
+                    !ticket.draft && ticket.reviewers.map(reviewer => (
+                        <Reviewer
+                            key={reviewer.id}
+                            data={reviewer}
+                        />
+                    ))
+                }
             </ListItemAvatar>
         </ListItem>
     )
