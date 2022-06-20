@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Refresh } from '@mui/icons-material'
-import { CircularProgress, IconButton, Pagination, SelectChangeEvent, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Refresh, Search } from '@mui/icons-material'
+import { CircularProgress, IconButton, InputAdornment, Pagination, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
@@ -85,17 +85,6 @@ export const Tickets = () => {
         dispatch(peerReviewSlice.actions.set(response.tickets))
     }
 
-    const handlePrType = (event: React.MouseEvent<HTMLElement>, value: string | null) => {
-        const type = value ?? 'created'
-        const author = type === 'created' ? '@me' : ''
-
-        setFilters({
-            ...filters,
-            prType: type,
-            author
-        })
-    }
-
     const handlePrState = (event: React.MouseEvent<HTMLElement>, value: 'open' | 'closed') => {
         setFilters({
             ...filters,
@@ -166,20 +155,6 @@ export const Tickets = () => {
                                 <ToggleButton value="open">Open</ToggleButton>
                                 <ToggleButton value="closed">Closed</ToggleButton>
                             </ToggleButtonGroup>
-                            <ToggleButtonGroup
-                                size="small"
-                                color="info"
-                                value={filters.prType}
-                                exclusive={true}
-                                onChange={handlePrType}
-                                disabled={tickets === null}
-                                sx={{
-                                    bgcolor: 'background.paper'
-                                }}
-                            >
-                                <ToggleButton value="created">Created</ToggleButton>
-                                <ToggleButton value="assigned">Review Requested</ToggleButton>
-                            </ToggleButtonGroup>
                             <IconButton
                                 sx={{ marginLeft: 1 }}
                                 onClick={() => setRefresh(refresh+1)}
@@ -194,9 +169,22 @@ export const Tickets = () => {
                 </Box>
                 <Box
                     display="flex"
-                    justifyContent="flex-end"
+                    justifyContent="space-between"
                     marginBottom={2}
                 >
+                    <TextField
+                        variant="outlined"
+                        size="small"
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment
+                                    position='start'
+                                >
+                                    <Search />
+                                </InputAdornment>
+                            )
+                        }}
+                    />
                     <Pagination
                         count={Math.ceil((totalPeerReviewCount / 25) ?? 0)}
                         page={filters.page}

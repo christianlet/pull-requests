@@ -1,8 +1,7 @@
 version: "3.7"
 services:
   app:
-    build:
-      dockerfile: Dockerfile
+    image: node:16-custom
     container_name: github-api-app
     user: "root"
     working_dir: /app
