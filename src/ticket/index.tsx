@@ -90,7 +90,7 @@ export const Ticket = (props: TicketProps) => {
                                 <IconButton
                                     onClick={() =>
                                         window.open(
-                                            `https://foxjira.praecipio.com/browse/${jiraLink}`,
+                                            `https://teamfox.atlassian.net/browse/${jiraLink}`,
                                             '_blank'
                                         )
                                     }
@@ -140,19 +140,15 @@ export const Ticket = (props: TicketProps) => {
                             </MenuItem>
                         )
                     }
-                    {
-                        myPR && (
-                            <MenuItem
-                                onClick={() => openTicketDialog('dev-branch')}
-                                divider={true}
-                            >
-                                <ListItemIcon>
-                                    <FontAwesomeIcon icon={faWrench} />
-                                </ListItemIcon>
-                                <ListItemText>Update Target Branch</ListItemText>
-                            </MenuItem>
-                        )
-                    }
+                    <MenuItem
+                        onClick={() => openTicketDialog('dev-branch')}
+                        divider={true}
+                    >
+                        <ListItemIcon>
+                            <FontAwesomeIcon icon={faWrench} />
+                        </ListItemIcon>
+                        <ListItemText>Update Target Branch</ListItemText>
+                    </MenuItem>
                     {
                         myPR && (
                             <MenuItem
