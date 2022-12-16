@@ -90,7 +90,7 @@ export const Ticket = (props: TicketProps) => {
                                 <IconButton
                                     onClick={() =>
                                         window.open(
-                                            `https://foxjira.praecipio.com/browse/${jiraLink}`,
+                                            `https://teamfox.atlassian.net/browse/${jiraLink}`,
                                             '_blank'
                                         )
                                     }
@@ -157,7 +157,7 @@ export const Ticket = (props: TicketProps) => {
                         myPR && (
                             <MenuItem
                                 onClick={() => {
-                                    const items = props.data.map(pr => (`* [${pr.repo} PR|${pr.html_url}]`))
+                                    const items = props.data.map(pr => `- ${pr.html_url}`)
 
                                     navigator.clipboard.writeText(items.join("\n"))
 
