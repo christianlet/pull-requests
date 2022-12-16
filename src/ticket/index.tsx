@@ -140,19 +140,15 @@ export const Ticket = (props: TicketProps) => {
                             </MenuItem>
                         )
                     }
-                    {
-                        myPR && (
-                            <MenuItem
-                                onClick={() => openTicketDialog('dev-branch')}
-                                divider={true}
-                            >
-                                <ListItemIcon>
-                                    <FontAwesomeIcon icon={faWrench} />
-                                </ListItemIcon>
-                                <ListItemText>Update Target Branch</ListItemText>
-                            </MenuItem>
-                        )
-                    }
+                    <MenuItem
+                        onClick={() => openTicketDialog('dev-branch')}
+                        divider={true}
+                    >
+                        <ListItemIcon>
+                            <FontAwesomeIcon icon={faWrench} />
+                        </ListItemIcon>
+                        <ListItemText>Update Target Branch</ListItemText>
+                    </MenuItem>
                     {
                         myPR && (
                             <MenuItem
