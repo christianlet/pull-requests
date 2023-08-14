@@ -2,7 +2,7 @@ import { CheckBox } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
 import { Dialog, DialogTitle, Divider, DialogContentText, DialogContent, List, ListItem, Checkbox, ListItemText, ListItemIcon, Chip, DialogActions, Select, MenuItem, OutlinedInput, SelectChangeEvent } from '@mui/material'
 import React, { useState } from 'react'
-import { LongPressDetectEvents, useLongPress } from 'use-long-press'
+import { LongPressEventType, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
 import { useAuthorsHook } from '../../hooks/authors-hook'
 import { useAppDispatch } from '../../hooks/redux-hooks'
@@ -24,7 +24,7 @@ export const AddReviewers = ({ ticket, closeDialog }: ActionDialogProps) => {
         threshold: 3000,
         captureEvent: true,
         cancelOnMovement: true,
-        detect: LongPressDetectEvents.BOTH
+        detect: LongPressEventType.Mouse
     })
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {

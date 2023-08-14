@@ -3,7 +3,7 @@ import { LoadingButton } from '@mui/lab'
 import { Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
 import { Box } from '@mui/system'
 import React, { useState } from 'react'
-import { LongPressDetectEvents, useLongPress } from 'use-long-press'
+import { LongPressEventType, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
 import { useAppDispatch } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
@@ -26,7 +26,7 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
         threshold: 3000,
         captureEvent: true,
         cancelOnMovement: true,
-        detect: LongPressDetectEvents.BOTH
+        detect: LongPressEventType.Mouse
     })
 
     const setBranch = (e: React.ChangeEvent<HTMLInputElement>) => {
