@@ -22,7 +22,7 @@ export const getOpenPullRequests = async (
     const { data } = await octokit.search.issuesAndPullRequests({
         q: `${query}+is:pr+is:${state}`,
         sort: 'updated',
-        per_page: 25,
+        per_page: 100,
         page,
     })
 
