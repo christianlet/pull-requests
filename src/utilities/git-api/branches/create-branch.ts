@@ -17,8 +17,11 @@ export const createBranch = async (owner: string, repo: string, branch: string) 
             response = await octokit.repos.getBranch({ owner, repo, branch: 'main' })
         } catch (error) {
             console.log('Main branch does not exist')
-            return false
         }
+    }
+
+    if(!response) {
+        return false
     }
 
     const res = await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
