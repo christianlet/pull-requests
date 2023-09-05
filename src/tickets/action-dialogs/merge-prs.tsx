@@ -25,7 +25,7 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
         threshold: 3000,
         captureEvent: true,
         cancelOnMovement: true,
-        detect: LongPressEventType.Mouse
+        detect: LongPressEventType.Pointer
     })
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,7 +185,7 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
                     loading={aip}
                     disabled={selectedRepos.length === 0}
                     disableRipple={true}
-                    {...longPress}
+                    {...longPress()}
                     fullWidth={true}
                 >Merge Pull Request{selectedRepos.length > 1 && 's'}</LoadingButton>
             </DialogActions>
