@@ -26,7 +26,7 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
         threshold: 3000,
         captureEvent: true,
         cancelOnMovement: true,
-        detect: LongPressEventType.Mouse
+        detect: LongPressEventType.Pointer
     })
 
     const setBranch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,7 +214,7 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
                     loading={aip}
                     disabled={baseBranch === '' || selectedRepos.length === 0}
                     disableRipple={true}
-                    {...longPress}
+                    {...longPress()}
                     fullWidth={true}
                 >Set target branch for repo{ticket.repos.length > 1 && 's'}</LoadingButton>
             </DialogActions>
