@@ -24,7 +24,7 @@ export const AddReviewers = ({ ticket, closeDialog }: ActionDialogProps) => {
         threshold: 3000,
         captureEvent: true,
         cancelOnMovement: true,
-        detect: LongPressEventType.Mouse
+        detect: LongPressEventType.Pointer
     })
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,7 +144,7 @@ export const AddReviewers = ({ ticket, closeDialog }: ActionDialogProps) => {
                     loading={aip}
                     disabled={repos.filter(r => r.state === 'open').length === 0 || !selectedRepos.length}
                     disableRipple={true}
-                    {...longPress}
+                    {...longPress()}
                     fullWidth={true}
                 >Submit reviewer{repos.length > 1 && 's'}</LoadingButton>
             </DialogActions>
