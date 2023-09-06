@@ -9,7 +9,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { useAuthenticatedUser } from './hooks/authenticated-user';
 import { userSlice } from './redux/reducers/user-reducer';
 import { Box } from '@mui/system';
-import { Login } from './login';
+import { GhaAuthentication } from './gha-authentication';
 
 function App() {
     const [darkMode, setDarkMode] = useState(false)
@@ -43,7 +43,7 @@ function App() {
                         path="/"
                         exact={true}
                     >
-                        <Login />
+                        <GhaAuthentication />
                     </Route>
                     <Route
                         path="/search"

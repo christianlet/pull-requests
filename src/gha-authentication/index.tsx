@@ -4,7 +4,7 @@ import { Box } from '@mui/system'
 import { GitHub } from '@mui/icons-material'
 import { Redirect } from 'react-router'
 
-export const Login = () => {
+export const GhaAuthentication = () => {
     return (
         <>
             {
