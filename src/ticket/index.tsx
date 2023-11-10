@@ -182,7 +182,7 @@ export const Ticket = (props: TicketProps) => {
                         )
                     }
                     {
-                        myPR && !devBranchRequested && (
+                        myPR && !devBranchRequested && process.env['REACT_APP_DEV_BRANCH_MANAGER'] &&(
                             <MenuItem
                                 onClick={() => devBranch()}
                                 divider={true}

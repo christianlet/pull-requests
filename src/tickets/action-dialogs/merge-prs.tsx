@@ -7,6 +7,7 @@ import { LongPressEventType, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
 import { mergePullRequest } from '../../utilities/git-api/pulls/merge-pull-request'
 import './styles.scss'
+import { createPullRequest } from '../../utilities/git-api/pulls/create-pull-request'
 
 interface MergePRsProps extends ActionDialogProps {
     refresh: () => void
@@ -50,6 +51,13 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
         await Promise.all([...repos].map( async repo => {
             if(selectedRepos.indexOf(repo.id) > -1) {
                 await mergePullRequest(repo.owner, repo.repo, repo.number)
+                await createPullRequest(
+                    repo.owner,
+                    repo.repo,
+                    repo.branches.base,
+                    repo.title,
+                    `## PR Does\n\n\n ## Ticket\n- See ${ticket.ticket}`
+                ).catch(e => console.warn(e))
             }
 
             return repo
@@ -68,7 +76,7 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
             maxWidth="md"
             scroll="paper"
         >
-            <DialogTitle>Base Branch For Repo</DialogTitle>
+            <DialogTitle>Merge Branches</DialogTitle>
             <Divider />
             <DialogTitle>
                 <DialogContentText>Repositories</DialogContentText>

@@ -1,4 +1,3 @@
-import { store } from '../../../store';
 import { Factory } from '../../authorizations/factory';
 
 export const getFiles = async (owner: string, repo: string, number: number) => {
