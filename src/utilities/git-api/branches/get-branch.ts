@@ -1,4 +1,3 @@
-import { store } from '../../../store'
 import { Factory } from '../../authorizations/factory';
 
 export const getBranch = async (owner: string, repo: string, branch: string) => {
@@ -10,9 +9,11 @@ export const getBranch = async (owner: string, repo: string, branch: string) => 
     await octokit.repos.getBranch({
         owner,
         repo,
-        branch
+        branch,
     })
-    .then(results => exists = results.status === 200)
+    .then(results => {
+        exists = results.data.name === branch
+    })
     .catch(e => {})
 
     return exists

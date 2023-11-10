@@ -1,16 +1,11 @@
 import { BaseRequest } from '../BaseRequest'
+import { GetBranch } from './GetBranch'
 
 
 
 export class CreateBranch extends BaseRequest{
     public async run(owner: string, repo: string, branch: string): Promise<unknown> {
-        let response
-
-        try {
-            response = await this.api.repos.getBranch({ owner, repo, branch: 'master' })
-        } catch (error) {
-            console.log('Master branch does not exist')
-        }
+        let response = GetBranch()
 
         if(!response) {
             try {

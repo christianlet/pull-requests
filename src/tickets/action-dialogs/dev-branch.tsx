@@ -55,10 +55,7 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
         await Promise.all([...repos].map( async repo => {
             if(selectedRepos.indexOf(repo.id) > -1) {
                 let created = await createBranch(repo.owner, repo.repo, baseBranch)
-                    .catch(e => {
-                        return true
-                    })
-
+                    .catch(e => console.warn(e))
 
                 if(created) {
                     const updated = await updatePullRequest(repo.owner, repo.repo, repo.number, {
