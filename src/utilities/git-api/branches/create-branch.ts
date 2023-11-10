@@ -1,33 +1,18 @@
 import { Factory } from '../../authorizations/factory';
-import { getBranch } from './get-branch'
+import { getRepository } from '../repository/get-repository'
 
 export const createBranch = async (owner: string, repo: string, branch: string) => {
     const factory = new Factory()
     const octokit = await factory.generate()
-    const masterExists = await getBranch(owner, repo, 'master')
-    const mainExists = await getBranch(owner, repo, 'main')
-    let base = 'master'
+    const repoInfo = await getRepository(owner, repo)
+    const baseBranch = await octokit.repos.getBranch({ owner, repo, branch: repoInfo.data.default_branch })
 
-    if (!masterExists && mainExists) {
-        base = 'main'
-    } else if (!masterExists && !mainExists) {
-        console.log('Branch `main` or `master` was not found')
-
-        return false
-    }
-
-    const baseBranch = await octokit.repos.getBranch({ owner, repo, branch: base })
-
-    if (!baseBranch) {
-        return false
-    }
-
-    const res = await octokit.request('POST /repos/{owner}/{repo}/git/refs', {
+    const response = await octokit.git.createRef({
         owner,
         repo,
         ref: `refs/heads/${branch}`,
         sha: baseBranch.data.commit.sha
     })
 
-    return res.status === 201
+    return response.status === 201
 }
