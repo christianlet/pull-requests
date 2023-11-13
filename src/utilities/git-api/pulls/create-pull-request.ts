@@ -1,4 +1,4 @@
-import { Factory } from '../../authorizations/factory'
+import { Factory } from '@christianlet/github-api-client'
 import { getRepository } from '../repository/get-repository'
 
 export const createPullRequest = async (owner: string, repo: string, branch: string, title: string, description: string) => {

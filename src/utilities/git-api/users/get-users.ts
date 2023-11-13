@@ -1,4 +1,4 @@
-import { Factory } from '../../authorizations/factory'
+import { Factory } from '@christianlet/github-api-client'
 import { getAuthenticatedUser } from './get-authenticated-user'
 import { getUserInfo } from './get-user-info'
 

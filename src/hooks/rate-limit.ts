@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Oauth } from '../utilities/authorizations/oauth'
 import { useAppSelector } from './redux-hooks'
 
 export const useRateLimitHook = (refresh: number = 0) => {
@@ -36,10 +35,10 @@ export const useRateLimitHook = (refresh: number = 0) => {
     useEffect(() => {
         const getRateLimit = async () => {
             if(token) {
-                const octokit = await new Oauth(token).generate()
-                const { data } = await octokit.rateLimit.get()
+                // const octokit = await new Oauth(token).generate()
+                // const { data } = await octokit.rateLimit.get()
 
-                setData(data.resources)
+                // setData(data.resources)
             }
         }
 

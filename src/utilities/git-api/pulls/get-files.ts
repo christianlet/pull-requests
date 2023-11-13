@@ -1,4 +1,4 @@
-import { Factory } from '../../authorizations/factory';
+import { Factory } from '@christianlet/github-api-client';
 
 export const getFiles = async (owner: string, repo: string, number: number) => {
     const factory = new Factory()
