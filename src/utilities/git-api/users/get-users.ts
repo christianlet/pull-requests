@@ -1,9 +1,9 @@
-import { Factory } from '@christianlet/github-api-client'
+import { GitHubApiClient } from '@christianlet/github-api-client'
 import { getAuthenticatedUser } from './get-authenticated-user'
 import { getUserInfo } from './get-user-info'
 
 export const getUsers = async () => {
-    const factory = new Factory()
+    const factory = new GitHubApiClient()
     const octokit = await factory.generate()
 
     const authenticatedUser = await getAuthenticatedUser()

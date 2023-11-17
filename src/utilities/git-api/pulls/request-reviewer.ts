@@ -1,7 +1,7 @@
-import { Factory } from '@christianlet/github-api-client'
+import { GitHubApiClient } from '@christianlet/github-api-client'
 
 export const requestDevBranch = async (owner: string, repo: string, pullNumber: number) => {
-    const factory = new Factory()
+    const factory = new GitHubApiClient()
     const octokit = await factory.generate()
     const devBranchManager = process.env.REACT_APP_DEV_BRANCH_MANAGER
 

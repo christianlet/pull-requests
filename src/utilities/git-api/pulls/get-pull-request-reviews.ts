@@ -1,7 +1,7 @@
-import { Factory } from '@christianlet/github-api-client'
+import { GitHubApiClient } from '@christianlet/github-api-client'
 
 export const getPullRequestReviews = async (owner: string, repo: string, pullNumber: number) => {
-    const factory = new Factory()
+    const factory = new GitHubApiClient()
     const octokit = await factory.generate()
 
     const { data } = await octokit.pulls.listReviews({

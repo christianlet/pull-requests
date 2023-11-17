@@ -1,7 +1,7 @@
-import { Factory } from '@christianlet/github-api-client'
+import { GitHubApiClient } from '@christianlet/github-api-client'
 
 export const getPullRequest = async (owner: string, repo: string, pullNumber: number, hasLocalStorage: boolean) => {
-    const factory = new Factory()
+    const factory = new GitHubApiClient()
     const octokit = await factory.generate()
 
     const lastSearched = sessionStorage.getItem('lastSearched')
