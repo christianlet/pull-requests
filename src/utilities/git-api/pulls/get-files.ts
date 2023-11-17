@@ -1,7 +1,7 @@
-import { Factory } from '../../authorizations/factory';
+import { GitHubApiClient } from '@christianlet/github-api-client';
 
 export const getFiles = async (owner: string, repo: string, number: number) => {
-    const factory = new Factory()
+    const factory = new GitHubApiClient()
     const octokit = await factory.generate()
 
     const { data } = await octokit.pulls.listFiles({
