@@ -34,6 +34,9 @@ function App() {
         setDarkMode(prefersDarkMode)
     }, [prefersDarkMode])
 
+    console.log(dispatch);
+    
+
     return (
         <BrowserRouter>
             <ThemeProvider theme={theme}>

@@ -1,15 +1,20 @@
 import { GitHubApiClient } from '@christianlet/github-api-client'
 import { getAuthenticatedUser } from './get-authenticated-user'
 import { getUserInfo } from './get-user-info'
+import { SessionStorage } from '../local-storage/session-storage'
+import { RestEndpointMethodTypes } from '@octokit/rest'
+
+type GhUser = RestEndpointMethodTypes["users"]["getByUsername"]["response"]['data']
 
 export const getUsers = async () => {
     const factory = new GitHubApiClient()
     const octokit = await factory.generate()
 
     const authenticatedUser = await getAuthenticatedUser()
+    const userStorage = new SessionStorage<GhUser>('githubUsers')
     const { data } = await octokit.request('GET /user/teams')
     let members: string[] = []
-    let users: any[] = []
+    let users = []
 
     for(let team of data) {
         const { data } = await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
@@ -23,13 +28,16 @@ export const getUsers = async () => {
 
                 let user
 
-                if(member.login === authenticatedUser.login) {
-                    user = {
-                        ...authenticatedUser,
-                        login: '@me'
+                if(!userStorage.get(member.login)) {
+                    if(member.login === authenticatedUser.login) {
+                        user = authenticatedUser
+                    } else {
+                        user = await getUserInfo(member.login)
                     }
+
+                    userStorage.store(user.login, user)
                 } else {
-                    user = await getUserInfo(member.login)
+                    user = userStorage.get(member.login)!
                 }
 
                 users.push({

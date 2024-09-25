@@ -2,7 +2,7 @@ import { ChangeCircle, CheckCircle } from '@mui/icons-material'
 import { Avatar, Badge, Tooltip } from '@mui/material'
 import { styled } from '@mui/system'
 import moment from 'moment'
-import { Reviewer as ReviewerType } from '../../../types/api-types'
+import { Reviewer as ReviewerType } from '../../../../types/api-types'
 
 
 interface ReviewerProps {

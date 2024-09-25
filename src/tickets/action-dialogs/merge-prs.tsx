@@ -8,17 +8,16 @@ import { ActionDialogProps } from '.'
 import { mergePullRequest } from '../../utilities/git-api/pulls/merge-pull-request'
 import './styles.scss'
 import { createPullRequest } from '../../utilities/git-api/pulls/create-pull-request'
+import { update } from '../../redux/reducers/peer-reviews-reducer'
+import { useAppDispatch } from '../../hooks/redux-hooks'
 
-interface MergePRsProps extends ActionDialogProps {
-    refresh: () => void
-}
-
-export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
+export const MergePRs = ({ ticket, closeDialog }: ActionDialogProps) => {
     const repos = ticket.repos
     const [aip, setAip] = useState(false)
     const [selectedRepos, setSelectedRepos] = useState<number[]>([])
     const [toggleSelect, setToggleSelect] = useState(false)
     const [longPressInProgress, setLongPressInProgress] = useState(false)
+    const dispatch = useAppDispatch()
     const longPress = useLongPress(() => handleSubmit(), {
         onStart: () => setLongPressInProgress(true),
         onFinish: () => setLongPressInProgress(false),
@@ -50,7 +49,7 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
 
         await Promise.all([...repos].map( async repo => {
             if(selectedRepos.indexOf(repo.id) > -1) {
-                await mergePullRequest(repo.owner, repo.repo, repo.number)
+                const merged = await mergePullRequest(repo.owner, repo.repo, repo.number)
                 await createPullRequest(
                     repo.owner,
                     repo.repo,
@@ -58,6 +57,15 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
                     repo.title,
                     `## PR Does\n\n\n ## Ticket\n- See ${ticket.ticket}`
                 ).catch(e => console.warn(e))
+
+                if(merged) {
+                    repo = {
+                        ...repo,
+                        merged: true
+                    }
+
+                    dispatch(update(repo))
+                }
             }
 
             return repo
@@ -65,7 +73,6 @@ export const MergePRs = ({ ticket, closeDialog, refresh }: MergePRsProps) => {
 
         setSelectedRepos([])
         setAip(false)
-        refresh()
     }
 
     return (

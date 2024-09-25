@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { CircularProgress, IconButton, InputAdornment, Pagination, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Button, CircularProgress, IconButton, InputAdornment, Pagination, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { ChangeEvent, useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router'
 import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { peerReviewSlice } from '../redux/reducers/peer-reviews-reducer'
-import { Ticket } from '../ticket'
+import { Ticket } from './ticket'
 import { TicketsState } from '../types/api-types'
 import { getPullRequests } from '../utilities/git-api/pulls/get-pull-requests'
 import { ClosePulls } from './action-dialogs/close-pulls'
@@ -79,7 +79,12 @@ export const Tickets = () => {
         dispatch(peerReviewSlice.actions.set(null))
 
         const reviewing = filters.prType !== 'created'
-        const response  = await getPullRequests(filters.author, reviewing, filters.state, filters.page)
+        const response  = await getPullRequests(
+            filters.author,
+            reviewing,
+            filters.state,
+            filters.page
+        )
 
         setTotalPeerReviewCount(response.totalCount)
         dispatch(peerReviewSlice.actions.set(response.tickets))
@@ -121,7 +126,6 @@ export const Tickets = () => {
                     <MergePRs
                         ticket={ticketDialogData.ticket}
                         closeDialog={handleDialogClose}
-                        refresh={() => setRefresh(refresh+1)}
                     />
             }
             <Box paddingX="50px" paddingY="25px">
@@ -136,6 +140,31 @@ export const Tickets = () => {
                             value={filters.author}
                             onChange={handleSelect}
                             disabled={tickets === null || filters.prType !== 'created'}
+                        />
+                    </div>
+                    <div style={{
+                        flexGrow: 2,
+                        textAlign: 'center'
+                    }}>
+                        <TextField
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            placeholder='Search for Pull Requests'
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment
+                                        position='start'
+                                    >
+                                        <Search />
+                                    </InputAdornment>
+                                )
+                            }}
+                            style={{
+                                padding: '0 10px',
+                                maxWidth: 700,
+                                display: 'none'
+                            }}
                         />
                     </div>
                     <div>
@@ -169,22 +198,9 @@ export const Tickets = () => {
                 </Box>
                 <Box
                     display="flex"
-                    justifyContent="space-between"
+                    justifyContent="flex-end"
                     marginBottom={2}
                 >
-                    <TextField
-                        variant="outlined"
-                        size="small"
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment
-                                    position='start'
-                                >
-                                    <Search />
-                                </InputAdornment>
-                            )
-                        }}
-                    />
                     <Pagination
                         count={Math.ceil((totalPeerReviewCount / 25) ?? 0)}
                         page={filters.page}
@@ -212,8 +228,8 @@ export const Tickets = () => {
                                 width: 300,
                                 marginTop: '50px'
                             }}>
-                                    <CircularProgress />
-                                    <div style={{ marginTop: '10px' }}>Loading...</div>
+                                <CircularProgress />
+                                <div style={{ marginTop: '10px' }}>Loading...</div>
                             </Box>
                         ) : tickets.map((ticket, index) => (
                             <Ticket

@@ -1,8 +1,8 @@
-import { PullRequest } from '../../types/api-types'
-import { Badge, BadgeProps, Box, Button, Chip, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
-import { ArrowRightAlt, Launch } from '@mui/icons-material'
+import { PullRequest } from '../../../types/api-types'
+import { Badge, BadgeProps, Box, Button, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
+import { Launch } from '@mui/icons-material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeBranch, faComment, faUserShield } from '@fortawesome/free-solid-svg-icons'
+import { faCodeMerge, faCodePullRequest, faComment, faUserShield } from '@fortawesome/free-solid-svg-icons'
 import { styled } from '@mui/system'
 import { Reviewer } from './reviewer'
 
@@ -96,13 +96,16 @@ export const Repo = (props: RepoProps) => {
                     >
                         {
                             !ticket.merged ? (
-                                <ArrowRightAlt />
+                                <FontAwesomeIcon
+                                    icon={faCodePullRequest}
+                                    style={{
+                                        marginRight: 5,
+                                        marginLeft: 10
+                                    }}
+                                />
                             ) : (
                                 <FontAwesomeIcon
-                                    icon={faCodeBranch}
-                                    transform={{
-                                        rotate: 180
-                                    }}
+                                    icon={faCodeMerge}
                                     style={{
                                         marginRight: 5
                                     }}
