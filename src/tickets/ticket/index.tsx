@@ -12,7 +12,7 @@ import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { requestDevBranch } from '../../utilities/git-api/pulls/request-reviewer'
 import { Repo } from './repo'
 
-const jiraLinkRegex = /(CPENY|LANDO|SPARK[A-Z]+)-[0-9]+/g
+const jiraLinkRegex = /(CPENY|LANDO|SPARK|CMS[A-Z0-9]+)-[0-9]+/g
 
 interface TicketProps {
     title: string
