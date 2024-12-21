@@ -1,8 +1,9 @@
-import { GitHubApiClient } from '@christianlet/github-api-client'
+import { Factory } from '@christianlet/github-api-client'
+import { githubApiConfig } from '../github-api-config'
 
 export const mergePullRequest = async (owner: string, repo: string, pullNumber: number, params?: Object) => {
-    const factory = new GitHubApiClient()
-    const octokit = await factory.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate(githubApiConfig)
 
     const response = await octokit.pulls.merge({
         owner,
@@ -12,5 +13,5 @@ export const mergePullRequest = async (owner: string, repo: string, pullNumber: 
         maintainer_can_modify: true
     })
 
-    return response.data.merged
+    return response
 }

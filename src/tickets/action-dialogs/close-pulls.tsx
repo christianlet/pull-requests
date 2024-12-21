@@ -65,7 +65,7 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
             maxWidth={false}
             scroll="paper"
         >
-            <DialogTitle>Repositories Associated with Ticket {ticket.ticket}</DialogTitle>
+            <DialogTitle>Repositories Associated with Ticket {ticket.info.number}</DialogTitle>
             <Divider />
             <DialogTitle>
                 <DialogContentText>This will close the pull request(s) associated with this ticket from the following repositories:</DialogContentText>

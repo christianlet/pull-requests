@@ -15,7 +15,7 @@ export const Repo = (props: RepoProps) => {
     const ticket = props.data
     const comments = ticket.comments + ticket.review_comments
     const releaseManagerRequested = ticket.requested_reviewers?.filter(
-        r => r.login === process.env.REACT_APP_DEV_BRANCH_MANAGER
+        r => r.login === import.meta.env.REACT_APP_DEV_BRANCH_MANAGER
     )
 
     return (
@@ -51,7 +51,7 @@ export const Repo = (props: RepoProps) => {
                                 <Tooltip
                                     key="release-branch-manager"
                                     arrow={true}
-                                    title={`Release branch manager ${process.env.REACT_APP_DEV_BRANCH_MANAGER} requested`}
+                                    title={`Release branch manager ${import.meta.env.REACT_APP_DEV_BRANCH_MANAGER} requested`}
                                 >
                                     <FontAwesomeIcon
                                         icon={faUserShield}

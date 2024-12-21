@@ -76,7 +76,7 @@ export const AddReviewers = ({ ticket, closeDialog }: ActionDialogProps) => {
             maxWidth={false}
             scroll="paper"
         >
-            <DialogTitle>Modify Reviewers for {ticket.ticket}</DialogTitle>
+            <DialogTitle>Modify Reviewers for {ticket.info.number}</DialogTitle>
             <Divider />
             <DialogTitle>
                 <DialogContentText>Reviewers:</DialogContentText>

@@ -9,9 +9,9 @@ export class RequestReviewer extends BaseRequest {
 
 
 export const requestDevBranch = async (owner: string, repo: string, pullNumber: number) => {
-    const factory = new GitHubApiClient()
-    const octokit = await factory.generate()
-    const devBranchManager = process.env.REACT_APP_DEV_BRANCH_MANAGER
+    const factory = new Factory()
+    const octokit = await factory.generate(githubApiConfig)
+    const devBranchManager = import.meta.env.REACT_APP_DEV_BRANCH_MANAGER
 
     if(!devBranchManager) {
         return false

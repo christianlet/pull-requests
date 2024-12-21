@@ -1,4 +1,5 @@
-import { GitHubApiClient } from '@christianlet/github-api-client'
+import { Factory } from '@christianlet/github-api-client'
+import { githubApiConfig } from '../github-api-config'
 
 export const getOpenPullRequests = async (
     reviewing: boolean,
@@ -6,8 +7,8 @@ export const getOpenPullRequests = async (
     state: 'open' | 'closed',
     page: number
 ) => {
-    const factory = new GitHubApiClient()
-    const octokit = await factory.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate(githubApiConfig)
 
     let query = `author:${author}`
 

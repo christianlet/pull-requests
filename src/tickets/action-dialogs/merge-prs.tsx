@@ -10,8 +10,10 @@ import './styles.scss'
 import { createPullRequest } from '../../utilities/git-api/pulls/create-pull-request'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { useAppDispatch } from '../../hooks/redux-hooks'
+import { Factory } from '@christianlet/github-api-client'
+import { githubApiConfig } from '../../utilities/git-api/github-api-config'
 
-export const MergePRs = ({ ticket, closeDialog }: ActionDialogProps) => {
+export const MergePRs = ({ ticket, closeDialog, refresh }: ActionDialogProps) => {
     const repos = ticket.repos
     const [aip, setAip] = useState(false)
     const [selectedRepos, setSelectedRepos] = useState<number[]>([])
@@ -47,33 +49,67 @@ export const MergePRs = ({ ticket, closeDialog }: ActionDialogProps) => {
     const handleSubmit = async () => {
         setAip(true)
 
-        await Promise.all([...repos].map( async repo => {
-            if(selectedRepos.indexOf(repo.id) > -1) {
-                const merged = await mergePullRequest(repo.owner, repo.repo, repo.number)
+        const factory = new Factory()
+        const client = await factory.generate(githubApiConfig)
+        const selectedReposInfo = repos.filter(repo => selectedRepos.indexOf(repo.id) > -1)
+
+        for (const repo of selectedReposInfo) {
+            const { data: { merged } } = await mergePullRequest(repo.owner, repo.repo, repo.number)
+
+            if(!merged) {
+                continue
+            }
+
+            const listOfPrs = await client.pulls.list({
+                owner: repo.owner,
+                repo: repo.repo,
+                base: 'main'
+            })
+            const baseBranchPr = listOfPrs.data?.filter(pr => pr.head.ref === repo.base.ref).pop()
+
+            if(baseBranchPr) {
+                let body = baseBranchPr.body ?? ''
+
+                if(!body.includes(`- #${repo.number}`)) {
+                    body = body.replace(/(## PR Does\n\n|## PR Does\r\n)/g, `## PR Does\n\n- #${repo.number}\n`)
+                }
+
+                if(ticket.info.link && !body.includes(ticket.info.link)) {
+                    body = body.replace(/(## Ticket\n\n|## Ticket\r\n)/g, `## Ticket\n\n- See [${ticket.info.number}](${ticket.info.link})`)
+                }
+
+                await client.pulls.update({
+                    owner: repo.owner,
+                    repo: repo.repo,
+                    pull_number: baseBranchPr.number,
+                    body
+                })
+            } else if(['main', 'master'].includes(repo.base.ref)) {
                 await createPullRequest(
                     repo.owner,
                     repo.repo,
                     repo.branches.base,
                     repo.title,
-                    `## PR Does\n\n\n ## Ticket\n- See ${ticket.ticket}`
+                    `## PR Does\n\n- #${repo.number}\n## Ticket\n\n- See ${ticket.info.link ?? ''}`
                 ).catch(e => console.warn(e))
-
-                if(merged) {
-                    repo = {
-                        ...repo,
-                        merged: true
-                    }
-
-                    dispatch(update(repo))
-                }
             }
 
-            return repo
-        }))
+            dispatch(update({
+                ...repo,
+                merged
+            }))
+
+            await sleep(2000)
+
+            if(refresh) {
+                refresh(new Date().getTime())
+            }
+        }
 
         setSelectedRepos([])
         setAip(false)
     }
+    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
     return (
         <Dialog

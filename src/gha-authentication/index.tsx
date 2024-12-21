@@ -1,4 +1,3 @@
-import React from 'react'
 import { Button, Container } from '@mui/material'
 import { Box } from '@mui/system'
 import { GitHub } from '@mui/icons-material'
@@ -8,7 +7,7 @@ export const GhaAuthentication = () => {
     return (
         <>
             {
-                process.env?.REACT_APP_AUTH_TYPE === 'pat' && (
+                import.meta.env?.REACT_APP_AUTH_TYPE === 'pat' && (
                     <Redirect
                         to={`/search`}
                         from="/"
@@ -16,7 +15,7 @@ export const GhaAuthentication = () => {
                 )
             }
             {
-                process.env?.REACT_APP_AUTH_TYPE === 'oauth' && (
+                import.meta.env?.REACT_APP_AUTH_TYPE === 'oauth' && (
                     <Container
                         maxWidth="sm"
                     >
@@ -40,7 +39,7 @@ export const GhaAuthentication = () => {
                                     const params: {
                                         [index: string]: any
                                     } = {
-                                        client_id: process.env.REACT_APP_CLIENT_ID,
+                                        client_id: import.meta.env.REACT_APP_CLIENT_ID,
                                         redirect_uri: 'http://localhost:3000/oauth-callback',
                                         scope: 'repo'
                                     }

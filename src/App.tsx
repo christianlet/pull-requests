@@ -10,6 +10,7 @@ import { useAuthenticatedUser } from './hooks/authenticated-user';
 import { userSlice } from './redux/reducers/user-reducer';
 import { Box } from '@mui/system';
 import { GhaAuthentication } from './gha-authentication';
+import { TicketDetailPage } from './ticket-detail-page.tsx'
 
 function App() {
     const [darkMode, setDarkMode] = useState(false)
@@ -34,9 +35,6 @@ function App() {
         setDarkMode(prefersDarkMode)
     }, [prefersDarkMode])
 
-    console.log(dispatch);
-    
-
     return (
         <BrowserRouter>
             <ThemeProvider theme={theme}>
@@ -47,6 +45,9 @@ function App() {
                         exact={true}
                     >
                         <GhaAuthentication />
+                    </Route>
+                    <Route path="/search/:ticketId">
+                        <TicketDetailPage />
                     </Route>
                     <Route
                         path="/search"

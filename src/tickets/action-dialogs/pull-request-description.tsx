@@ -1,20 +1,20 @@
-import { ErrorOutline, KeyboardBackspace } from '@mui/icons-material'
+import { KeyboardBackspace } from '@mui/icons-material'
 import { LoadingButton } from '@mui/lab'
-import { Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
+import { Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemText, TextField } from '@mui/material'
 import { Box } from '@mui/system'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LongPressEventType, useLongPress } from 'use-long-press'
 import { ActionDialogProps } from '.'
 import { useAppDispatch } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
-import { createBranch } from '../../utilities/git-api/branches/create-branch'
 import { updatePullRequest } from '../../utilities/git-api/pulls/update-pull-request'
 import './styles.scss'
+import { getCommit } from '../../utilities/git-api/pulls/get-commits'
 
-export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
+export const PullRequestDescription = ({ ticket, closeDialog }: ActionDialogProps) => {
     const repos = ticket.repos
     const [aip, setAip] = useState(false)
-    const [baseBranch, setBaseBranch] = useState('')
+    const [description, setDescription] = useState('')
     const [selectedRepos, setSelectedRepos] = useState<number[]>([])
     const [toggleSelect, setToggleSelect] = useState(false)
     const [longPressInProgress, setLongPressInProgress] = useState(false)
@@ -28,11 +28,9 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
         cancelOnMovement: true,
         detect: LongPressEventType.Pointer
     })
-
-    const setBranch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setBaseBranch(e.currentTarget.value.toLowerCase().replace(/(\s)/g, '-'))
+    const setBody = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setDescription(e.currentTarget.value)
     }
-
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const id = parseInt(event.target.id, 10)
 
@@ -47,39 +45,23 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
             setSelectedRepos(newSelectedRepos)
         }
     }
-
-
     const handleSubmit = async () => {
         setAip(true)
 
         await Promise.all([...repos].map( async repo => {
             if(selectedRepos.indexOf(repo.id) > -1) {
-                let created = await createBranch(repo.owner, repo.repo, baseBranch)
-                    .catch(e => {
-                        console.warn(e.message)
+                const updated = await updatePullRequest({
+                    owner: repo.owner,
+                    repo: repo.repo,
+                    pull_number: repo.number,
+                    body: description
+                })
 
-                        return e.message.includes('Reference already exists')
-                    })
-
-                if(created) {
-                    const updated = await updatePullRequest({
-                        owner: repo.owner,
-                        repo: repo.repo,
-                        pull_number: repo.number,
-                        base: baseBranch
-                    })
-
-                    if(updated) {
-                        repo = {
-                            ...repo,
-                            branches: {
-                                ...repo.branches,
-                                base: baseBranch
-                            }
-                        }
-
-                        dispatch(update(repo))
-                    }
+                if(updated) {
+                    dispatch(update({
+                        ...repo,
+                        body: description
+                    }))
                 }
             }
 
@@ -87,34 +69,90 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
         }))
 
         setSelectedRepos([])
-        setBaseBranch('')
+        setDescription('')
         setAip(false)
     }
+    const generateDescription = async () => {
+        setAip(true)
+        let message = '## PR Does\n\n'
+
+        for (const repo of repos) {
+            if(selectedRepos.indexOf(repo.id) === -1) {
+                continue
+            }
+
+            message += `### ${repo.repo}\n\n`
+
+            const commit = await getCommit({
+                owner: repo.owner,
+                repo: repo.repo,
+                pull_number: repo.number
+            })
+            const commitMessages = commit.map(commit => `- ${commit.commit.message}`).filter(msg => !msg.includes('Merge'))
+
+            message += commitMessages.join('\n') + '\n\n'
+        }
+
+        message += '# Tickets\n\n- See '
+
+        if(ticket.info.link) {
+            message += `[${ticket.info.number}](${ticket.info.link})`
+        }
+
+        setDescription(message)
+        setAip(false)
+    }
+
+    useEffect(() => {
+        if(selectedRepos.length === 0) {
+            setToggleSelect(false)
+        } else if(selectedRepos.length === repos.length) {
+            setToggleSelect(true)
+        }
+
+        if(selectedRepos.length === 1) {
+            const body = repos.find(repo => repo.id === selectedRepos[0])?.body
+
+            if(body) {
+                setDescription(body)
+            }
+        } else {
+            setDescription('')
+        }
+    }, [selectedRepos, repos])
 
     return (
         <Dialog
             open={true}
             onClose={closeDialog}
-            fullWidth={true}
+            fullWidth
             maxWidth="md"
             scroll="paper"
         >
-            <DialogTitle>Target Branch For Repo(s)</DialogTitle>
+            <DialogTitle>Pull Request Description</DialogTitle>
             <Divider />
             <DialogTitle>
                 <TextField
-                    label="Target Branch"
+                    label="Description"
                     fullWidth={true}
                     margin="normal"
+                    multiline={true}
+                    rows={10}
+                    disabled={aip}
                     variant="outlined"
-                    value={baseBranch}
-                    onChange={setBranch}
+                    value={description}
+                    onChange={setBody}
                 />
+                <Button
+                    variant="contained"
+                    color="info"
+                    onClick={generateDescription}
+                    disabled={aip}
+                >Generate</Button>
             </DialogTitle>
             <DialogTitle>
-                <DialogContentText>Repositories</DialogContentText>
                 <DialogContentText>
-                    <ListItem>
+                    <ListItem style={{ padding: 0 }}>
                         <Checkbox
                             checked={toggleSelect}
                             onChange={(event) => {
@@ -130,17 +168,17 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
                             }}
                         />
                         <ListItemText
-                            primary={toggleSelect ? 'Unselect All' : 'Select All'}
+                            primary="Repositories"
                         />
                     </ListItem>
                 </DialogContentText>
             </DialogTitle>
-            <DialogContent sx={{ bgcolor: 'background.paper' }}>
-                <List dense={true} sx={{ marginTop: 2, padding: 0 }}>
+            <DialogContent sx={{ bgcolor: 'background.paper', minHeight: "75px", padding: 0 }}>
+                <List dense={true} sx={{ margin: 0, padding: 0 }}>
                     {
                         repos.map((repo, i) => {
                             const selected = selectedRepos.indexOf(repo.id) > -1
-                            const branch   = selected && baseBranch !== '' ? baseBranch : repo.branches.base
+                            const branch   = repo.branches.base
 
                             return (
                                 <ListItem key={repo.id} divider={i < (repos.length - 1)}>
@@ -167,7 +205,7 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
                                                     <Chip
                                                         label={branch}
                                                         size="small"
-                                                        color={selected && baseBranch ? 'info' : 'default'}
+                                                        color="default"
                                                         variant="filled"
                                                         className=""
                                                     />
@@ -179,27 +217,6 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
                                                         variant="filled"
                                                         className=""
                                                     />
-                                                </Box>
-                                                <Box
-                                                    marginTop={1}
-                                                    display="flex"
-                                                    alignItems="center"
-                                                >
-                                                    {
-                                                        ['master','main'].includes(branch) && (
-                                                            <>
-                                                                <ErrorOutline
-                                                                    fontSize="small"
-                                                                    color="warning"
-                                                                />
-                                                                <Typography
-                                                                    color="darkorange"
-                                                                    fontSize={12}
-                                                                    marginLeft={1}
-                                                                >Targeting {branch} branch</Typography>
-                                                            </>
-                                                        )
-                                                    }
                                                 </Box>
                                             </>
                                         }
@@ -216,11 +233,11 @@ export const DevBranch = ({ ticket, closeDialog }: ActionDialogProps) => {
                     variant="contained"
                     color="info"
                     loading={aip}
-                    disabled={baseBranch === '' || selectedRepos.length === 0}
+                    disabled={selectedRepos.length === 0}
                     disableRipple={true}
                     {...longPress()}
                     fullWidth={true}
-                >Set target branch for repo{ticket.repos.length > 1 && 's'}</LoadingButton>
+                >Set description for repo{ticket.repos.length > 1 && 's'}</LoadingButton>
             </DialogActions>
         </Dialog>
     )

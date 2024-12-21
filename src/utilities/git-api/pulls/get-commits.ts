@@ -2,14 +2,11 @@ import { Factory } from '@christianlet/github-api-client'
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { githubApiConfig } from '../github-api-config'
 
-export const updatePullRequest = async (params: RestEndpointMethodTypes["pulls"]["update"]["parameters"]) => {
+export const getCommit = async (arg: RestEndpointMethodTypes["pulls"]["listCommits"]["parameters"]) => {
     const factory = new Factory()
     const octokit = await factory.generate(githubApiConfig)
 
-    const response = await octokit.pulls.update({
-        ...params,
-        maintainer_can_modify: false
-    })
+    const { data } = await octokit.pulls.listCommits(arg)
 
-    return response.status === 200
+    return data
 }

@@ -1,8 +1,9 @@
-import { GitHubApiClient } from '@christianlet/github-api-client';
+import { Factory } from '@christianlet/github-api-client';
+import { githubApiConfig } from '../github-api-config'
 
 export const getBranch = async (owner: string, repo: string, branch: string) => {
-    const factory = new GitHubApiClient()
-    const octokit = await factory.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate(githubApiConfig)
 
     let exists = false
 

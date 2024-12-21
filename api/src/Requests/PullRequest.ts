@@ -91,7 +91,7 @@ export class PullRequest extends BaseRequest {
     }
 
     public async requestReviewer() {
-        const devBranchManager = process.env.REACT_APP_DEV_BRANCH_MANAGER
+        const devBranchManager = import.meta.env.REACT_APP_DEV_BRANCH_MANAGER
 
         if(!devBranchManager) {
             return false

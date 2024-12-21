@@ -5,7 +5,7 @@ import { useState } from 'react'
 import moment from 'moment'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCopy, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
+import { faCodeMerge, faCodePullRequest, faCopy, faFileText, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
 import { TicketsState } from '../../types/api-types'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
@@ -15,7 +15,7 @@ import { Repo } from './repo'
 const jiraLinkRegex = /(CPENY|LANDO|SPARK|CMS[A-Z0-9]+)-[0-9]+/g
 
 interface TicketProps {
-    title: string
+    ticket: TicketsState['info']
     data: TicketsState["repos"]
     openTicketDetail: (action: string) => void
     prType: string
@@ -30,8 +30,8 @@ export const Ticket = (props: TicketProps) => {
     const dispatch = useAppDispatch()
     const user = useAppSelector(state => state.user.value)
     const myPR = user?.login === props.data[0]?.user.login
-    const jiraLink = props.title.toUpperCase().match(jiraLinkRegex)?.pop()
-    const devBranchManager = process.env.REACT_APP_DEV_BRANCH_MANAGER
+    const jiraLink = props.ticket.link
+    const devBranchManager = import.meta.env.REACT_APP_DEV_BRANCH_MANAGER
     const devBranchRequested = props.data.filter(repo =>
         (repo.requested_reviewers?.filter(reviewer => reviewer.login === devBranchManager) ?? []).length > 0
     ).length > 0
@@ -84,13 +84,13 @@ export const Ticket = (props: TicketProps) => {
                             sx={{
                                 color: 'text.secondary'
                             }}
-                        >{props.title}</Typography>
+                        >{props.ticket.number}</Typography>
                         {
                             jiraLink && (
                                 <IconButton
                                     onClick={() =>
                                         window.open(
-                                            `https://teamfox.atlassian.net/browse/${jiraLink}`,
+                                            jiraLink,
                                             '_blank'
                                         )
                                     }
@@ -130,13 +130,13 @@ export const Ticket = (props: TicketProps) => {
                     {
                         myPR && (
                             <MenuItem
-                                onClick={() => openTicketDialog('delete')}
+                                onClick={() => openTicketDialog('pull-request-description')}
                                 divider={true}
                             >
                                 <ListItemIcon>
-                                    <FontAwesomeIcon icon={faTimesCircle} />
+                                    <FontAwesomeIcon icon={faFileText} />
                                 </ListItemIcon>
-                                <ListItemText>Close Branches</ListItemText>
+                                <ListItemText>Update PR Description</ListItemText>
                             </MenuItem>
                         )
                     }
@@ -145,7 +145,7 @@ export const Ticket = (props: TicketProps) => {
                         divider={true}
                     >
                         <ListItemIcon>
-                            <FontAwesomeIcon icon={faWrench} />
+                            <FontAwesomeIcon icon={faCodePullRequest} />
                         </ListItemIcon>
                         <ListItemText>Update Target Branch</ListItemText>
                     </MenuItem>
@@ -175,14 +175,27 @@ export const Ticket = (props: TicketProps) => {
                                 divider={true}
                             >
                                 <ListItemIcon>
-                                    <FontAwesomeIcon icon={faProjectDiagram} />
+                                    <FontAwesomeIcon icon={faCodeMerge} />
                                 </ListItemIcon>
                                 <ListItemText>Merge PRs</ListItemText>
                             </MenuItem>
                         )
                     }
                     {
-                        myPR && !devBranchRequested && process.env['REACT_APP_DEV_BRANCH_MANAGER'] &&(
+                        myPR && (
+                            <MenuItem
+                                onClick={() => openTicketDialog('delete')}
+                                divider={true}
+                            >
+                                <ListItemIcon>
+                                    <FontAwesomeIcon icon={faTimesCircle} />
+                                </ListItemIcon>
+                                <ListItemText>Close Branches</ListItemText>
+                            </MenuItem>
+                        )
+                    }
+                    {
+                        myPR && !devBranchRequested && import.meta.env['REACT_APP_DEV_BRANCH_MANAGER'] &&(
                             <MenuItem
                                 onClick={() => devBranch()}
                                 divider={true}

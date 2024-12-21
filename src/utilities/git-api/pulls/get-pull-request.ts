@@ -1,15 +1,15 @@
-import { GitHubApiClient } from '@christianlet/github-api-client'
+import { Factory } from '@christianlet/github-api-client'
+import { githubApiConfig } from '../github-api-config'
+import { RestEndpointMethodTypes } from '@octokit/rest'
 
-export const getPullRequest = async (owner: string, repo: string, pullNumber: number, hasLocalStorage: boolean) => {
-    const factory = new GitHubApiClient()
-    const octokit = await factory.generate()
+export const getPullRequest = async (args: RestEndpointMethodTypes["pulls"]["get"]["parameters"], hasLocalStorage = false) => {
+    const factory = new Factory()
+    const octokit = await factory.generate(githubApiConfig)
 
     const lastSearched = sessionStorage.getItem('lastSearched')
 
     const { data } = await octokit.pulls.get({
-        owner,
-        repo,
-        pull_number: pullNumber,
+        ...args,
         headers:
             lastSearched && hasLocalStorage
             ? { "If-Modified-Since": lastSearched }

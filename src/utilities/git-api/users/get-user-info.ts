@@ -1,8 +1,9 @@
-import { GitHubApiClient } from '@christianlet/github-api-client'
+import { Factory } from '@christianlet/github-api-client'
+import { githubApiConfig } from '../github-api-config'
 
 export const getUserInfo = async (login: string) => {
-    const factory = new GitHubApiClient()
-    const octokit = await factory.generate()
+    const factory = new Factory()
+    const octokit = await factory.generate(githubApiConfig)
 
     const { data } = await octokit.users.getByUsername({
         username: login

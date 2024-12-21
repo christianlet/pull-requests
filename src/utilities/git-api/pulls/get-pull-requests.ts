@@ -6,6 +6,7 @@ import { getAuthenticatedUser } from '../users/get-authenticated-user'
 import { getUserInfo } from '../users/get-user-info'
 import { getPullRequest } from './get-pull-request'
 import { getPullRequestReviews } from './get-pull-request-reviews'
+import { jiraTicket } from '../../jira-ticket'
 
 type GhUser = RestEndpointMethodTypes["users"]["getByUsername"]["response"]['data']
 
@@ -39,7 +40,11 @@ export const getPullRequests = async (
         try {
             if (repo && owner && pullNumber && item.pull_request?.url ) {
                 const hasLocalStorage = prStorage.get(item.id) !== null
-                const info = await getPullRequest(owner, repo, pullNumber, hasLocalStorage)
+                const info = await getPullRequest({
+                    owner,
+                    repo,
+                    pull_number: pullNumber
+                }, hasLocalStorage)
                 const reviews = await getPullRequestReviews(owner, repo, pullNumber)
 
                 reviewers = await Promise.all(reviews
@@ -102,11 +107,15 @@ const groupPeerReviews = (prs: any[]) => {
 
     prs?.forEach((pr: any) => {
         const ticket  = pr.branches?.head.split('/').pop() ?? ''
+        const link = jiraTicket(ticket)
         const prIndex = groupedPRs.findIndex(repo => repo.ticket === ticket)
 
         if(prIndex === -1) {
             groupedPRs.push({
-                ticket,
+                info: {
+                    number: ticket,
+                    link
+                },
                 repos: [pr]
             })
         } else {

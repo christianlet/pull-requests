@@ -14,6 +14,7 @@ import { DevBranch } from './action-dialogs/dev-branch'
 import { MergePRs } from './action-dialogs/merge-prs'
 import { AuthorsSelect } from './authors-select'
 import './styles.scss'
+import { PullRequestDescription } from './action-dialogs/pull-request-description'
 
 
 type DialogActionState = {
@@ -42,7 +43,7 @@ export const Tickets = () => {
         page: parseInt(currentUrlParams.get('page') ?? '1', 10)
     })
     const history = useHistory()
-    const [refresh, setRefresh] = useState(0)
+    const [refresh, setRefresh] = useState(new Date().getTime())
     const dispatch = useAppDispatch()
     const theme = useTheme()
     const tickets = useAppSelector(state => state.peerReviews.value)
@@ -61,13 +62,10 @@ export const Tickets = () => {
     useEffect(() => {
         if(ticketDialogData) {
             tickets?.forEach(ticket => {
-                if(ticket.ticket === ticketDialogData.ticket.ticket) {
+                if(ticket.info.number === ticketDialogData.ticket.info.number) {
                     setTicketDialogData({
                         ...ticketDialogData,
-                        ticket: {
-                            ...ticket,
-                            repos: [...ticket.repos]
-                        }
+                        ticket
                     })
                 }
             })
@@ -122,10 +120,14 @@ export const Tickets = () => {
                 ticketDialogData?.action === 'dev-branch' && <DevBranch ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
             }
             {
+                ticketDialogData?.action === 'pull-request-description' && <PullRequestDescription ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
+            }
+            {
                 ticketDialogData?.action === 'merge-prs' &&
                     <MergePRs
                         ticket={ticketDialogData.ticket}
                         closeDialog={handleDialogClose}
+                        refresh={setRefresh}
                     />
             }
             <Box paddingX="50px" paddingY="25px">
@@ -202,7 +204,7 @@ export const Tickets = () => {
                     marginBottom={2}
                 >
                     <Pagination
-                        count={Math.ceil((totalPeerReviewCount / 25) ?? 0)}
+                        count={Math.ceil((totalPeerReviewCount / 25) || 0)}
                         page={filters.page}
                         color="primary"
                         variant="outlined"
@@ -234,7 +236,7 @@ export const Tickets = () => {
                         ) : tickets.map((ticket, index) => (
                             <Ticket
                                 key={index}
-                                title={ticket.ticket}
+                                ticket={ticket.info}
                                 data={ticket.repos}
                                 prType={filters.prType}
                                 openTicketDetail={action => handleDialogOpen(action, ticket)}

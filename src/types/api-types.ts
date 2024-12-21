@@ -26,6 +26,9 @@ export type Reviewer =
     }
 
 export interface TicketsState {
-    ticket: string
+    info: {
+        number: string
+        link: null | string
+    }
     repos: PullRequest[]
 }
