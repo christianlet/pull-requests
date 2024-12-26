@@ -1,10 +1,10 @@
-import { Factory } from '@christianlet/github-api-client';
+
 import { getRepository } from '../repository/get-repository'
-import { githubApiConfig } from '../github-api-config'
+import { OctokitClient } from '../../octokit-client'
 
 export const createBranch = async (owner: string, repo: string, branch: string) => {
-    const factory = new Factory()
-    const octokit = await factory.generate(githubApiConfig)
+
+    const octokit = await OctokitClient.getInstance()
     const repoInfo = await getRepository(owner, repo)
     const baseBranch = await octokit.repos.getBranch({ owner, repo, branch: repoInfo.data.default_branch })
 

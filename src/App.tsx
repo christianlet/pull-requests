@@ -1,23 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { Switch, Route, BrowserRouter } from "react-router-dom";
-import { Tickets } from './tickets';
-import { OauthCallback } from './oauth-callback';
-import { AppBar, CssBaseline, FormControlLabel, FormGroup, Paper, Toolbar, Typography, useMediaQuery } from '@mui/material';
-import { default as MuiSwitch } from '@mui/material/Switch'
+import { useEffect, useMemo, useState } from 'react';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import GitHubIcon from '@mui/icons-material/GitHub';
 import { useAppDispatch } from './hooks/redux-hooks';
-import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { useAuthenticatedUser } from './hooks/authenticated-user';
 import { userSlice } from './redux/reducers/user-reducer';
-import { Box } from '@mui/system';
-import { GhaAuthentication } from './gha-authentication';
-import { TicketDetailPage } from './ticket-detail-page.tsx'
+import { OctokitClient } from './utilities/octokit-client'
+import { default as MuiSwitch } from '@mui/material/Switch'
+import { ThemeProvider } from '@emotion/react'
+import { AppBar, Box, createTheme, CssBaseline, FormControlLabel, FormGroup, Paper, Toolbar, Typography, useMediaQuery } from '@mui/material'
+import { PullRequestDescription } from './components/action/pull-request-description'
+import { OauthCallback } from './components/oauth-callback'
+import { Tickets } from './tickets'
+import { BranchDetail } from './components/branch-detail'
 
 function App() {
-    const [darkMode, setDarkMode] = useState(false)
     const user = useAuthenticatedUser()
     const dispatch = useAppDispatch()
+    const [octokitConnecting, setOctokitConnecting] = useState(false)
+    const [darkMode, setDarkMode] = useState(false)
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
-    const theme = React.useMemo(() =>
+    const theme = useMemo(() =>
         createTheme({
             palette: {
                 mode: darkMode ? 'dark' : 'light'
@@ -26,98 +28,104 @@ function App() {
     , [darkMode])
 
     useEffect(() => {
+        setDarkMode(prefersDarkMode)
+    }, [prefersDarkMode])
+
+    useEffect(() => {
         if(user) {
             dispatch(userSlice.actions.set(user))
+
+            setOctokitConnecting(true)
+
+            OctokitClient.getInstance().then(octokit => {
+                setOctokitConnecting(false)
+            })
         }
     }, [user, dispatch])
 
-    useEffect(() => {
-        setDarkMode(prefersDarkMode)
-    }, [prefersDarkMode])
+    if(octokitConnecting) {
+        return <div>Connecting...</div>
+    }
 
     return (
         <BrowserRouter>
             <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <Switch>
-                    <Route
-                        path="/"
-                        exact={true}
-                    >
-                        <GhaAuthentication />
-                    </Route>
-                    <Route path="/search/:ticketId">
-                        <TicketDetailPage />
-                    </Route>
-                    <Route
-                        path="/search"
-                        exact={true}
-                    >
-                        <AppBar
-                            color="primary"
-                            enableColorOnDark={true}
-                            sx={{
-                                bgcolor: 'primary.dark',
-                                color: 'white'
-                            }}
+                <Header darkMode={darkMode} setDarkMode={setDarkMode} />
+                <Routes>
+                    <Route path="/">
+                        <Route
+                            path="prs"
                         >
-                            <Toolbar
-                                variant="dense"
-                            >
-                                <Typography sx={{ flexGrow: 1 }}>
-                                    Peer Reviews
-                                </Typography>
-                                <Box>
-                                    <FormGroup>
-                                        <FormControlLabel
-                                            control={
-                                                <MuiSwitch
-                                                    color="default"
-                                                    checked={darkMode}
-                                                    onChange={e => {
-                                                        setDarkMode(e.target.checked ?? false)
-                                                    }}
-                                                />
-                                            }
-                                            label="Dark Mode"
-                                            labelPlacement="start"
-                                        />
-                                    </FormGroup>
-                                </Box>
-                            </Toolbar>
-                        </AppBar>
-                        <Paper square sx={{
-                            position: 'absolute',
-                            top: 48,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            overflow: 'auto'
-                        }}>
-                            <Tickets />
-                        </Paper>
-                        {/* <AppBar
-                            position="absolute"
-                            sx={{
-                                top: 'auto',
-                                bottom: 0,
-                                bgcolor: 'background.paper' ,
-                                borderTop: 'solid thin',
-                                borderTopColor: 'divider'
-                            }}
-                        >
-                            <Toolbar variant="dense">
-                                <RateLimit />
-                            </Toolbar>
-                        </AppBar> */}
+                            <Route
+                                index
+                                element={<TicketsPage />}
+                            />
+                            <Route
+                                path="*"
+                                element={<BranchDetail />}
+                            />
+                        </Route>
+                        <Route
+                            path="oauth-callback"
+                            element={<OauthCallback />}
+                        />
+
+                        <Route
+                            path="octokit-error"
+                            element={<div>Octokit error</div>}
+                        />
                     </Route>
-                    <Route path="/oauth-callback">
-                        <OauthCallback />
-                    </Route>
-                </Switch>
+                </Routes>
             </ThemeProvider>
         </BrowserRouter>
     );
 }
+
+const TicketsPage = () => (
+    <Paper square sx={{
+        overflow: 'auto'
+    }}>
+        <Tickets />
+    </Paper>
+)
+
+const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c: boolean) => void }) => (
+    <AppBar
+        color="primary"
+        enableColorOnDark={true}
+        position="sticky"
+        sx={{
+            bgcolor: 'primary.dark',
+            color: 'white'
+        }}
+    >
+        <Toolbar
+            variant="dense"
+        >
+            <GitHubIcon sx={{ marginRight: 1 }} />
+            <Typography sx={{ flexGrow: 1 }}>
+                GitHub Manager
+            </Typography>
+            <Box>
+                <FormGroup>
+                    <FormControlLabel
+                        control={
+                            <MuiSwitch
+                                color="default"
+                                checked={darkMode}
+                                onChange={e => {
+                                    setDarkMode(e.target.checked ?? false)
+                                }}
+                            />
+                        }
+                        label="Dark Mode"
+                        labelPlacement="start"
+                    />
+                </FormGroup>
+            </Box>
+        </Toolbar>
+    </AppBar>
+)
 
 export default App;

@@ -1,18 +1,30 @@
 import { ChangeCircle, CheckCircle } from '@mui/icons-material'
 import { Avatar, Badge, Tooltip } from '@mui/material'
 import { styled } from '@mui/system'
-import moment from 'moment'
 import { Reviewer as ReviewerType } from '../../../../types/api-types'
-
 
 interface ReviewerProps {
     data: ReviewerType
 }
 
+const fromNow = (date: string) => {
+    const now = new Date();
+    const submittedAt = new Date(date);
+    const diff = Math.abs(now.getTime() - submittedAt.getTime());
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (minutes < 60) return `${minutes} minutes ago`
+    if (hours < 24) return `${hours} hours ago`
+
+    return `${days} days ago`;
+}
+
 export const Reviewer = (props: ReviewerProps) => {
     const reviewState = props.data.state.toLowerCase().replace(/(-|_)/, ' ')
-    const name = props.data.user?.name ?? props.data.user.login
-    const time = moment(props.data.submitted_at).fromNow()
+    const time = fromNow(props.data.submitted_at ?? '')
+    const name = props.data.user.login
 
     return (
         <Tooltip

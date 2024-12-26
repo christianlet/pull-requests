@@ -1,16 +1,14 @@
-import { Factory } from '@christianlet/github-api-client'
+
 import { getAuthenticatedUser } from './get-authenticated-user'
 import { getUserInfo } from './get-user-info'
 import { SessionStorage } from '../local-storage/session-storage'
 import { RestEndpointMethodTypes } from '@octokit/rest'
-import { githubApiConfig } from '../github-api-config'
+import { OctokitClient } from '../../octokit-client'
 
 type GhUser = RestEndpointMethodTypes["users"]["getByUsername"]["response"]['data']
 
 export const getUsers = async () => {
-    const factory = new Factory()
-    const octokit = await factory.generate(githubApiConfig)
-
+    const octokit = await OctokitClient.getInstance()
     const authenticatedUser = await getAuthenticatedUser()
     const userStorage = new SessionStorage<GhUser>('githubUsers')
     const { data } = await octokit.request('GET /user/teams')

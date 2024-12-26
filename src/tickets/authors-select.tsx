@@ -1,4 +1,3 @@
-import React from 'react'
 import { MenuItem, OutlinedInput, Select } from '@mui/material'
 import { useAuthorsHook } from '../hooks/authors-hook'
 import { PersonOutline } from '@mui/icons-material'
@@ -28,7 +27,6 @@ export const AuthorsSelect = (props: AuthorsSelectProps) => {
             displayEmpty={true}
             input={
                 <OutlinedInput
-
                     startAdornment={<PersonOutline sx={{ marginRight: '10px' }} />}
                 />
             }

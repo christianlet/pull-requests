@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../store';
-import { PullRequest, TicketsState } from '../../types/api-types';
+import { PullRequestFull, TicketsState } from '../../types/api-types';
 
 interface PeerReviewState {
     value: null|TicketsState[]
@@ -17,7 +17,7 @@ export const peerReviewSlice = createSlice({
         set: (state, action: PayloadAction<null|TicketsState[]>) => {
             state.value = action.payload
         },
-        update: (state, action: PayloadAction<PullRequest>) => {
+        update: (state, action: PayloadAction<PullRequestFull>) => {
             if(state.value) {
                 const newTickets = [...state.value].map(ticket => {
                     const index = ticket.repos.findIndex(repo => repo.id === action.payload.id)

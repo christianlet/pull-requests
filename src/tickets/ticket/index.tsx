@@ -2,36 +2,34 @@ import { Launch, MoreHoriz } from '@mui/icons-material'
 import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import { useState } from 'react'
-import moment from 'moment'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeMerge, faCodePullRequest, faCopy, faFileText, faProjectDiagram, faTimesCircle, faUserClock, faWrench } from '@fortawesome/free-solid-svg-icons'
+import { faCodeMerge, faCodePullRequest, faCopy, faFileText, faTimesCircle, faUserClock } from '@fortawesome/free-solid-svg-icons'
 import { TicketsState } from '../../types/api-types'
 import { useAppDispatch, useAppSelector } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { requestDevBranch } from '../../utilities/git-api/pulls/request-reviewer'
 import { Repo } from './repo'
-
-const jiraLinkRegex = /(CPENY|LANDO|SPARK|CMS[A-Z0-9]+)-[0-9]+/g
+import { useNavigate } from 'react-router-dom'
 
 interface TicketProps {
     ticket: TicketsState['info']
     data: TicketsState["repos"]
-    openTicketDetail: (action: string) => void
     prType: string
 }
 
 export const Ticket = (props: TicketProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const menuOpen = Boolean(anchorEl)
-    const updated = moment(props.data[props.data.length-1].updated_at)
+    const navigate = useNavigate()
+    const updated = new Date(props.data[props.data.length-1].updated_at)
     const authorData = props.data[props.data.length-1].user
     const theme = useTheme()
     const dispatch = useAppDispatch()
     const user = useAppSelector(state => state.user.value)
     const myPR = user?.login === props.data[0]?.user.login
     const jiraLink = props.ticket.link
-    const devBranchManager = import.meta.env.REACT_APP_DEV_BRANCH_MANAGER
+    const devBranchManager = import.meta.env.VITE_DEV_BRANCH_MANAGER
     const devBranchRequested = props.data.filter(repo =>
         (repo.requested_reviewers?.filter(reviewer => reviewer.login === devBranchManager) ?? []).length > 0
     ).length > 0
@@ -40,11 +38,6 @@ export const Ticket = (props: TicketProps) => {
         setAnchorEl(event.currentTarget)
     )
     const handleMenuClose = () => setAnchorEl(null)
-
-    const openTicketDialog = (action: string) => {
-        handleMenuClose()
-        props.openTicketDetail(action)
-    }
 
     const devBranch = async () => {
         handleMenuClose()
@@ -61,6 +54,14 @@ export const Ticket = (props: TicketProps) => {
                 )
             }
         }
+    }
+
+    const navigateToPage = (tab: string) => {
+        const params = new URLSearchParams({
+            tab
+        })
+
+        navigate(props.data[0].head.ref + `?${params.toString()}`)
     }
 
     return (
@@ -110,7 +111,7 @@ export const Ticket = (props: TicketProps) => {
                             color: 'text.disabled'
                         }}
                     >
-                        {updated.fromNow()} by {authorData.name ?? authorData.login}
+                        {updated.toLocaleString()} by {authorData.name ?? authorData.login}
                     </Typography>
                 </div>
                 <IconButton
@@ -130,7 +131,7 @@ export const Ticket = (props: TicketProps) => {
                     {
                         myPR && (
                             <MenuItem
-                                onClick={() => openTicketDialog('pull-request-description')}
+                                onClick={() => navigateToPage('description')}
                                 divider={true}
                             >
                                 <ListItemIcon>
@@ -141,7 +142,7 @@ export const Ticket = (props: TicketProps) => {
                         )
                     }
                     <MenuItem
-                        onClick={() => openTicketDialog('dev-branch')}
+                        onClick={() => navigateToPage('base-branch')}
                         divider={true}
                     >
                         <ListItemIcon>
@@ -153,9 +154,12 @@ export const Ticket = (props: TicketProps) => {
                         myPR && (
                             <MenuItem
                                 onClick={() => {
-                                    const items = props.data.map(pr => `- ${pr.html_url}`)
+                                    let text = `:alert: Hey team, ${props.ticket.link} is ready for review\n\nPRs:\n`
 
-                                    navigator.clipboard.writeText(items.join("\n"))
+                                    text += props.data.map(pr => `- ${pr.html_url}`).join('\n')
+                                    text += '\n\ncc: @sarmad.ansari @matthew.bentley @rich.trunzo'
+
+                                    navigator.clipboard.writeText(text)
 
                                     handleMenuClose()
                                 }}
@@ -164,14 +168,14 @@ export const Ticket = (props: TicketProps) => {
                                 <ListItemIcon>
                                     <FontAwesomeIcon icon={faCopy} />
                                 </ListItemIcon>
-                                <ListItemText>Copy For Jira Comment</ListItemText>
+                                <ListItemText>Copy For Team Review</ListItemText>
                             </MenuItem>
                         )
                     }
                     {
                         myPR && (
                             <MenuItem
-                                onClick={() => openTicketDialog('merge-prs')}
+                                onClick={() => navigateToPage('merge')}
                                 divider={true}
                             >
                                 <ListItemIcon>
@@ -184,7 +188,7 @@ export const Ticket = (props: TicketProps) => {
                     {
                         myPR && (
                             <MenuItem
-                                onClick={() => openTicketDialog('delete')}
+                                onClick={() => navigateToPage('close')}
                                 divider={true}
                             >
                                 <ListItemIcon>
@@ -195,7 +199,7 @@ export const Ticket = (props: TicketProps) => {
                         )
                     }
                     {
-                        myPR && !devBranchRequested && import.meta.env['REACT_APP_DEV_BRANCH_MANAGER'] &&(
+                        myPR && !devBranchRequested && import.meta.env['VITE_DEV_BRANCH_MANAGER'] &&(
                             <MenuItem
                                 onClick={() => devBranch()}
                                 divider={true}

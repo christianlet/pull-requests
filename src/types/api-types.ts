@@ -1,6 +1,8 @@
 import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods';
 
-export type PullRequest =
+export type PullRequest = RestEndpointMethodTypes["pulls"]["get"]["response"]["data"]
+
+export type PullRequestFull =
     RestEndpointMethodTypes["pulls"]["get"]["response"]["data"]
     & {
         repo: string
@@ -30,5 +32,5 @@ export interface TicketsState {
         number: string
         link: null | string
     }
-    repos: PullRequest[]
+    repos: PullRequestFull[]
 }

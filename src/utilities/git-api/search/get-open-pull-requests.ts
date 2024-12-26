@@ -1,15 +1,13 @@
-import { Factory } from '@christianlet/github-api-client'
-import { githubApiConfig } from '../github-api-config'
+import { OctokitClient } from '../../octokit-client'
+
 
 export const getOpenPullRequests = async (
     reviewing: boolean,
     author: string,
     state: 'open' | 'closed',
-    page: number
+    page: string
 ) => {
-    const factory = new Factory()
-    const octokit = await factory.generate(githubApiConfig)
-
+    const octokit = await OctokitClient.getInstance()
     let query = `author:${author}`
 
     if(reviewing) {
@@ -22,9 +20,9 @@ export const getOpenPullRequests = async (
 
     const { data } = await octokit.search.issuesAndPullRequests({
         q: `${query}+is:pr+is:${state}`,
-        sort: 'updated',
-        per_page: 25,
-        page,
+        sort: 'created',
+        per_page: 50,
+        page: parseInt(page, 10)
     })
 
     return data

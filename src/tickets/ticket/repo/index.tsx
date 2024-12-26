@@ -1,13 +1,12 @@
-import { PullRequest } from '../../../types/api-types'
-import { Badge, BadgeProps, Box, Button, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
+import { PullRequestFull } from '../../../types/api-types'
+import { Box, Button, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import { Launch } from '@mui/icons-material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCodeMerge, faCodePullRequest, faComment, faUserShield } from '@fortawesome/free-solid-svg-icons'
-import { styled } from '@mui/system'
 import { Reviewer } from './reviewer'
 
 interface RepoProps {
-    data: PullRequest
+    data: PullRequestFull
     divider: boolean
 }
 
@@ -15,7 +14,7 @@ export const Repo = (props: RepoProps) => {
     const ticket = props.data
     const comments = ticket.comments + ticket.review_comments
     const releaseManagerRequested = ticket.requested_reviewers?.filter(
-        r => r.login === import.meta.env.REACT_APP_DEV_BRANCH_MANAGER
+        r => r.login === import.meta.env.VITE_DEV_BRANCH_MANAGER
     )
 
     return (
@@ -24,13 +23,17 @@ export const Repo = (props: RepoProps) => {
             className="list-item"
             divider={props.divider}
             dense={true}
+            sx={{
+                borderLeft: '5px solid',
+                borderLeftColor: ticket.mergeable_state === 'dirty' ? 'error.main' : 'transparent',
+            }}
         >
             <ListItemIcon>
                 <IconButton
                     onClick={() => window.open(ticket.html_url, '_blank')}
                     size="small"
                     sx={{
-                        color: 'text.primary'
+                        color: 'text.primary',
                     }}
                 >
                     <Launch fontSize="small" />
@@ -51,7 +54,7 @@ export const Repo = (props: RepoProps) => {
                                 <Tooltip
                                     key="release-branch-manager"
                                     arrow={true}
-                                    title={`Release branch manager ${import.meta.env.REACT_APP_DEV_BRANCH_MANAGER} requested`}
+                                    title={`Release branch manager ${import.meta.env.VITE_DEV_BRANCH_MANAGER} requested`}
                                 >
                                     <FontAwesomeIcon
                                         icon={faUserShield}
@@ -62,24 +65,6 @@ export const Repo = (props: RepoProps) => {
                                         }}
                                     />
                                 </Tooltip>
-                            )
-                        }
-                        {
-                            comments > 0 && (
-                                <StyledBadge
-                                    badgeContent={ticket.comments + ticket.review_comments}
-                                    sx={{
-                                        marginRight: 1
-                                    }}
-                                >
-                                    <FontAwesomeIcon
-                                        icon={faComment}
-                                        style={{
-                                            fontSize: 16,
-                                            marginLeft: 5
-                                        }}
-                                    />
-                                </StyledBadge>
                             )
                         }
                     </>
@@ -116,6 +101,7 @@ export const Repo = (props: RepoProps) => {
                     </Box>
                 }
                 secondaryTypographyProps={{
+                    component: 'div',
                     fontSize: '11px'
                 }}
             />
@@ -132,6 +118,14 @@ export const Repo = (props: RepoProps) => {
                     )
                 }
                 {
+                    comments > 0 && (
+                        <FontAwesomeIcon
+                            icon={faComment}
+                            size="lg"
+                        />
+                    )
+                }
+                {
                     !ticket.draft && ticket.reviewers.map(reviewer => (
                         <Reviewer
                             key={reviewer.id}
@@ -143,13 +137,3 @@ export const Repo = (props: RepoProps) => {
         </ListItem>
     )
 }
-
-const StyledBadge = styled(Badge)<BadgeProps>(({ theme }) => ({
-    '& .MuiBadge-badge': {
-      right: -3,
-      top: '50%',
-      border: `2px solid ${theme.palette.background.paper}`,
-      padding: '0 4px',
-      backgroundColor: theme.palette.mode === 'dark' ? 'gray' : 'lightgray'
-    },
-}));

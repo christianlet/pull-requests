@@ -1,19 +1,20 @@
 import { LoadingButton } from '@mui/lab'
-import { Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
+import { Checkbox, Chip, Divider, List, ListItem, ListItemIcon, ListItemText, Paper } from '@mui/material'
 import React, { useState } from 'react'
 import { LongPressEventType, useLongPress } from 'use-long-press'
-import { ActionDialogProps } from '.'
-import { useAppDispatch } from '../../hooks/redux-hooks'
-import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { closePullRequest } from '../../utilities/git-api/pulls/close-pull-request'
 import './styles.scss'
+import { useBranchPrs } from '../../hooks/branch-prs'
+import { useSearchParams } from 'react-router-dom'
+import { Title } from '@mui/icons-material'
 
-export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
-    const repos = ticket.repos
+export const ClosePulls = () => {
+    const [searchParams] = useSearchParams()
+    const branch = searchParams.get('branch') ?? ''
+    const repos = useBranchPrs(branch)
     const [aip, setAip] = useState(false)
     const [longPressInProgress, setLongPressInProgress] = useState(false)
     const [selectedRepos, setSelectedRepos] = useState<number[]>([])
-    const dispatch = useAppDispatch()
     const longPress = useLongPress(() => handleSubmit(), {
         onStart: () => setLongPressInProgress(true),
         onFinish: () => setLongPressInProgress(false),
@@ -44,13 +45,10 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
 
         await Promise.all(repos.map(async repo => {
             if(selectedRepos.indexOf(repo.id) > -1) {
-                const response = await closePullRequest(repo.owner, repo.repo, repo.number)
+                const response = await closePullRequest(repo.repository.owner.login, repo.repository.name, repo.number)
 
                 if(response) {
-                    dispatch(update({
-                        ...repo,
-                        state: 'closed'
-                    }))
+
                 }
             }
         }))
@@ -59,32 +57,27 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
     }
 
     return (
-        <Dialog
-            open={true}
-            onClose={closeDialog}
-            maxWidth={false}
-            scroll="paper"
-        >
-            <DialogTitle>Repositories Associated with Ticket {ticket.info.number}</DialogTitle>
+        <>
+            <h1>Repositories Associated with branch {branch}</h1>
             <Divider />
-            <DialogTitle>
-                <DialogContentText>This will close the pull request(s) associated with this ticket from the following repositories:</DialogContentText>
-            </DialogTitle>
-            <DialogContent sx={{ bgcolor: 'background.paper' }}>
+            <Title>This will close the pull request(s) associated with this ticket from the following repositories:</Title>
+            <Paper>
                 <List dense={true} sx={{ padding: 0, marginTop: 2 }}>
                     {
-                        ticket.repos.map((repo, i) => (
-                            <ListItem key={repo.id} divider={i < (ticket.repos.length - 1)}>
+                        repos.map((repo, i) => (
+                            <ListItem key={repo.id} divider={i < (repos.length - 1)}>
                                 <Checkbox
                                     id={repo.id.toString()}
                                     checked={selectedRepos.indexOf(repo.id) > -1}
                                     onChange={handleCheckboxChange}
                                 />
                                 <ListItemText
-                                    primary={repo.repo}
-                                    secondary={repo.branches.head}
-                                    secondaryTypographyProps={{
-                                        fontSize: '11px'
+                                    primary={repo.repository.name}
+                                    secondary={repo.node_id}
+                                    slotProps={{
+                                        secondary: {
+                                            fontSize: '11px'
+                                        }
                                     }}
                                 />
                                 <ListItemIcon>
@@ -100,8 +93,8 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
                         ))
                     }
                 </List>
-            </DialogContent>
-            <DialogActions>
+            </Paper>
+            <div>
                 <LoadingButton
                     className={longPressInProgress ? 'pressing' : ''}
                     variant="contained"
@@ -112,7 +105,7 @@ export const ClosePulls = ({ ticket, closeDialog }: ActionDialogProps) => {
                     {...longPress()}
                     fullWidth={true}
                 >Close the pull request{repos.length > 1 && 's'}</LoadingButton>
-            </DialogActions>
-        </Dialog>
+            </div>
+        </>
     )
 }

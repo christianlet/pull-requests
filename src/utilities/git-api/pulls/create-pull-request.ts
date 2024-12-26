@@ -1,10 +1,10 @@
-import { Factory } from '@christianlet/github-api-client'
+
 import { getRepository } from '../repository/get-repository'
-import { githubApiConfig } from '../github-api-config'
+import { OctokitClient } from '../../octokit-client'
 
 export const createPullRequest = async (owner: string, repo: string, branch: string, title: string, description: string) => {
-    const factory = new Factory()
-    const octokit = await factory.generate(githubApiConfig)
+
+    const octokit = await OctokitClient.getInstance()
     const repoInfo = await getRepository(owner, repo)
 
     const response = await octokit.pulls.create({

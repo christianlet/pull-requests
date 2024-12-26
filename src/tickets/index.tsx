@@ -1,20 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { Button, CircularProgress, IconButton, InputAdornment, Pagination, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { CircularProgress, IconButton, InputAdornment, Pagination, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
-import React, { ChangeEvent, useEffect, useMemo, useState } from 'react'
-import { useHistory } from 'react-router'
+import React, { useEffect, useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
 import { peerReviewSlice } from '../redux/reducers/peer-reviews-reducer'
 import { Ticket } from './ticket'
 import { TicketsState } from '../types/api-types'
 import { getPullRequests } from '../utilities/git-api/pulls/get-pull-requests'
-import { ClosePulls } from './action-dialogs/close-pulls'
-import { DevBranch } from './action-dialogs/dev-branch'
-import { MergePRs } from './action-dialogs/merge-prs'
 import { AuthorsSelect } from './authors-select'
 import './styles.scss'
-import { PullRequestDescription } from './action-dialogs/pull-request-description'
+import { useSearchParams } from 'react-router-dom'
 
 
 type DialogActionState = {
@@ -22,42 +18,22 @@ type DialogActionState = {
     ticket: TicketsState
 } | null
 
-type FilterState = {
-    prType: string
-    author: string
-    state: 'open' | 'closed'
-    page: number
-}
-
-export const Tickets = () => {
-    const currentUrlParams = useMemo(() =>
-        new URLSearchParams(window.location.search),
-        []
-    )
+export const Tickets = (props: any) => {
+    const [searchParams, setSearchParams] = useSearchParams()
     const [ticketDialogData, setTicketDialogData] = useState<DialogActionState>(null)
     const [totalPeerReviewCount, setTotalPeerReviewCount] = useState(0)
-    const [filters, setFilters] = useState<FilterState>({
-        prType: currentUrlParams.get('pr_type') ?? 'created',
-        author: currentUrlParams.get('author') ?? '@me',
-        state: (currentUrlParams.get('state') as ('open' | 'closed')) ?? 'open',
-        page: parseInt(currentUrlParams.get('page') ?? '1', 10)
-    })
-    const history = useHistory()
     const [refresh, setRefresh] = useState(new Date().getTime())
+    const author = searchParams.get('author') ?? '@me'
+    const state = searchParams.get('state') as 'open' | 'closed' ?? 'open'
+    const prType = searchParams.get('prType') ?? 'created'
+    const page = searchParams.get('page') ?? '1'
     const dispatch = useAppDispatch()
     const theme = useTheme()
     const tickets = useAppSelector(state => state.peerReviews.value)
 
     useEffect(() => {
-        currentUrlParams.set('pr_type', filters.prType)
-        currentUrlParams.set('author', filters.author)
-        currentUrlParams.set('state', filters.state)
-        currentUrlParams.set('page', filters.page.toString())
-
-        history.push({ search: currentUrlParams.toString() })
-
         getPeerReviews()
-    }, [filters, history, currentUrlParams, refresh])
+    }, [searchParams])
 
     useEffect(() => {
         if(ticketDialogData) {
@@ -76,12 +52,11 @@ export const Tickets = () => {
     const getPeerReviews = async () => {
         dispatch(peerReviewSlice.actions.set(null))
 
-        const reviewing = filters.prType !== 'created'
         const response  = await getPullRequests(
-            filters.author,
-            reviewing,
-            filters.state,
-            filters.page
+            author,
+            prType !== 'created',
+            state,
+            page
         )
 
         setTotalPeerReviewCount(response.totalCount)
@@ -89,47 +64,19 @@ export const Tickets = () => {
     }
 
     const handlePrState = (event: React.MouseEvent<HTMLElement>, value: 'open' | 'closed') => {
-        setFilters({
-            ...filters,
-            state: value
-        })
+        searchParams.set('state', value)
+
+        setSearchParams(searchParams)
     }
 
-    const handleDialogOpen = (action: string, ticket: TicketsState) => setTicketDialogData({
-        action,
-        ticket
-    })
-    const handleDialogClose = () => setTicketDialogData(null)
+    const handleSelect = ({ target: { value } }: SelectChangeEvent) => {
+        searchParams.set('author', value)
 
-    const handleSelect = ({ target: { value } }: SelectChangeEvent) => setFilters({
-        ...filters,
-        author: value
-    })
-
-    const handlePageChange = (event: unknown, page: number) => setFilters({
-        ...filters,
-        page
-    })
+        setSearchParams(searchParams)
+    }
 
     return (
         <>
-            {
-                ticketDialogData?.action === 'delete' && <ClosePulls ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
-            }
-            {
-                ticketDialogData?.action === 'dev-branch' && <DevBranch ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
-            }
-            {
-                ticketDialogData?.action === 'pull-request-description' && <PullRequestDescription ticket={ticketDialogData.ticket} closeDialog={handleDialogClose} />
-            }
-            {
-                ticketDialogData?.action === 'merge-prs' &&
-                    <MergePRs
-                        ticket={ticketDialogData.ticket}
-                        closeDialog={handleDialogClose}
-                        refresh={setRefresh}
-                    />
-            }
             <Box paddingX="50px" paddingY="25px">
                 <Box
                     className="filter-container"
@@ -139,9 +86,9 @@ export const Tickets = () => {
                 >
                     <div>
                         <AuthorsSelect
-                            value={filters.author}
+                            value={author}
                             onChange={handleSelect}
-                            disabled={tickets === null || filters.prType !== 'created'}
+                            disabled={tickets === null || prType !== 'created'}
                         />
                     </div>
                     <div style={{
@@ -153,19 +100,20 @@ export const Tickets = () => {
                             size="small"
                             fullWidth
                             placeholder='Search for Pull Requests'
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment
-                                        position='start'
-                                    >
-                                        <Search />
-                                    </InputAdornment>
-                                )
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment
+                                            position='start'
+                                        >
+                                            <Search />
+                                        </InputAdornment>
+                                    )
+                                }
                             }}
                             style={{
                                 padding: '0 10px',
-                                maxWidth: 700,
-                                display: 'none'
+                                maxWidth: 700
                             }}
                         />
                     </div>
@@ -174,7 +122,7 @@ export const Tickets = () => {
                             <ToggleButtonGroup
                                 size="small"
                                 color="info"
-                                value={filters.state}
+                                value={state}
                                 exclusive={true}
                                 onChange={handlePrState}
                                 disabled={tickets === null}
@@ -205,11 +153,15 @@ export const Tickets = () => {
                 >
                     <Pagination
                         count={Math.ceil((totalPeerReviewCount / 25) || 0)}
-                        page={filters.page}
+                        page={parseInt(page, 10)}
                         color="primary"
                         variant="outlined"
                         shape="rounded"
-                        onChange={handlePageChange}
+                        onChange={(event, page) => {
+                            searchParams.set('page', page.toString())
+
+                            setSearchParams(searchParams)
+                        }}
                     />
                 </Box>
                 <Box sx={{
@@ -238,8 +190,7 @@ export const Tickets = () => {
                                 key={index}
                                 ticket={ticket.info}
                                 data={ticket.repos}
-                                prType={filters.prType}
-                                openTicketDetail={action => handleDialogOpen(action, ticket)}
+                                prType={prType}
                             />
                         ))
                     }

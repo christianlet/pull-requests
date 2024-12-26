@@ -1,10 +1,9 @@
-import { Factory } from '@christianlet/github-api-client'
-import { githubApiConfig } from '../github-api-config'
+
 import { RestEndpointMethodTypes } from '@octokit/rest'
+import { OctokitClient } from '../../octokit-client'
 
 export const getRelease = async (tag: string, arg: RestEndpointMethodTypes["repos"]["listReleases"]["parameters"]) => {
-    const factory = new Factory()
-    const octokit = await factory.generate(githubApiConfig)
+    const octokit = await OctokitClient.getInstance()
     const { data } = await octokit.repos.listReleases(arg)
     let releaseInfo = null
 

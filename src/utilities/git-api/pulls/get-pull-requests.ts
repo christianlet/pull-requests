@@ -19,7 +19,7 @@ export const getPullRequests = async (
     author: string,
     reviewing: boolean,
     state: 'open' | 'closed',
-    page: number
+    page: string
 ): Promise<PullRequestWithPagination> => {
     const { total_count, items: openPullRequests } = await getOpenPullRequests(reviewing, author, state, page)
         .catch(e => ({
@@ -29,13 +29,13 @@ export const getPullRequests = async (
     const prStorage = new SessionStorage('peerReviews')
     const userStorage = new SessionStorage<GhUser>('githubUsers')
     const userInfo = author === '@me' ? await getAuthenticatedUser() : await getUserInfo(author)
-    const results: any = await Promise.all(openPullRequests.map(async (item) => {
+    const results = await Promise.all(openPullRequests.map(async (item) => {
         const repositoryUrl = item.repository_url.split('/')
         const repo = repositoryUrl.pop()
         const owner = repositoryUrl.pop()
         const pullNumber = parseInt(item.pull_request?.url?.split('/').pop() ?? '0', 10)
         let reviewers: any[] = []
-        let newItem: any = item
+        let newItem
 
         try {
             if (repo && owner && pullNumber && item.pull_request?.url ) {
@@ -108,7 +108,7 @@ const groupPeerReviews = (prs: any[]) => {
     prs?.forEach((pr: any) => {
         const ticket  = pr.branches?.head.split('/').pop() ?? ''
         const link = jiraTicket(ticket)
-        const prIndex = groupedPRs.findIndex(repo => repo.ticket === ticket)
+        const prIndex = groupedPRs.findIndex(repo => repo.info.number === ticket)
 
         if(prIndex === -1) {
             groupedPRs.push({
