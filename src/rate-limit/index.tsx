@@ -1,6 +1,5 @@
 import { Tooltip, Typography } from '@mui/material'
 import { Box } from '@mui/system'
-import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useRateLimitHook } from '../hooks/rate-limit'
 import './styles.scss'
@@ -9,20 +8,9 @@ const formatter = new Intl.NumberFormat(undefined, {
     style: 'percent'
 })
 
-export const RateLimit = (props: any) => {
-    const [refreshValue, setRefreshValue] = useState(0)
+export const RateLimit = (props: React.ReactElement['props']) => {
+    const [refreshValue, setRefreshValue] = useState(new Date().getTime())
     const { core, search } = useRateLimitHook(refreshValue)
-
-    moment.relativeTimeThreshold('m', 100)
-    moment.relativeTimeThreshold('ss', 0)
-
-    useEffect(() => {
-        const interval = setTimeout(() => {
-            setRefreshValue(refreshValue+1)
-        }, 60000)
-
-        return () => clearInterval(interval)
-    }, [refreshValue])
 
     return (
         <Box style={{
@@ -37,7 +25,7 @@ export const RateLimit = (props: any) => {
             >
                 <Typography sx={{ color: 'text.primary'}}>Core Rate Limit</Typography>
                 <Tooltip
-                    title={`Resets ${moment.unix(core.reset).fromNow()}`}
+                    title={`Resets ${new Date(core.reset).toLocaleTimeString()}`}
                 >
                     <Typography
                         className={`badge ${badgeColor(core.limit, core.used)}`}
@@ -52,7 +40,7 @@ export const RateLimit = (props: any) => {
             >
                 <Typography sx={{ color: 'text.primary'}}>Search Rate Limit</Typography>
                 <Tooltip
-                    title={`Resets ${moment.unix(search.reset).fromNow()}`}
+                    title={`Resets ${new Date(search.reset).toLocaleTimeString()}`}
                 >
                     <Typography
                         className={`badge ${badgeColor(search.limit, search.used)}`}

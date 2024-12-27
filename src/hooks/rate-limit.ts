@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAppSelector } from './redux-hooks'
+import { OctokitClient } from '../utilities/octokit-client'
 
 export const useRateLimitHook = (refresh: number = 0) => {
     const token = useAppSelector(state => state.token.value)
@@ -35,10 +36,10 @@ export const useRateLimitHook = (refresh: number = 0) => {
     useEffect(() => {
         const getRateLimit = async () => {
             if(token) {
-                // const octokit = await new Oauth(token).generate()
-                // const { data } = await octokit.rateLimit.get()
+                const octokit = await OctokitClient.getInstance()
+                const { data } = await octokit.rateLimit.get()
 
-                // setData(data.resources)
+                setData(data.resources)
             }
         }
 
