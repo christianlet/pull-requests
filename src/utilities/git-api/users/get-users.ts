@@ -11,6 +11,7 @@ export const getUsers = async () => {
     const octokit = await OctokitClient.getInstance()
     const authenticatedUser = await getAuthenticatedUser()
     const userStorage = new SessionStorage<GhUser>('githubUsers')
+    const lastSearched = sessionStorage.getItem('lastSearched')
     const { data } = await octokit.request('GET /user/teams')
     let members: string[] = []
     let users = []
@@ -18,7 +19,11 @@ export const getUsers = async () => {
     for(let team of data) {
         const { data } = await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
             org: team.organization.login,
-            team_slug: team.slug
+            team_slug: team.slug,
+            headers:
+                lastSearched
+                ? { "If-Modified-Since": lastSearched }
+                : {}
         })
 
         for(let member of data) {

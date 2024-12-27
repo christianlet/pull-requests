@@ -2,17 +2,19 @@
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { OctokitClient } from '../../octokit-client'
 
-export const getPullRequest = async (args: RestEndpointMethodTypes["pulls"]["get"]["parameters"], hasLocalStorage = false) => {
+export const getPullRequest = async (args: RestEndpointMethodTypes["pulls"]["get"]["parameters"], lastModifiedSince: string = '') => {
     const octokit = await OctokitClient.getInstance()
-    const lastSearched = sessionStorage.getItem('lastSearched')
 
-    const { data } = await octokit.pulls.get({
+    const res = await octokit.pulls.get({
         ...args,
         headers:
-            lastSearched && hasLocalStorage
-            ? { "If-Modified-Since": lastSearched }
+            lastModifiedSince
+            ? { "If-Modified-Since": lastModifiedSince }
             : {}
     })
 
-    return data
+    console.log(lastModifiedSince, res);
+
+
+    return res
 }

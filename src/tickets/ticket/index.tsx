@@ -6,7 +6,7 @@ import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCodeMerge, faCodePullRequest, faCopy, faFileText, faTimesCircle, faUserClock } from '@fortawesome/free-solid-svg-icons'
 import { TicketsState } from '../../types/api-types'
-import { useAppDispatch, useAppSelector } from '../../hooks/redux-hooks'
+import { useAppDispatch } from '../../hooks/redux-hooks'
 import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { requestDevBranch } from '../../utilities/git-api/pulls/request-reviewer'
 import { Repo } from './repo'
@@ -22,12 +22,12 @@ export const Ticket = (props: TicketProps) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const menuOpen = Boolean(anchorEl)
     const navigate = useNavigate()
-    const updated = new Date(props.data[props.data.length-1].updated_at)
-    const authorData = props.data[props.data.length-1].user
+    const updated = new Date(props.data[0].updated_at)
+    const relativeTime = getRelativeTime(updated)
+    const authorData = props.data[0].user
     const theme = useTheme()
     const dispatch = useAppDispatch()
-    const user = useAppSelector(state => state.user.value)
-    const myPR = user?.login === props.data[0]?.user.login
+    const myPR = true
     const jiraLink = props.ticket.link
     const devBranchManager = import.meta.env.VITE_DEV_BRANCH_MANAGER
     const devBranchRequested = props.data.filter(repo =>
@@ -43,7 +43,7 @@ export const Ticket = (props: TicketProps) => {
         handleMenuClose()
 
         for (const repo of props.data) {
-            const response = await requestDevBranch(repo.owner, repo.repo, repo.number)
+            const response = await requestDevBranch(repo.base.repo.owner.login, repo.base.repo.name, repo.number)
 
             if(response) {
                 dispatch(
@@ -111,7 +111,7 @@ export const Ticket = (props: TicketProps) => {
                             color: 'text.disabled'
                         }}
                     >
-                        {updated.toLocaleString()} by {authorData.name ?? authorData.login}
+                        {relativeTime} by {authorData?.name || authorData?.login}
                     </Typography>
                 </div>
                 <IconButton
@@ -239,4 +239,40 @@ export const Ticket = (props: TicketProps) => {
             </Box>
         </Box>
     )
+}
+
+const getRelativeTime = (date: Date) => {
+    const now = new Date()
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+    let interval = Math.floor(seconds / 31536000)
+
+    if (interval > 1) {
+        return `${interval} years ago`
+    }
+
+    interval = Math.floor(seconds / 2592000)
+
+    if (interval > 1) {
+        return `${interval} months ago`
+    }
+
+    interval = Math.floor(seconds / 86400)
+
+    if (interval > 1) {
+        return `${interval} days ago`
+    }
+
+    interval = Math.floor(seconds / 3600)
+
+    if (interval > 1) {
+        return `${interval} hours ago`
+    }
+
+    interval = Math.floor(seconds / 60)
+
+    if (interval > 1) {
+        return `${interval} minutes ago`
+    }
+
+    return `${Math.floor(seconds)} seconds ago`
 }

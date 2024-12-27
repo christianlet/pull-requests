@@ -1,66 +1,47 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { CircularProgress, IconButton, InputAdornment, Pagination, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { CircularProgress, IconButton, InputAdornment, Pagination, Paper, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../hooks/redux-hooks'
-import { peerReviewSlice } from '../redux/reducers/peer-reviews-reducer'
 import { Ticket } from './ticket'
-import { TicketsState } from '../types/api-types'
 import { getPullRequests } from '../utilities/git-api/pulls/get-pull-requests'
-import { AuthorsSelect } from './authors-select'
 import './styles.scss'
 import { useSearchParams } from 'react-router-dom'
+import { TicketsState } from '../types/api-types'
 
+interface State {
+    items: null | TicketsState[]
+    total: number
+}
 
-type DialogActionState = {
-    action: string
-    ticket: TicketsState
-} | null
-
-export const Tickets = (props: any) => {
+export const Tickets = () => {
     const [searchParams, setSearchParams] = useSearchParams()
-    const [ticketDialogData, setTicketDialogData] = useState<DialogActionState>(null)
-    const [totalPeerReviewCount, setTotalPeerReviewCount] = useState(0)
     const [refresh, setRefresh] = useState(new Date().getTime())
-    const author = searchParams.get('author') ?? '@me'
+    const [tickets, setTickets] = useState<State>({
+        items: null,
+        total: 0
+    })
     const state = searchParams.get('state') as 'open' | 'closed' ?? 'open'
     const prType = searchParams.get('prType') ?? 'created'
     const page = searchParams.get('page') ?? '1'
-    const dispatch = useAppDispatch()
     const theme = useTheme()
-    const tickets = useAppSelector(state => state.peerReviews.value)
 
     useEffect(() => {
         getPeerReviews()
-    }, [searchParams])
-
-    useEffect(() => {
-        if(ticketDialogData) {
-            tickets?.forEach(ticket => {
-                if(ticket.info.number === ticketDialogData.ticket.info.number) {
-                    setTicketDialogData({
-                        ...ticketDialogData,
-                        ticket
-                    })
-                }
-            })
-
-        }
-    }, [tickets])
+    }, [searchParams, refresh])
 
     const getPeerReviews = async () => {
-        dispatch(peerReviewSlice.actions.set(null))
-
         const response  = await getPullRequests(
-            author,
+            '@me',
             prType !== 'created',
             state,
             page
         )
 
-        setTotalPeerReviewCount(response.totalCount)
-        dispatch(peerReviewSlice.actions.set(response.tickets))
+        setTickets({
+            items: response.tickets,
+            total: response.totalCount
+        })
     }
 
     const handlePrState = (event: React.MouseEvent<HTMLElement>, value: 'open' | 'closed') => {
@@ -69,14 +50,8 @@ export const Tickets = (props: any) => {
         setSearchParams(searchParams)
     }
 
-    const handleSelect = ({ target: { value } }: SelectChangeEvent) => {
-        searchParams.set('author', value)
-
-        setSearchParams(searchParams)
-    }
-
     return (
-        <>
+        <Paper>
             <Box paddingX="50px" paddingY="25px">
                 <Box
                     className="filter-container"
@@ -84,16 +59,8 @@ export const Tickets = (props: any) => {
                         bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : 'grey.300'
                     }}
                 >
-                    <div>
-                        <AuthorsSelect
-                            value={author}
-                            onChange={handleSelect}
-                            disabled={tickets === null || prType !== 'created'}
-                        />
-                    </div>
                     <div style={{
-                        flexGrow: 2,
-                        textAlign: 'center'
+                        flexGrow: 1
                     }}>
                         <TextField
                             variant="outlined"
@@ -113,7 +80,7 @@ export const Tickets = (props: any) => {
                             }}
                             style={{
                                 padding: '0 10px',
-                                maxWidth: 700
+                                maxWidth: 300
                             }}
                         />
                     </div>
@@ -152,7 +119,7 @@ export const Tickets = (props: any) => {
                     marginBottom={2}
                 >
                     <Pagination
-                        count={Math.ceil((totalPeerReviewCount / 25) || 0)}
+                        count={Math.ceil((tickets.total / 25) || 0)}
                         page={parseInt(page, 10)}
                         color="primary"
                         variant="outlined"
@@ -171,7 +138,7 @@ export const Tickets = (props: any) => {
                     justifyContent: 'center'
                 }}>
                     {
-                        !tickets
+                        tickets.items === null
                         ? (
                             <Box sx={{
                                 display: 'flex',
@@ -185,7 +152,7 @@ export const Tickets = (props: any) => {
                                 <CircularProgress />
                                 <div style={{ marginTop: '10px' }}>Loading...</div>
                             </Box>
-                        ) : tickets.map((ticket, index) => (
+                        ) : tickets.items.map((ticket, index) => (
                             <Ticket
                                 key={index}
                                 ticket={ticket.info}
@@ -196,6 +163,6 @@ export const Tickets = (props: any) => {
                     }
                 </Box>
             </Box>
-        </>
+        </Paper>
     )
 }

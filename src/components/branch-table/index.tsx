@@ -1,7 +1,9 @@
 import { Box, Checkbox, Chip, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
-import { ErrorOutline, KeyboardBackspace, Launch } from '@mui/icons-material'
+import { ErrorOutline, KeyboardBackspace, Launch, Merge } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import { EditablePullRequest } from '../action/types/editable-pull-request'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCodeMerge } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
     repos: EditablePullRequest[]
@@ -47,24 +49,24 @@ export const BranchTable = ({ repos, ...props }: Props) => {
             <Table size="small">
                 <TableHead>
                     <TableRow>
-                        <TableCell>
-                        <Checkbox
-                            checked={toggleSelect}
-                            disabled={props.aip}
-                            onChange={(event) => {
-                                if(event.target.checked) {
-                                    const allRepos = repos
-                                        .filter(repo => props.hideUnmergeable ? repo.mergeable : true)
-                                        .filter(repo => repo.state === 'open')
+                        <TableCell align="center">
+                            <Checkbox
+                                checked={toggleSelect}
+                                disabled={props.aip}
+                                onChange={(event) => {
+                                    if(event.target.checked) {
+                                        const allRepos = repos
+                                            .filter(repo => props.hideUnmergeable ? repo.mergeable : true)
+                                            .filter(repo => repo.state === 'open')
 
-                                    props.setSelectedRepos(allRepos)
-                                } else {
-                                    props.setSelectedRepos([])
-                                }
+                                        props.setSelectedRepos(allRepos)
+                                    } else {
+                                        props.setSelectedRepos([])
+                                    }
 
-                                setToggleSelect(event.target.checked)
-                            }}
-                        />
+                                    setToggleSelect(event.target.checked)
+                                }}
+                            />
                         </TableCell>
                         <TableCell>Repository</TableCell>
                         <TableCell>Branch</TableCell>
@@ -84,13 +86,18 @@ export const BranchTable = ({ repos, ...props }: Props) => {
 
                             return (
                                 <TableRow key={repo.id}>
-                                    <TableCell>
+                                    <TableCell align="center">
                                         { repo.state === 'open' && (<Checkbox
                                             id={repo.id.toString()}
                                             disabled={props.aip || !isActionable}
                                             checked={selected !== undefined}
                                             onChange={handleCheckboxChange}
                                         />)}
+                                        {
+                                            repo.state !== 'open' && (
+                                                <Typography fontSize={10} color="success">{repo.merged ? 'Merged' : 'Closed'}</Typography>
+                                            )
+                                        }
                                     </TableCell>
                                     <TableCell>
                                         <Box>

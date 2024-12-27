@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { PullRequest } from '../../types/api-types'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
-import { Paper, Divider, Button, Tab, Box } from '@mui/material'
+import { Paper, Divider, Button, Tab, Box, Switch, FormControl, InputLabel, FormControlLabel } from '@mui/material'
 import { BranchTable } from '../branch-table'
 import { getBranchPrs } from '../../utilities/get-branch-prs'
 import { PullRequestDescription } from '../action/pull-request-description'
@@ -18,7 +18,7 @@ export const BranchDetail = () => {
     const branch = route['*'] ?? ''
     const user = useAuthenticatedUser()
     const [searchParams, setSearchParams] = useSearchParams()
-    const [showClosed, setShowClosed] = useState(true)
+    const [showClosed, setShowClosed] = useState(false)
     const [repos, setRepos] = useState<null | false | EditablePullRequest[]>([])
     const [refreshRepos, setRefreshRepos] = useState(new Date().getTime())
     const [selectedRepos, setSelectedRepos] = useState<EditablePullRequest[]>([])
@@ -50,7 +50,23 @@ export const BranchDetail = () => {
 
     return (
         <Paper style={{ margin: '25px 100px', padding: 25 }}>
-            <h1>Branch Details</h1>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between'  }}>
+                <div>
+                    <h1>Branch Details</h1>
+                </div>
+                <div>
+                    <FormControlLabel
+                        label="Show Closed PRs"
+                        control={
+                            <Switch
+                                id="show-switch"
+                                checked={showClosed}
+                                onChange={() => setShowClosed(!showClosed)}
+                            />
+                        }
+                    />
+                </div>
+            </Box>
             <Divider />
             <TabContext value={currentTab}>
                 <TabList onChange={

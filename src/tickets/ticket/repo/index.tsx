@@ -46,7 +46,7 @@ export const Repo = (props: RepoProps) => {
                 primary={
                     <>
                         <Box>
-                            {ticket.repo}
+                            {ticket.base.repo.name}
                         </Box>
                         {
                             releaseManagerRequested &&
@@ -97,7 +97,7 @@ export const Repo = (props: RepoProps) => {
                                 />
                             )
                         }
-                        <span>{ticket.branches?.base}</span>
+                        <span>{ticket.base.ref}</span>
                     </Box>
                 }
                 secondaryTypographyProps={{

@@ -177,7 +177,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                 >Back</Button>
                 <LongPress
                     loading={isSubmitting}
-                    disabled={selectedRepos.length === 0}
+                    disabled={selectedRepos.length === 0 || targetBranch.match(/(\/)$/) !== null}
                     onSubmit={handleSubmit}
                 />
             </div>

@@ -5,14 +5,8 @@ export type PullRequest = RestEndpointMethodTypes["pulls"]["get"]["response"]["d
 export type PullRequestFull =
     RestEndpointMethodTypes["pulls"]["get"]["response"]["data"]
     & {
-        repo: string
-        owner: string
-        user: User
         reviewers: Reviewer[]
-        branches: {
-            base: string
-            head: string
-        }
+        lastModifiedSince?: string
     }
 
 export type User =

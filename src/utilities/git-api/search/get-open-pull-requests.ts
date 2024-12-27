@@ -18,12 +18,12 @@ export const getOpenPullRequests = async (
         }
     }
 
-    const { data } = await octokit.search.issuesAndPullRequests({
+    const res = await octokit.search.issuesAndPullRequests({
         q: `${query}+is:pr+is:${state}`,
-        sort: 'created',
-        per_page: 50,
+        sort: 'updated',
+        per_page: 30,
         page: parseInt(page, 10)
     })
 
-    return data
+    return res.data
 }
