@@ -4,13 +4,13 @@ import { PullRequest } from '../../types/api-types'
 import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Paper, Divider, Button, Tab, Box, Switch, FormControl, InputLabel, FormControlLabel } from '@mui/material'
 import { BranchTable } from '../branch-table'
-import { getBranchPrs } from '../../utilities/get-branch-prs'
 import { PullRequestDescription } from '../action/pull-request-description'
 import { LongPress } from '../long-press'
 import { MergePRs } from '../action/merge-prs'
 import { TargetBranch } from '../action/target-branch'
 import { EditablePullRequest } from '../action/types/editable-pull-request'
 import { useAuthenticatedUser } from '../../hooks/authenticated-user'
+import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
 
 export const BranchDetail = () => {
     const navigate = useNavigate()
@@ -32,9 +32,11 @@ export const BranchDetail = () => {
         setRepos(null)
         setSelectedRepos([])
 
-        getBranchPrs(`org:foxcorp org:foxnews org:${user.login} is:pr ${showClosed ? '' : 'is:open'} head:${branch}`)
+        getPullRequests({
+            q: `org:foxcorp org:foxnews org:${user.login} ${showClosed ? '' : 'is:open'} head:${branch}`
+        })
             .then(data => {
-                setRepos(data)
+                setRepos(data.items)
             })
             .catch(e => {
                 console.error(e)

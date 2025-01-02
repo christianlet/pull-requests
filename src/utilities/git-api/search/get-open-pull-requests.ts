@@ -1,29 +1,17 @@
+import { RestEndpointMethodTypes } from '@octokit/rest'
 import { OctokitClient } from '../../octokit-client'
 
+type SearchOpenPullRequestsParameters = RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"]
 
-export const getOpenPullRequests = async (
-    reviewing: boolean,
-    author: string,
-    state: 'open' | 'closed',
-    page: string
-) => {
+export const searchOpenPullRequests = async (args: SearchOpenPullRequestsParameters): Promise<RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["response"]> => {
     const octokit = await OctokitClient.getInstance()
-    let query = `author:${author}`
-
-    if(reviewing) {
-        query = 'review-requested:@me'
-
-        if(author !== '') {
-            query += `+author:${author}`
-        }
-    }
-
     const res = await octokit.search.issuesAndPullRequests({
-        q: `${query}+is:pr+is:${state}`,
         sort: 'updated',
-        per_page: 30,
-        page: parseInt(page, 10)
+        per_page: 50,
+        page: 1,
+        ...args,
+        q: `${args.q.replace('is:pr', '')}+is:pr`,
     })
 
-    return res.data
+    return res
 }

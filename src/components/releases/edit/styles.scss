@@ -1,0 +1,41 @@
+.MuiFormGroup-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap !important;
+    justify-content: flex-end;
+    align-items: flex-start;
+    margin-bottom: 20px;
+
+    .MuiFormControl-root {
+        width: 100%;
+
+        &:not(:last-child) {
+            margin-right: 10px
+        }
+    }
+
+}
+
+.MuiCardHeader-title {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.tickets-container {
+    background-color: rgba(0,0,0, .5);
+    width: 100%;
+    color: white;
+    padding: 10px;
+
+    > div {
+        &:not(:last-child) {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        > .MuiChip-root:not(:last-child) {
+            margin-right: 10px;
+        }
+    }
+
+}

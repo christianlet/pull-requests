@@ -5,55 +5,18 @@ import { useState } from 'react'
 import { BranchTable } from '../branch-table'
 import { LongPress } from '../long-press'
 import { useNavigate } from 'react-router-dom'
-import { OctokitClient } from '../../utilities/octokit-client'
+import { mergeAndCreatePr } from '../../utilities/merge-and-create-pr'
 
 export const MergePRs = (props: ActionProps) => {
     const navigate = useNavigate()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [createPullRequest, setCreatePullRequest] = useState(true)
-    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
     const submit = async () => {
         setIsSubmitting(true)
 
-        const client = await OctokitClient.getInstance()
-
         for (const repo of props.selectedRepos) {
-            if(!repo.mergeable || repo.mergeable_state !== 'clean') {
-                continue
-            }
-
-            try {
-                await client.pulls.merge({
-                    owner: repo.base.repo.owner.login,
-                    repo: repo.base.repo.name,
-                    pull_number: repo.number,
-                    merge_method: 'merge'
-                })
-
-                if(createPullRequest && repo.base.repo.default_branch !== repo.base.ref) {
-                    const prExists = await client.pulls.list({
-                        owner: repo.base.repo.owner.login,
-                        repo: repo.base.repo.name,
-                        head: `${repo.base.repo.owner.login}:${repo.base.ref}`,
-                        base: repo.base.repo.default_branch
-                    })
-
-                    if(!prExists.data.length) {
-                        await client.pulls.create({
-                            owner: repo.base.repo.owner.login,
-                            repo: repo.base.repo.name,
-                            title: repo.title,
-                            head: repo.base.ref,
-                            base: repo.base.repo.default_branch
-                        })
-                    }
-                }
-            } catch (error) {
-                console.error(error)
-            }
+            await mergeAndCreatePr(repo, createPullRequest)
         }
-
-        await sleep(1000)
 
         setIsSubmitting(false)
         props.setRefreshRepos(new Date().getTime())

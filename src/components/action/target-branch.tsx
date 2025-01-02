@@ -5,7 +5,7 @@ import { BranchTable } from '../branch-table'
 import { ActionProps } from './types/action-props'
 import { useNavigate } from 'react-router-dom'
 import { LongPress } from '../long-press'
-import { OctokitClient } from '../../utilities/octokit-client'
+import { setTargetBranch } from '../../utilities/set-target-branch'
 
 export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
@@ -25,37 +25,9 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
 
         setIsSubmitting(true)
 
-        const octokit = await OctokitClient.getInstance()
-
         for (const repo of selectedRepos) {
             try {
-                const baseBranch = await octokit.repos.getBranch({
-                    owner: repo.base.repo.owner.login,
-                    repo: repo.base.repo.name,
-                    branch: targetBranch
-                }).catch(() => null)
-
-                if(!baseBranch) {
-                    const defaultBranch = await octokit.repos.getBranch({
-                        owner: repo.base.repo.owner.login,
-                        repo: repo.base.repo.name,
-                        branch: repo.base.repo.default_branch
-                    })
-
-                    await octokit.git.createRef({
-                        owner: repo.base.repo.owner.login,
-                        repo: repo.base.repo.name,
-                        ref: `refs/heads/${targetBranch}`,
-                        sha: defaultBranch.data.commit.sha
-                    })
-                }
-
-                await octokit.pulls.update({
-                    owner: repo.base.repo.owner.login,
-                    repo: repo.base.repo.name,
-                    pull_number: repo.number,
-                    base: targetBranch
-                })
+                await setTargetBranch(repo, targetBranch)
             } catch (error) {
                 console.log(error)
             }

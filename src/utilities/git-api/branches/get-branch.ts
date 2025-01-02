@@ -2,7 +2,6 @@ import { OctokitClient } from '../../octokit-client'
 
 
 export const getBranch = async (owner: string, repo: string, branch: string) => {
-
     const octokit = await OctokitClient.getInstance()
 
     let exists = false

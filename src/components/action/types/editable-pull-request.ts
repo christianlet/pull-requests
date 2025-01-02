@@ -1,7 +1,7 @@
-import { PullRequest } from '../../../types/api-types'
+import { PullRequest, PullRequestFull } from '../../../types/api-types'
 
 
-export type EditablePullRequest = PullRequest & {
+export interface EditablePullRequest extends PullRequestFull {
     edits?: {
         target_branch?: string
     }
