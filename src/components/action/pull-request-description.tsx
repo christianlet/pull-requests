@@ -8,6 +8,7 @@ import { OctokitClient } from '../../utilities/octokit-client'
 import { LongPress } from '../long-press'
 import { useNavigate } from 'react-router-dom'
 import { BranchTable } from '../branch-table'
+import { sleep } from '../../utilities/sleep'
 
 export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefreshRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
@@ -93,6 +94,8 @@ export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefres
                 console.error(error)
             }
         }
+
+        await sleep(1000)
 
         setIsSubmitting(false)
         setRefreshRepos(new Date().getTime())

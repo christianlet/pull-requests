@@ -1,5 +1,6 @@
 import { PullRequestFull } from '../types/api-types'
 import { OctokitClient } from './octokit-client'
+import { sleep } from './sleep'
 
 export const mergeAndCreatePr = async (branch: PullRequestFull, createPullRequest = true) => {
     const client = await OctokitClient.getInstance()
@@ -44,5 +45,3 @@ export const mergeAndCreatePr = async (branch: PullRequestFull, createPullReques
 
     return null
 }
-
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
