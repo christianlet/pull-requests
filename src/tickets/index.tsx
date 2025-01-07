@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { CircularProgress, IconButton, InputAdornment, Pagination, Paper, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { CircularProgress, IconButton, InputAdornment, Pagination, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { Ticket } from './ticket'
@@ -32,6 +32,11 @@ export const Tickets = () => {
     }, [searchParams, refresh])
 
     const getPeerReviews = async () => {
+        setTickets({
+            items: null,
+            total: 0
+        })
+
         const response  = await getPullRequests({
             q: `author:@me+is:${state}`,
             page: parseInt(page, 10)
@@ -54,7 +59,7 @@ export const Tickets = () => {
             <Box
                 className="filter-container"
                 sx={{
-                    bgcolor: theme.palette.mode === 'dark' ? 'background.paper' : 'grey.300'
+                    bgcolor: theme.palette.mode === 'dark' ? '#424242' : 'darkgray'
                 }}
             >
                 <div style={{

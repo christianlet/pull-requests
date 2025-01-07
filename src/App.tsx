@@ -9,6 +9,7 @@ import { Tickets } from './tickets'
 import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
 import { Edit } from './components/releases/edit'
+import { amber, blue, green, yellow } from '@mui/material/colors'
 
 function App() {
     const [darkMode, setDarkMode] = useState(true)
@@ -16,7 +17,23 @@ function App() {
     const theme = useMemo(() => {
         return createTheme({
             palette: {
-                mode: darkMode ? 'dark' : 'light'
+                mode: darkMode ? 'dark' : 'light',
+                primary: {
+                    ...blue,
+                    main: blue[500]
+                },
+                secondary: {
+                    ...yellow,
+                    main: yellow['A400']
+                },
+                success: {
+                    ...green,
+                    main: green[500]
+                },
+                warning: {
+                    ...amber,
+                    main: amber['A400']
+                }
             }
         })
     }, [darkMode])
@@ -145,6 +162,7 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                 </Toolbar>
             </AppBar>
             <Paper
+                elevation={2}
                 sx={{
                     position: 'absolute',
                     top: 50,

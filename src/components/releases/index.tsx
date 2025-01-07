@@ -23,7 +23,7 @@ export const Releases = () => {
                     component={NavLink}
                     to="edit"
                     variant='contained'
-                    color='success'
+                    color='secondary'
                     startIcon={<AddTask />}
                 >
                     Create Release

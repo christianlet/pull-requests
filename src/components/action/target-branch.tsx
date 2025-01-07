@@ -45,7 +45,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
         <>
             <Box sx={{ marginBottom: 5 }}>
                 <FormGroup sx={{
-                    marginBottom: 2
+                    marginBottom: 2,
                 }}>
                     <FormControl>
                         <FormLabel>Branch Type</FormLabel>
@@ -53,6 +53,9 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                             defaultValue='personal'
                             onChange={e => setBranchType(e.target.value)}
                             row
+                            sx={{
+                                justifyContent: 'flex-start'
+                            }}
                         >
                             <FormControlLabel value='personal' control={<Radio />} label='Personal' />
                             <FormControlLabel value='release' control={<Radio />} label='Release' />

@@ -143,7 +143,7 @@ export const Ticket = (props: TicketProps) => {
                         )
                     }
                     <MenuItem
-                        onClick={() => navigateToPage('base-branch')}
+                        onClick={() => navigateToPage('target-branch')}
                         divider={true}
                     >
                         <ListItemIcon>

@@ -142,7 +142,7 @@ export const BranchTable = ({ repos, ...props }: Props) => {
                                                         <ErrorOutline fontSize="small" color="warning" />
                                                         <Typography
                                                             fontSize={12}
-                                                            color="orange"
+                                                            color="warning"
                                                             marginLeft={1}
                                                         >Targeting main branch</Typography>
                                                     </div>
