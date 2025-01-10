@@ -1,5 +1,5 @@
 import { Box, Button, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './styles.scss'
 import { BranchTable } from '../branch-table'
 import { ActionProps } from './types/action-props'
@@ -20,6 +20,14 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
 
     const handleSubmit = async () => {
         if(baseBranch === '' || (branchType === 'release' && releaseVersion === '')) {
+            console.log('Invalid branch name')
+            console.log({
+                baseBranch,
+                branchType,
+                releaseVersion
+            })
+
+
             return
         }
 
@@ -40,6 +48,11 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
         setIsSubmitting(false)
         props.setRefreshRepos(new Date().getTime())
     }
+
+    useEffect(() => {
+      setBaseBranch(targetBranch)
+    }, [branchType])
+
 
     return (
         <>
