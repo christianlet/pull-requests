@@ -1,9 +1,7 @@
 import { Box, Checkbox, Chip, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
-import { ErrorOutline, KeyboardBackspace, Launch, Merge } from '@mui/icons-material'
+import { ErrorOutline, KeyboardBackspace, Launch } from '@mui/icons-material'
 import { useEffect, useState } from 'react'
 import { EditablePullRequest } from '../action/types/editable-pull-request'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeMerge } from '@fortawesome/free-solid-svg-icons'
 
 interface Props {
     repos: EditablePullRequest[]

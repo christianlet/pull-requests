@@ -13,8 +13,5 @@ export const getPullRequest = async (args: RestEndpointMethodTypes["pulls"]["get
             : {}
     })
 
-    console.log(lastModifiedSince, res);
-
-
     return res
 }

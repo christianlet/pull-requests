@@ -18,7 +18,6 @@ export const getPullRequestReviews = async (owner: string, repo: string, pullNum
 
     data.forEach(review => {
         const index = filteredReviews
-            .filter(r => r.state === 'CHANGES_REQUESTED' || r.state === 'APPROVED')
             .findIndex(r => r.user?.login === review.user?.login)
 
         if(index === -1) {

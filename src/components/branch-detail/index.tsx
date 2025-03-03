@@ -33,7 +33,7 @@ export const BranchDetail = () => {
         setSelectedRepos([])
 
         getPullRequests({
-            q: `org:foxcorp org:foxnews org:${user.login} ${showClosed ? '' : 'is:open'} head:${branch}`
+            q: `author:@me ${showClosed ? '' : 'is:open'} head:${branch}`
         })
             .then(data => {
                 setRepos(data.items)
