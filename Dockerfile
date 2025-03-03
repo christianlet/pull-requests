@@ -1,12 +1,13 @@
-FROM node:16
-
-ENV NPM_CONFIG_PREFIX=/var/www/.npm-global
-ENV PATH=$PATH:/var/www/.npm-global/bin
+FROM node:20-alpine
 
 WORKDIR /app
 
-RUN npm install -g serverless \
-    npm install -g serverless-offline \
-    npm install -g typescript
+COPY package*.json .
+
+RUN --mount=type=secret,id=npmrc,target=/root/.npmrc npm install
+
+COPY . .
 
 EXPOSE 3000
+
+CMD ["npm", "start"]

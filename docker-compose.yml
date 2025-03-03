@@ -1,51 +1,22 @@
-version: "3.7"
+version: "3"
 services:
   app:
-    image: node:16-custom
-    container_name: github-api-app
-    user: "root"
-    working_dir: /app
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - ./api:/app
+    image: pull-requests:1.0
+    container_name: pull-requests
+    build: .
     ports:
-      - "3000:3000"
-    command: "node --inspect=0.0.0.0 /var/www/.npm-global/bin/serverless offline start --host 0.0.0.0 --httpPort 3000 --stage local --noPrependStageInUrl"
-    networks:
-      - github-api
-  mysql:
-    image: mysql:5.7
-    container_name: github-api-db
-    restart: unless-stopped
-    environment:
-      MYSQL_DATABASE: github-api
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_PASSWORD: app-pass
-      MYSQL_USER: app-pass
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+      - 3000:3000
     volumes:
-      - "mysql-data:/var/lib/mysql:rw"
+      - ./src:/app/src
+      - ./public/assets:/app/public/assets
+      - /app/node_modules
+  mongo:
+    image: mongo
+    restart: always
+    container_name: mongodb
     ports:
-      - 10000:3306
-    networks:
-      - github-api
-
-  nginx:
-    image: nginx:alpine
-    container_name: github-api-nginx
-    restart: unless-stopped
-    ports:
-      - 8888:80
+      - "27017:27017"
     volumes:
-      - ./:/home/node/app
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - github-api
-networks:
-  github-api:
-    name: github-api
-    driver: bridge
+      - data-volume:/data/db # mount the volume, so the data is not lost
 volumes:
-  mysql-data:
+  data-volume:
