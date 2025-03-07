@@ -165,7 +165,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                 selectedRepos={selectedRepos.map(repo => ({
                     ...repo,
                     edits: {
-                        target_branch: baseBranch
+                        target_branch: branchPrefix + baseBranch
                     }
                 }))}
                 aip={isSubmitting}
