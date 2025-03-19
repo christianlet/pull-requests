@@ -1,4 +1,4 @@
-import { Button, Paper, TextField } from '@mui/material'
+import { Button, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
 import './styles.scss'
 import { getCommit } from '../../utilities/git-api/pulls/get-commits'
@@ -9,6 +9,8 @@ import { LongPress } from '../long-press'
 import { useNavigate } from 'react-router-dom'
 import { BranchTable } from '../branch-table'
 import { sleep } from '../../utilities/sleep'
+import { SessionStorage } from '../../utilities/git-api/local-storage/session-storage'
+import { Release } from '../../types/releases/release'
 
 export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefreshRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
@@ -30,14 +32,19 @@ export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefres
         if(isPersonalBranch) {
             message = '## PR Does\n\n'
         } else if (isReleaseBranch) {
+            const releases = new SessionStorage<Release>('releases')
+            const releaseUrl = releases.get(`${team}-${release}`)?.url
+
             message = `## Release\n\n`
 
             if(team) {
-                message += `Team: **${team}**\n`
+                message += `Team: **${team.toUpperCase()}**\n`
             }
 
-            if(release) {
+            if(release && !releaseUrl) {
                 message += `Release: **${release}**\n`
+            } else if(release && releaseUrl) {
+                message += `Release: **[${release}](${releaseUrl})**\n`
             }
         }
 
@@ -117,12 +124,11 @@ export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefres
                     fullWidth={true}
                     margin="normal"
                     multiline={true}
-                    rows={10}
+                    minRows={10}
                     disabled={asyncInProgress}
                     variant="filled"
                     value={body}
                     onChange={e => setBody(e.target.value)}
-
                 />
                 <Button
                     variant="contained"

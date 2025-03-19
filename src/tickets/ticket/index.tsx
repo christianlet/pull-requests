@@ -30,6 +30,7 @@ export const Ticket = (props: TicketProps) => {
     const dispatch = useAppDispatch()
     const myPR = true
     const jiraLink = props.ticket.link
+    // const releaseFound = selectedRepos[0].head.ref.match(/^collab\/(.*)\/release\/(.*)$/)
     const devBranchManager = import.meta.env.VITE_DEV_BRANCH_MANAGER
     const devBranchRequested = props.data.filter(repo =>
         (repo.requested_reviewers?.filter(reviewer => reviewer.login === devBranchManager) ?? []).length > 0

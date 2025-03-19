@@ -1,15 +1,17 @@
 import { Box, Button, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import './styles.scss'
 import { BranchTable } from '../branch-table'
 import { ActionProps } from './types/action-props'
 import { useNavigate } from 'react-router-dom'
-import { LongPress } from '../long-press'
 import { setTargetBranch } from '../../utilities/set-target-branch'
+import { LoadingButton } from '@mui/lab'
+import { SessionStorage } from '../../utilities/git-api/local-storage/session-storage'
+import { Release } from '../../types/releases/release'
 
 export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
-    const [branchType, setBranchType] = useState('personal')
+    const [branchType, setBranchType] = useState('release')
     const [team, setTeam] = useState('cms3')
     const [releaseUrl, setReleaseUrl] = useState('')
     const [baseBranch, setBaseBranch] = useState('')
@@ -21,19 +23,19 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
             ? `collab/${team}/release/`
             : 'collab/'
 
-    const handleSubmit = async () => {
-        if(baseBranch === '') {
-            console.log('Invalid branch name')
-            console.log({
-                baseBranch,
-                branchType
-            })
-
-
-            return
-        }
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
 
         setIsSubmitting(true)
+
+        if(branchType === 'release') {
+            const releaseStorage = new SessionStorage<Release>('releases')
+
+            releaseStorage.store(`${team}-${baseBranch}`, {
+                url: releaseUrl,
+                version: baseBranch
+            })
+        }
 
         const fullBranch = branchPrefix + baseBranch
 
@@ -56,7 +58,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
     }, [branchType])
 
     return (
-        <>
+        <form onSubmit={handleSubmit}>
             <Box sx={{ marginBottom: 5 }}>
                 <FormGroup sx={{
                     marginBottom: 2,
@@ -64,7 +66,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                     <FormControl>
                         <FormLabel>Branch Type</FormLabel>
                         <RadioGroup
-                            defaultValue='personal'
+                            defaultValue='release'
                             onChange={e => setBranchType(e.target.value)}
                             row
                             sx={{
@@ -107,6 +109,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                             margin="normal"
                             variant="outlined"
                             value={releaseUrl}
+                            required={branchType === 'release'}
                             onChange={e => setReleaseUrl(e.target.value)}
                             slotProps={{
                                 input: {
@@ -183,12 +186,15 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                     onClick={() => navigate('/prs')}
                     sx={{ marginRight: 2 }}
                 >Back</Button>
-                <LongPress
+                <LoadingButton
                     loading={isSubmitting}
-                    disabled={selectedRepos.length === 0 || baseBranch === ''}
-                    onSubmit={handleSubmit}
-                />
+                    variant="contained"
+                    color="info"
+                    size="large"
+                    disabled={selectedRepos.length === 0}
+                    type="submit"
+                >Submit</LoadingButton>
             </div>
-        </>
+        </form>
     )
 }

@@ -13,8 +13,12 @@ interface PullRequestWithPagination {
     totalCount: number
 }
 
-export const getPullRequests = async (...args: Parameters<typeof searchOpenPullRequests>): Promise<PullRequestWithPagination> => {
-    const searchResponse = await searchOpenPullRequests(...args).catch(e => null)
+type Arguments = RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] & {
+    hardFetch?: boolean
+}
+
+export const getPullRequests = async (args: Arguments): Promise<PullRequestWithPagination> => {
+    const searchResponse = await searchOpenPullRequests(args).catch(e => null)
 
     if(!searchResponse) {
         return {
@@ -40,7 +44,7 @@ export const getPullRequests = async (...args: Parameters<typeof searchOpenPullR
                     owner,
                     repo,
                     pull_number: pullNumber
-                }, localStorage?.lastModifiedSince || '')
+                }, args.hardFetch ? '' : (localStorage?.lastModifiedSince || ''))
 
                 const reviews = await getPullRequestReviews(owner, repo, pullNumber)
 

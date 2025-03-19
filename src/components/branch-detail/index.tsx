@@ -33,7 +33,8 @@ export const BranchDetail = () => {
         setSelectedRepos([])
 
         getPullRequests({
-            q: `author:@me ${showClosed ? '' : 'is:open'} head:${branch}`
+            q: `author:@me ${showClosed ? '' : 'is:open'} head:${branch}`,
+            hardFetch: true
         })
             .then(data => {
                 setRepos(data.items)

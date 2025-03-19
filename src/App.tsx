@@ -8,7 +8,6 @@ import { OauthCallback } from './components/oauth-callback'
 import { Tickets } from './tickets'
 import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
-import { Edit } from './components/releases/edit'
 import { amber, blue, green, yellow } from '@mui/material/colors'
 
 function App() {
@@ -64,7 +63,7 @@ function App() {
                             path="releases"
                         >
                             <Route index element={<Releases />} />
-                            <Route path="edit/:id?" element={<Edit />} />
+                            {/* <Route path="edit/:id?" element={<Edit />} /> */}
                         </Route>
                         <Route
                             path="oauth-callback"

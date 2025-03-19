@@ -1,9 +1,8 @@
-import { AddTask, Edit, PlayArrow, PlusOne } from '@mui/icons-material'
-import { Box, Button, Card, CardContent, CardHeader, Divider, IconButton, Typography } from '@mui/material'
+import { AddTask, Edit, Launch } from '@mui/icons-material'
+import { Box, Button, Card, CardContent, CardHeader, IconButton, Typography } from '@mui/material'
 import { Link, NavLink } from 'react-router-dom'
 import { SessionStorage } from '../../utilities/git-api/local-storage/session-storage'
 import { Release } from '../../types/releases/release'
-import { Step } from './step'
 
 export const Releases = () => {
     const releaseStorage = new SessionStorage<Release>('releases')
@@ -19,7 +18,7 @@ export const Releases = () => {
                 bgcolor: 'background.paper',
                 padding: 1
             }}>
-                <Button
+                {/* <Button
                     component={NavLink}
                     to="edit"
                     variant='contained'
@@ -27,7 +26,7 @@ export const Releases = () => {
                     startIcon={<AddTask />}
                 >
                     Create Release
-                </Button>
+                </Button> */}
             </Box>
             <Box marginTop={5} sx={{
                 display: 'flex',
@@ -38,7 +37,7 @@ export const Releases = () => {
                 {
                     releases.map(release => (
                         <Card
-                            key={release.fixVersion}
+                            key={release.version}
                             elevation={5}
                             sx={{
                                 width: '500px'
@@ -48,31 +47,39 @@ export const Releases = () => {
                                 title={
                                     <Box display="flex" justifyContent="space-between" alignContent="center">
                                         <div>
-                                            <Typography variant="h5">
-                                                {release.fixVersion}
-                                            </Typography>
+                                            <Box
+                                                display="flex"
+                                                alignItems="center"
+                                            >
+                                                <Typography variant="h5">
+                                                    {release.version}
+                                                </Typography>
+                                                <IconButton
+                                                    onClick={() =>
+                                                        window.open(
+                                                            release.url,
+                                                            '_blank'
+                                                        )
+                                                    }
+                                                    size="small"
+                                                    sx={{
+                                                        color: 'text.primary'
+                                                    }}
+                                                >
+                                                    <Launch fontSize="small" />
+                                                </IconButton>
+                                            </Box>
                                         </div>
-                                        <IconButton
+                                        {/* <IconButton
                                             component={Link}
-                                            to={`edit/${release.fixVersion}`}
+                                            to={`edit/${release.version}`}
                                             size='small'
                                         >
                                             <Edit />
-                                        </IconButton>
+                                        </IconButton> */}
                                     </Box>
                                 }
                             />
-                            <CardContent sx={{ padding: 0, margin: 0, paddingBottom: '0 !important' }}>
-                                {
-                                    Object.entries(release.steps).map(([step, obj], index) => (
-                                        <Step
-                                            key={step}
-                                            {...release}
-                                            step={step as keyof Release['steps']}
-                                        />
-                                    ))
-                                }
-                            </CardContent>
                         </Card>
                     ))
                 }
