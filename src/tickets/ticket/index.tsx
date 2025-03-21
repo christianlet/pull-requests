@@ -11,7 +11,7 @@ import { update } from '../../redux/reducers/peer-reviews-reducer'
 import { requestDevBranch } from '../../utilities/git-api/pulls/request-reviewer'
 import { Repo } from './repo'
 import { useNavigate } from 'react-router-dom'
-import { getRelativeTime } from '../../utilities/relative-date'
+import { fromNow } from '../../utilities/from-now'
 
 interface TicketProps {
     ticket: TicketsState['info']
@@ -24,13 +24,12 @@ export const Ticket = (props: TicketProps) => {
     const menuOpen = Boolean(anchorEl)
     const navigate = useNavigate()
     const updated = new Date(props.data[0].updated_at)
-    const relativeTime = getRelativeTime(updated)
+    const relativeTime = fromNow(updated.toISOString())
     const authorData = props.data[0].user
     const theme = useTheme()
     const dispatch = useAppDispatch()
     const myPR = true
     const jiraLink = props.ticket.link
-    // const releaseFound = selectedRepos[0].head.ref.match(/^collab\/(.*)\/release\/(.*)$/)
     const devBranchManager = import.meta.env.VITE_DEV_BRANCH_MANAGER
     const devBranchRequested = props.data.filter(repo =>
         (repo.requested_reviewers?.filter(reviewer => reviewer.login === devBranchManager) ?? []).length > 0
@@ -88,6 +87,24 @@ export const Ticket = (props: TicketProps) => {
                                 color: 'text.secondary'
                             }}
                         >{props.ticket.number}</Typography>
+                        {
+                            props.ticket.release && (
+                                <IconButton
+                                    onClick={() =>
+                                        window.open(
+                                            props.ticket.release?.url,
+                                            '_blank'
+                                        )
+                                    }
+                                    size="small"
+                                    sx={{
+                                        color: 'text.primary'
+                                    }}
+                                >
+                                    <Launch fontSize="small" />
+                                </IconButton>
+                            )
+                        }
                         {
                             jiraLink && (
                                 <IconButton
