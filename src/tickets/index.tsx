@@ -18,6 +18,8 @@ interface State {
 export const Tickets = () => {
     const [searchParams, setSearchParams] = useSearchParams()
     const [refresh, setRefresh] = useState(new Date().getTime())
+    const [query, setQuery] = useState('')
+    const [inputValue, setInputValue] = useState('')
     const [tickets, setTickets] = useState<State>({
         items: null,
         total: 0
@@ -28,8 +30,22 @@ export const Tickets = () => {
     const theme = useTheme()
 
     useEffect(() => {
+        const handler = setTimeout(() => {
+            setQuery(inputValue)
+        }, 500); // Delay of 500 milliseconds
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [inputValue]);
+
+    const handleChange = (event: any) => {
+        setInputValue(event.target.value);
+    };
+
+    useEffect(() => {
         getPeerReviews()
-    }, [searchParams, refresh])
+    }, [searchParams, refresh, query])
 
     const getPeerReviews = async () => {
         setTickets({
@@ -38,7 +54,7 @@ export const Tickets = () => {
         })
 
         const response  = await getPullRequests({
-            q: `author:@me+is:${state}`,
+            q: `author:@me+is:${state} ${query}`,
             page: parseInt(page, 10)
         })
 
@@ -70,6 +86,7 @@ export const Tickets = () => {
                         size="small"
                         fullWidth
                         placeholder='Search for Pull Requests'
+                        onChange={handleChange}
                         slotProps={{
                             input: {
                                 startAdornment: (
