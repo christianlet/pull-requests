@@ -1,5 +1,5 @@
 import { AddTask, Edit, Launch } from '@mui/icons-material'
-import { Box, Button, Card, CardContent, CardHeader, IconButton, Typography } from '@mui/material'
+import { Box, Button, Card, CardHeader, IconButton, Typography } from '@mui/material'
 import { Link, NavLink } from 'react-router-dom'
 import { SessionStorage } from '../../utilities/git-api/local-storage/session-storage'
 import { Release } from '../../types/releases/release'
