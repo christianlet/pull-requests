@@ -18,15 +18,17 @@ export const Releases = () => {
                 bgcolor: 'background.paper',
                 padding: 1
             }}>
-                {/* <Button
-                    component={NavLink}
-                    to="edit"
-                    variant='contained'
-                    color='secondary'
-                    startIcon={<AddTask />}
-                >
-                    Create Release
-                </Button> */}
+                {
+                    <Button
+                        component={NavLink}
+                        to="edit"
+                        variant='contained'
+                        color='secondary'
+                        startIcon={<AddTask />}
+                    >
+                        Create Release
+                    </Button>
+                }
             </Box>
             <Box marginTop={5} sx={{
                 display: 'flex',
@@ -70,13 +72,15 @@ export const Releases = () => {
                                                 </IconButton>
                                             </Box>
                                         </div>
-                                        {/* <IconButton
-                                            component={Link}
-                                            to={`edit/${release.version}`}
-                                            size='small'
-                                        >
-                                            <Edit />
-                                        </IconButton> */}
+                                        {
+                                            <IconButton
+                                                component={Link}
+                                                to={`edit/${release.team}-${release.version}`}
+                                                size='small'
+                                            >
+                                                <Edit />
+                                            </IconButton>
+                                        }
                                     </Box>
                                 }
                             />

@@ -9,6 +9,7 @@ import { Tickets } from './tickets'
 import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
 import { amber, blue, green, yellow } from '@mui/material/colors'
+import { Edit } from './components/releases/edit'
 
 function App() {
     const [darkMode, setDarkMode] = useState(true)
@@ -63,7 +64,7 @@ function App() {
                             path="releases"
                         >
                             <Route index element={<Releases />} />
-                            {/* <Route path="edit/:id?" element={<Edit />} /> */}
+                            <Route path="edit/:id?" element={<Edit />} />
                         </Route>
                         <Route
                             path="oauth-callback"

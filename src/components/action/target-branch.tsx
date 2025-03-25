@@ -33,7 +33,8 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
 
             releaseStorage.store(`${team}-${baseBranch}`, {
                 url: releaseUrl,
-                version: baseBranch
+                version: baseBranch,
+                team
             })
         }
 
