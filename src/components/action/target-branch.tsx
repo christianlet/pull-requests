@@ -50,6 +50,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
 
         setBaseBranch('')
         setSelectedRepos([])
+        setReleaseUrl('')
         setIsSubmitting(false)
         props.setRefreshRepos(new Date().getTime())
     }
