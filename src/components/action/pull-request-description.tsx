@@ -135,7 +135,7 @@ export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefres
                     color="warning"
                     size="small"
                     onClick={generateDescription}
-                    disabled={asyncInProgress}
+                    disabled={selectedRepos.length === 0 || asyncInProgress}
                 >Generate</Button>
             </div>
             <BranchTable
