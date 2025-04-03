@@ -1,8 +1,8 @@
-version: "3"
+name: pull-requests
+
 services:
   app:
     image: pull-requests:1.0
-    container_name: pull-requests
     build: .
     ports:
       - 3000:3000
@@ -13,7 +13,6 @@ services:
   mongo:
     image: mongo
     restart: always
-    container_name: mongodb
     ports:
       - "27017:27017"
     volumes:

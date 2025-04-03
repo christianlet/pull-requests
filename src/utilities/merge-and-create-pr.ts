@@ -14,7 +14,7 @@ export const mergeAndCreatePr = async (branch: PullRequestFull, createPullReques
             owner: branch.base.repo.owner.login,
             repo: branch.base.repo.name,
             pull_number: branch.number,
-            merge_method: 'merge'
+            merge_method: 'squash'
         })
 
         if(createPullRequest && branch.base.repo.default_branch !== branch.base.ref) {
