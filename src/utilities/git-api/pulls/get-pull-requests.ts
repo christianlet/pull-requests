@@ -1,6 +1,6 @@
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { PullRequestFull, Reviewer } from '../../../types/api-types'
-import { SessionStorage } from '../local-storage/session-storage'
+import { SessionStorage } from '../storage/session-storage'
 import { searchOpenPullRequests } from '../search/get-open-pull-requests'
 import { getUserInfo } from '../users/get-user-info'
 import { getPullRequest } from './get-pull-request'

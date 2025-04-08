@@ -1,7 +1,7 @@
 
 import { getAuthenticatedUser } from './get-authenticated-user'
 import { getUserInfo } from './get-user-info'
-import { SessionStorage } from '../local-storage/session-storage'
+import { SessionStorage } from '../storage/session-storage'
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { OctokitClient } from '../../octokit-client'
 
