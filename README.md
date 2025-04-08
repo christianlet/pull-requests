@@ -4,7 +4,7 @@
 
 Duplicate the `.env.local.sample` file with the name `.env.local`
 
-Add your PAT token to the config key `REACT_APP_PAT`
+Add your PAT token to the config key `VITE_PAT`
 
 Run `npm start` to start up the application
 
@@ -42,5 +42,5 @@ Merges pull requests into the specified target branch. Only allows merge if the 
 
 ### Request Target Branch
 
-The current Fox Spark workflow requires a fix version and collab branch to be specified by our release manager. This action adds the release manager specified by the `REACT_APP_DEV_BRANCH_MANAGER` field in the `.env.local` file. If no branch manager is specified this action will not show up in the menu.
+The current Fox Spark workflow requires a fix version and collab branch to be specified by our release manager. This action adds the release manager specified by the `VITE_DEV_BRANCH_MANAGER` field in the `.env.local` file. If no branch manager is specified this action will not show up in the menu.
 
