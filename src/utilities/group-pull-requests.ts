@@ -1,6 +1,6 @@
 import { PullRequestFull } from '../types/api-types'
 import { Release } from '../types/releases/release'
-import { SessionStorage } from './git-api/local-storage/session-storage'
+import { SessionStorage } from './git-api/storage/session-storage'
 import { jiraTicket } from './jira-ticket'
 
 export const groupPullRequests = (prs: PullRequestFull[]) => {

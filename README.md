@@ -4,7 +4,7 @@
 
 Duplicate the `.env.local.sample` file with the name `.env.local`
 
-Add your PAT token to the config key `REACT_APP_PAT`
+Add your PAT token to the config key `VITE_PAT`
 
 Run `npm start` to start up the application
 
@@ -24,10 +24,6 @@ The information display in the pull requests:
 
 When you are viewing pull requests you have created, you have access to actions that can be run.
 
-### Close Pull Requests
-
-Allows you to close any open pull requests in the grouping you selected.
-
 ### Update Target Branch
 
 Allows you to set all grouped pull requests target branch.
@@ -39,8 +35,3 @@ Copies the grouped pull requests to your local clipboard to be pasted to a Jira 
 ### Merge Pull Requests
 
 Merges pull requests into the specified target branch. Only allows merge if the pull request satisfies all the repo specifications.
-
-### Request Target Branch
-
-The current Fox Spark workflow requires a fix version and collab branch to be specified by our release manager. This action adds the release manager specified by the `REACT_APP_DEV_BRANCH_MANAGER` field in the `.env.local` file. If no branch manager is specified this action will not show up in the menu.
-

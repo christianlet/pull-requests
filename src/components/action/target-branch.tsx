@@ -6,7 +6,7 @@ import { ActionProps } from './types/action-props'
 import { useNavigate } from 'react-router-dom'
 import { setTargetBranch } from '../../utilities/set-target-branch'
 import { LoadingButton } from '@mui/lab'
-import { SessionStorage } from '../../utilities/git-api/local-storage/session-storage'
+import { SessionStorage } from '../../utilities/git-api/storage/session-storage'
 import { Release } from '../../types/releases/release'
 
 export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: ActionProps) => {

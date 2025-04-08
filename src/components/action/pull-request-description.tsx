@@ -9,7 +9,7 @@ import { LongPress } from '../long-press'
 import { useNavigate } from 'react-router-dom'
 import { BranchTable } from '../branch-table'
 import { sleep } from '../../utilities/sleep'
-import { SessionStorage } from '../../utilities/git-api/local-storage/session-storage'
+import { SessionStorage } from '../../utilities/git-api/storage/session-storage'
 import { Release } from '../../types/releases/release'
 
 export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefreshRepos, ...props }: ActionProps) => {

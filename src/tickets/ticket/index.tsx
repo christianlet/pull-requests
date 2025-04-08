@@ -204,32 +204,6 @@ export const Ticket = (props: TicketProps) => {
                             </MenuItem>
                         )
                     }
-                    {
-                        myPR && (
-                            <MenuItem
-                                onClick={() => navigateToPage('close')}
-                                divider={true}
-                            >
-                                <ListItemIcon>
-                                    <FontAwesomeIcon icon={faTimesCircle} />
-                                </ListItemIcon>
-                                <ListItemText>Close Branches</ListItemText>
-                            </MenuItem>
-                        )
-                    }
-                    {
-                        myPR && !devBranchRequested && import.meta.env['VITE_DEV_BRANCH_MANAGER'] &&(
-                            <MenuItem
-                                onClick={() => devBranch()}
-                                divider={true}
-                            >
-                                <ListItemIcon>
-                                    <FontAwesomeIcon icon={faUserClock} />
-                                </ListItemIcon>
-                                <ListItemText>Request Target Branch</ListItemText>
-                            </MenuItem>
-                        )
-                    }
                 </Menu>
             </Box>
             <Divider />

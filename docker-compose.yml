@@ -7,7 +7,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./src:/app/src
+      - ./:/app
       - ./public/assets:/app/public/assets
       - /app/node_modules
   mongo:
