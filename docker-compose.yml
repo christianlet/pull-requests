@@ -12,15 +12,5 @@ services:
       - ./:/app
       - ./public/assets:/app/public/assets
       - /app/node_modules
-  mongo:
-    image: mongo
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=user
-      - MONGO_INITDB_ROOT_PASSWORD=pass
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - data-volume:/data/db # mount the volume, so the data is not lost
 volumes:
   data-volume:

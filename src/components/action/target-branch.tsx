@@ -1,44 +1,77 @@
 import { Box, Button, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from '@mui/material'
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useState } from 'react'
 import './styles.scss'
 import { BranchTable } from '../branch-table'
 import { ActionProps } from './types/action-props'
 import { useNavigate } from 'react-router-dom'
 import { setTargetBranch } from '../../utilities/set-target-branch'
 import { LoadingButton } from '@mui/lab'
-import { SessionStorage } from '../../utilities/git-api/storage/session-storage'
+import { Api } from '../../utilities/git-api/storage/api'
 import { Release } from '../../types/releases/release'
 
 export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
-    const [branchType, setBranchType] = useState('release')
-    const [team, setTeam] = useState('cms3')
-    const [releaseUrl, setReleaseUrl] = useState('')
-    const [baseBranch, setBaseBranch] = useState('')
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [formState, setFormState] = useState({
+        branchType: 'release',
+        team: 'cms3',
+        releaseUrl: '',
+        baseBranch: ''
+    })
+    const [newRelease, setNewRelease] = useState(true)
+    const [aip, setAip] = useState(false)
 
-    const branchPrefix = branchType === 'personal'
+    const branchPrefix = formState.branchType === 'personal'
         ? `personal/${props.user?.login}/`
-        : branchType === 'release'
-            ? `collab/${team}/release/`
+        : formState.branchType === 'release'
+            ? `collab/${formState.team}/release/`
             : 'collab/'
+
+    const setBaseBranch = async (branch: string) => {
+        let newFormState = {
+            ...formState,
+            baseBranch: branch
+        }
+
+        if(!newRelease) {
+            setAip(true)
+
+            const releaseStorage = new Api<Release>('releases')
+            const releaseKey = `${formState.team}-${branch}`
+            const release = await releaseStorage.get(releaseKey)
+
+            if(release) {
+                newFormState = {
+                    ...newFormState,
+                    releaseUrl: release.url
+                }
+            } else {
+                newFormState = {
+                    ...newFormState,
+                    releaseUrl: ''
+                }
+            }
+        }
+
+        setFormState(newFormState)
+        setAip(false)
+    }
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        setIsSubmitting(true)
+        setAip(true)
 
-        if(branchType === 'release') {
-            const releaseStorage = new SessionStorage<Release>('releases')
+        if(formState.branchType === 'release' && newRelease) {
+            const releaseStorage = new Api<Release>('releases')
 
-            releaseStorage.store(`${team}-${baseBranch}`, {
-                url: releaseUrl,
-                version: baseBranch,
-                team
+            releaseStorage.create(`${formState.team}-${formState.baseBranch}`, {
+                url: formState.releaseUrl,
+                version: formState.baseBranch,
+                team: formState.team
             })
         }
 
-        const fullBranch = branchPrefix + baseBranch
+        const fullBranch = branchPrefix + formState.baseBranch
 
         for (const repo of selectedRepos) {
             try {
@@ -48,16 +81,15 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
             }
         }
 
-        setBaseBranch('')
+        setFormState({
+            ...formState,
+            baseBranch: '',
+            releaseUrl: ''
+        })
         setSelectedRepos([])
-        setReleaseUrl('')
-        setIsSubmitting(false)
+        setAip(false)
         props.setRefreshRepos(new Date().getTime())
     }
-
-    useEffect(() => {
-      setBaseBranch('')
-    }, [branchType])
 
     return (
         <form onSubmit={handleSubmit}>
@@ -66,10 +98,14 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                     marginBottom: 2,
                 }}>
                     <FormControl>
-                        <FormLabel>Branch Type</FormLabel>
+                        <FormLabel required>Branch Type</FormLabel>
                         <RadioGroup
                             defaultValue='release'
-                            onChange={e => setBranchType(e.target.value)}
+                            onChange={e => setFormState({
+                                ...formState,
+                                baseBranch: '',
+                                branchType: e.target.value
+                            })}
                             row
                             sx={{
                                 justifyContent: 'flex-start'
@@ -82,59 +118,60 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                     </FormControl>
                 </FormGroup>
                 <FormGroup sx={{
-                    display: branchType === 'release' ? 'block' : 'none',
+                    display: formState.branchType === 'release' ? 'block' : 'none',
                     marginBottom: 2
                 }}>
                     <FormControl sx={{ width: 700 }}>
-                        <InputLabel id="team" required>Team</InputLabel>
-                        <Select
-                            id="team"
-                            label="Team"
-                            value={team}
-                            onChange={e => setTeam(e.target.value as string)}
-                            required={branchType === 'release'}
+                        <FormLabel id="team" required>Team</FormLabel>
+                        <RadioGroup
+                            defaultValue={formState.team}
+                            onChange={e => setFormState({
+                                ...formState,
+                                team: e.target.value as string
+                            })}
+                            row
+                            sx={{
+                                justifyContent: 'flex-start'
+                            }}
                         >
-                            <MenuItem value="cms1">CMS1</MenuItem>
-                            <MenuItem value="cms2">CMS2</MenuItem>
-                            <MenuItem value="cms3">CMS3</MenuItem>
+                            <FormControlLabel value='cms1' control={<Radio />} label='CMS1' />
+                            <FormControlLabel value='cms2' control={<Radio />} label='CMS2' />
+                            <FormControlLabel value='cms3' control={<Radio />} label='CMS3' />
+                        </RadioGroup>
+                    </FormControl>
+                </FormGroup>
+                <FormGroup row sx={{
+                    display: formState.branchType === 'release' ? 'flex' : 'none',
+                    alignItems: 'center',
+                    marginBottom: 2
+                }}>
+                    <FormControl>
+                        <InputLabel id="newRelease">New Release</InputLabel>
+                        <Select
+                            id="newRelease"
+                            label="New Release"
+                            value={newRelease ? 'yes' : 'no'}
+                            onChange={e => setNewRelease(e.target.value === 'yes')}
+                            sx={{
+                                marginBottom: '-8px',
+                                width: 250
+                            }}
+                        >
+                            <MenuItem value="yes">Yes</MenuItem>
+                            <MenuItem value="no">No</MenuItem>
                         </Select>
                     </FormControl>
-                </FormGroup>
-                <FormGroup sx={{
-                    display: branchType === 'release' ? 'block' : 'none',
-                    marginBottom: 2
-                }}>
-                    <FormControl sx={{ width: 700 }}>
-                        <TextField
-                            label="Release URL"
-                            fullWidth={true}
-                            margin="normal"
-                            variant="outlined"
-                            value={releaseUrl}
-                            required={branchType === 'release'}
-                            onChange={e => setReleaseUrl(e.target.value)}
-                            slotProps={{
-                                input: {
-                                    placeholder: 'ex: https://teamfox.atlassian.net/projects/CMS3/versions/24006'
-                                }
-                            }}
-                        />
-                    </FormControl>
-                </FormGroup>
-                <FormGroup sx={{
-                    display: branchType === 'release' ? 'block' : 'none',
-                    marginBottom: 2
-                }}>
-                    <FormControl sx={{ width: 250 }}>
+                    <FormControl>
                         <TextField
                             label="Release Version"
                             fullWidth={true}
                             margin="normal"
                             variant="outlined"
-                            value={baseBranch}
-                            error={baseBranch !== '' && baseBranch.match(/^[0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3})?$/) === null}
+                            autoComplete='off'
+                            value={formState.baseBranch}
+                            error={formState.baseBranch !== '' && formState.baseBranch.match(/^[0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3})?$/) === null}
                             onChange={e => setBaseBranch(e.target.value)}
-                            required={branchType === 'release'}
+                            required={formState.branchType === 'release'}
                             slotProps={{
                                 input: {
                                     placeholder: '1.0.0'
@@ -143,18 +180,47 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                         />
                     </FormControl>
                 </FormGroup>
-                <FormGroup sx={{ width: 700 }}>
+                <FormGroup sx={{
+                    display: formState.branchType === 'release' ? 'block' : 'none',
+                    marginBottom: 2
+                }}>
+                    <FormControl>
+                        <TextField
+                            label="Release URL"
+                            fullWidth={true}
+                            margin="normal"
+                            variant="outlined"
+                            autoComplete='off'
+                            value={formState.releaseUrl}
+                            disabled={!newRelease}
+                            required={formState.branchType === 'release'}
+                            onChange={e => setFormState({
+                                ...formState,
+                                releaseUrl: e.target.value as string
+                            })}
+                            slotProps={{
+                                input: {
+                                    placeholder: 'ex: https://teamfox.atlassian.net/projects/CMS3/versions/24006'
+                                }
+                            }}
+                        />
+                    </FormControl>
+                </FormGroup>
+                <FormGroup>
                     <FormControl>
                         <TextField
                             label="Target Branch"
                             fullWidth={true}
                             margin="normal"
                             variant="outlined"
-                            value={baseBranch}
-                            error={branchType !== 'release' && baseBranch !== '' && baseBranch.match(/^[A-Za-z0-9_-]+$/) === null}
-                            onChange={e => setBaseBranch(e.target.value)}
+                            value={formState.baseBranch}
+                            error={formState.branchType !== 'release' && formState.baseBranch !== '' && formState.baseBranch.match(/^[A-Za-z0-9_-]+$/) === null}
+                            onChange={e => setFormState({
+                                ...formState,
+                                baseBranch: e.target.value
+                            })}
                             required
-                            disabled={branchType === 'release'}
+                            disabled={formState.branchType === 'release'}
                             slotProps={{
                                 input: {
                                     startAdornment: <InputAdornment position="start">{branchPrefix}</InputAdornment>
@@ -170,10 +236,10 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                 selectedRepos={selectedRepos.map(repo => ({
                     ...repo,
                     edits: {
-                        target_branch: branchPrefix + baseBranch
+                        target_branch: branchPrefix + formState.baseBranch
                     }
                 }))}
-                aip={isSubmitting}
+                aip={aip}
                 setSelectedRepos={setSelectedRepos}
             />
             <div style={{
@@ -184,12 +250,12 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                 <Button
                     color="error"
                     variant="outlined"
-                    disabled={isSubmitting}
+                    disabled={aip}
                     onClick={() => navigate('/prs')}
                     sx={{ marginRight: 2 }}
                 >Back</Button>
                 <LoadingButton
-                    loading={isSubmitting}
+                    loading={aip}
                     variant="contained"
                     color="info"
                     size="large"

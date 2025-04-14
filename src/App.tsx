@@ -10,6 +10,9 @@ import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
 import { amber, blue, green, yellow } from '@mui/material/colors'
 import { Edit } from './components/releases/edit'
+import { OctokitClient } from './utilities/octokit-client'
+import { octokitSlice } from './redux/reducers/octokit-reducer'
+import { useAppDispatch, useAppSelector } from './hooks/redux-hooks'
 
 function App() {
     const [darkMode, setDarkMode] = useState(true)
@@ -82,6 +85,15 @@ function App() {
 }
 
 const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c: boolean) => void }) => {
+    const dispatch = useAppDispatch()
+    const client = useAppSelector(state => state.octokit.value)
+
+    useEffect(() => {
+        OctokitClient.getInstance().then((octo) => {
+            dispatch(octokitSlice.actions.set(octo))
+        })
+    }, [dispatch])
+
     return (
         <Box>
             <AppBar
@@ -173,7 +185,7 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                     overflow: 'auto'
                 }}
             >
-                <Outlet />
+                { client ? <Outlet /> : <div>No auth</div> }
             </Paper>
         </Box>
     )

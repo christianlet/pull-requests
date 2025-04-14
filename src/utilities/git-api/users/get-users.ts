@@ -1,7 +1,7 @@
 
 import { getAuthenticatedUser } from './get-authenticated-user'
 import { getUserInfo } from './get-user-info'
-import { SessionStorage } from '../storage/session-storage'
+import { Api } from '../storage/api'
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { OctokitClient } from '../../octokit-client'
 
@@ -10,7 +10,7 @@ type GhUser = RestEndpointMethodTypes["users"]["getByUsername"]["response"]['dat
 export const getUsers = async () => {
     const octokit = await OctokitClient.getInstance()
     const authenticatedUser = await getAuthenticatedUser()
-    const userStorage = new SessionStorage<GhUser>('githubUsers')
+    const userStorage = new Api<GhUser>('users')
     const lastSearched = sessionStorage.getItem('lastSearched')
     const { data } = await octokit.request('GET /user/teams')
     let members: string[] = []
@@ -30,18 +30,20 @@ export const getUsers = async () => {
             if(!members.includes(member.login)) {
                 members.push(member.login)
 
-                let user
+                let user = await userStorage.get(member.login)
 
-                if(!userStorage.get(member.login)) {
+                if(!user) {
                     if(member.login === authenticatedUser.login) {
                         user = authenticatedUser
                     } else {
                         user = await getUserInfo(member.login)
                     }
 
-                    userStorage.store(user.login, user)
-                } else {
-                    user = userStorage.get(member.login)!
+                    userStorage.create(user.login, user)
+                }
+
+                if(!user) {
+                    return null
                 }
 
                 users.push({

@@ -1,6 +1,6 @@
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { PullRequestFull, Reviewer } from '../../../types/api-types'
-import { SessionStorage } from '../storage/session-storage'
+import { Api } from '../storage/api'
 import { searchOpenPullRequests } from '../search/get-open-pull-requests'
 import { getUserInfo } from '../users/get-user-info'
 import { getPullRequest } from './get-pull-request'
@@ -27,8 +27,8 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
         }
     }
 
-    const prStorage = new SessionStorage<PullRequestFull>('peerReviews')
-    const userStorage = new SessionStorage<GhUser>('githubUsers')
+    const prStorage = new Api<PullRequestFull>('pull-requests')
+    const userStorage = new Api<GhUser>('users')
     const results = await Promise.all(searchResponse.data.items.map(async (item) => {
         const repositoryUrl = item.repository_url.split('/')
         const repo = repositoryUrl.pop()
@@ -39,7 +39,7 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
 
         try {
             if (repo && owner && pullNumber && item.pull_request?.url ) {
-                const localStorage = prStorage.get(item.id)
+                const localStorage = await prStorage.get(item.id)
                 const { headers, data } = await getPullRequest({
                     owner,
                     repo,
@@ -51,12 +51,12 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
                 reviewers = await Promise.all(reviews
                     .filter(r => r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED')
                     .map(async r => {
-                        let user = userStorage.get(r.user?.login ?? '')
+                        let user = await userStorage.get(r.user?.login ?? '')
 
                         if(!user) {
                             user = await getUserInfo(r.user?.login ?? '')
 
-                            userStorage.store(user.login, user)
+                            userStorage.create(user.login, user)
                         }
 
                         return {
@@ -71,7 +71,7 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
                     reviewers
                 }
 
-                prStorage.store(item.id, newItem)
+                prStorage.create(item.id, newItem)
             }
         } catch (error: any) {
             if(error.status === 304) {

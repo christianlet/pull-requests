@@ -5,12 +5,12 @@ import { getCommit } from '../../utilities/git-api/pulls/get-commits'
 import { jiraTicket } from '../../utilities/jira-ticket'
 import { ActionProps } from './types/action-props'
 import { OctokitClient } from '../../utilities/octokit-client'
-import { LongPress } from '../long-press'
 import { useNavigate } from 'react-router-dom'
 import { BranchTable } from '../branch-table'
 import { sleep } from '../../utilities/sleep'
-import { SessionStorage } from '../../utilities/git-api/storage/session-storage'
+import { Api } from '../../utilities/git-api/storage/api'
 import { Release } from '../../types/releases/release'
+import { LoadingButton } from '@mui/lab'
 
 export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefreshRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
@@ -32,8 +32,9 @@ export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefres
         if(isPersonalBranch) {
             message = '## PR Does\n\n'
         } else if (isReleaseBranch) {
-            const releases = new SessionStorage<Release>('releases')
-            const releaseUrl = releases.get(`${team}-${release}`)?.url
+            const releases = new Api<Release>('releases')
+            const releaseData = await releases.get(`${team}-${release}`)
+            const releaseUrl = releaseData?.url
 
             message = `## Release\n\n`
 
@@ -157,11 +158,15 @@ export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefres
                     onClick={() => navigate('/prs')}
                     sx={{ marginRight: 2 }}
                 >Back</Button>
-                <LongPress
+                <LoadingButton
                     loading={isSubmitting}
+                    variant="contained"
+                    color="info"
+                    size="large"
                     disabled={selectedRepos.length === 0}
-                    onSubmit={submit}
-                />
+                    onClick={submit}
+                    type="button"
+                >Submit</LoadingButton>
             </div>
         </div>
     )

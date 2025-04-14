@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import tokenReducer from './redux/reducers/token-reducer';
 import peerReviewsReducer from './redux/reducers/peer-reviews-reducer';
 import userReducer from './redux/reducers/user-reducer';
+import octokitReducer from './redux/reducers/octokit-reducer';
 
 export const store = configureStore({
     reducer: {
         peerReviews: peerReviewsReducer,
         user: userReducer,
-        token: tokenReducer
+        token: tokenReducer,
+        octokit: octokitReducer
     }
 })
 
