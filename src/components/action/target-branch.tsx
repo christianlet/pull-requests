@@ -1,5 +1,5 @@
-import { Box, Button, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from '@mui/material'
-import { FormEvent, useState } from 'react'
+import { Box, Button, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from '@mui/material'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 import './styles.scss'
 import { BranchTable } from '../branch-table'
 import { ActionProps } from './types/action-props'
@@ -9,15 +9,30 @@ import { LoadingButton } from '@mui/lab'
 import { Api } from '../../utilities/git-api/storage/api'
 import { Release } from '../../types/releases/release'
 
+const releaseTeamChipColors = (team: string) => {
+    switch (team) {
+        case 'cms1':
+            return 'warning'
+        case 'cms2':
+            return 'info'
+    }
+
+    return 'success'
+}
+
+const DEFAULT_TEAM = 'cms3'
+
 export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
+    const releaseStorage = useMemo(() => new Api<Release>('releases'), [])
     const [formState, setFormState] = useState({
         branchType: 'release',
-        team: 'cms3',
+        team: DEFAULT_TEAM,
         releaseUrl: '',
         baseBranch: ''
     })
     const [newRelease, setNewRelease] = useState(true)
+    const [existingReleases, setExistingReleases] = useState<Release[]>([])
     const [aip, setAip] = useState(false)
 
     const branchPrefix = formState.branchType === 'personal'
@@ -62,9 +77,10 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
         setAip(true)
 
         if(formState.branchType === 'release' && newRelease) {
-            const releaseStorage = new Api<Release>('releases')
+            const id = `${formState.team}-${formState.baseBranch}`
 
-            releaseStorage.create(`${formState.team}-${formState.baseBranch}`, {
+            releaseStorage.create(id, {
+                id,
                 url: formState.releaseUrl,
                 version: formState.baseBranch,
                 team: formState.team
@@ -91,10 +107,26 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
         props.setRefreshRepos(new Date().getTime())
     }
 
+    useEffect(() => {
+        if(!newRelease) {
+            releaseStorage.getAll().then(({ items }) => {
+                const sortedItems = items.sort((a, b) => a.id.localeCompare(b.id))
+                setExistingReleases(sortedItems)
+            })
+        }
+    }, [newRelease, releaseStorage])
+
+    useEffect(() => {
+        if (formState.branchType !== 'release') {
+            setNewRelease(true)
+        }
+    }, [formState.branchType])
+
     return (
         <form onSubmit={handleSubmit}>
             <Box sx={{ marginBottom: 5 }}>
-                <FormGroup sx={{
+                <FormGroup row sx={{
+                    display: 'flex',
                     marginBottom: 2,
                 }}>
                     <FormControl>
@@ -104,6 +136,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                             onChange={e => setFormState({
                                 ...formState,
                                 baseBranch: '',
+                                team: DEFAULT_TEAM,
                                 branchType: e.target.value
                             })}
                             row
@@ -116,15 +149,15 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                             <FormControlLabel value='collaboration' control={<Radio />} label='Collaboration' />
                         </RadioGroup>
                     </FormControl>
-                </FormGroup>
-                <FormGroup sx={{
-                    display: formState.branchType === 'release' ? 'block' : 'none',
-                    marginBottom: 2
-                }}>
-                    <FormControl sx={{ width: 700 }}>
+                    <FormControl
+                        disabled={!newRelease}
+                        sx={{
+                            display: formState.branchType === 'release' ? 'block' : 'none',
+                        }}
+                    >
                         <FormLabel id="team" required>Team</FormLabel>
                         <RadioGroup
-                            defaultValue={formState.team}
+                            value={formState.team}
                             onChange={e => setFormState({
                                 ...formState,
                                 team: e.target.value as string
@@ -143,41 +176,95 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                 <FormGroup row sx={{
                     display: formState.branchType === 'release' ? 'flex' : 'none',
                     alignItems: 'center',
-                    marginBottom: 2
+                    marginBottom: 2,
+                    height: '95px'
                 }}>
-                    <FormControl>
+                    <FormControl sx={{
+                        width: '250px !important',
+                        paddingRight: '5px'
+                    }}>
                         <InputLabel id="newRelease">New Release</InputLabel>
                         <Select
                             id="newRelease"
                             label="New Release"
                             value={newRelease ? 'yes' : 'no'}
-                            onChange={e => setNewRelease(e.target.value === 'yes')}
+                            onChange={e => {
+                                setNewRelease(e.target.value === 'yes')
+                                setFormState({
+                                    ...formState,
+                                    baseBranch: '',
+                                    team: DEFAULT_TEAM
+                                })
+                            }}
                             sx={{
-                                marginBottom: '-8px',
-                                width: 250
+                                marginBottom: newRelease ? '-8px' : 0
                             }}
                         >
                             <MenuItem value="yes">Yes</MenuItem>
                             <MenuItem value="no">No</MenuItem>
                         </Select>
                     </FormControl>
-                    <FormControl>
-                        <TextField
-                            label="Release Version"
-                            fullWidth={true}
-                            margin="normal"
-                            variant="outlined"
-                            autoComplete='off'
-                            value={formState.baseBranch}
-                            error={formState.baseBranch !== '' && formState.baseBranch.match(/^[0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3})?$/) === null}
-                            onChange={e => setBaseBranch(e.target.value)}
-                            required={formState.branchType === 'release'}
-                            slotProps={{
-                                input: {
-                                    placeholder: '1.0.0'
-                                }
-                            }}
-                        />
+                    <FormControl fullWidth>
+                        {
+                            newRelease ? (
+                                <TextField
+                                    label="Release Version"
+                                    fullWidth={true}
+                                    margin="normal"
+                                    variant="outlined"
+                                    autoComplete='off'
+                                    value={formState.baseBranch}
+                                    error={formState.baseBranch !== '' && formState.baseBranch.match(/^[0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3})?$/) === null}
+                                    onChange={e => setBaseBranch(e.target.value)}
+                                    required={formState.branchType === 'release'}
+                                    slotProps={{
+                                        input: {
+                                            placeholder: '1.0.0'
+                                        }
+                                    }}
+                                />
+                            ) : (
+                                <>
+                                    <InputLabel
+                                        id="existingRelease"
+                                        required={formState.branchType === 'release'}
+                                    >Release</InputLabel>
+                                    <Select
+                                        id="existingRelease"
+                                        label="Release"
+                                        value={`${formState.team}-${formState.baseBranch}`}
+                                        required={formState.branchType === 'release'}
+                                        onChange={e => {
+                                            const [team, version] = e.target.value.split('-')
+
+                                            setFormState({
+                                                ...formState,
+                                                team,
+                                                baseBranch: version
+                                            })
+                                        }}
+                                    >
+                                        {
+                                            existingReleases.map((item, i) => (
+                                                <MenuItem value={item.id}>
+                                                    <>
+                                                        <Chip
+                                                            label={item.team.toUpperCase()}
+                                                            size="small"
+                                                            color={releaseTeamChipColors(item.team)}
+                                                            sx={{
+                                                                marginRight: 2
+                                                            }}
+                                                        />
+                                                    </>
+                                                    {item.version}
+                                                </MenuItem>
+                                            ))
+                                        }
+                                    </Select>
+                                </>
+                            )
+                        }
                     </FormControl>
                 </FormGroup>
                 <FormGroup sx={{

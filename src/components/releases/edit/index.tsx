@@ -19,6 +19,7 @@ export const Edit = () => {
         message: ''
     })
     const [formData, setFormData] = useState<Release>({
+        id: '',
         team: '',
         url: '',
         version: ''
@@ -28,7 +29,10 @@ export const Edit = () => {
         const releaseStorage = new Api<Release>('releases')
         const releaseId = `${formData.team}-${formData.version}`
 
-        releaseStorage[id ? 'update' : 'create'](releaseId, formData)
+        await releaseStorage[id ? 'update' : 'create'](releaseId, {
+            ...formData,
+            id: releaseId
+        })
 
         setFeedback({
             severity: 'success',

@@ -16,10 +16,7 @@ export class Api<Type extends Record<string, unknown> = Record<string, unknown>>
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                id: key,
-                ...data
-            })
+            body: JSON.stringify(data)
         })
 
         console.log(await response.json())
