@@ -1,9 +1,10 @@
 import { AddTask, Edit, Launch } from '@mui/icons-material'
-import { Box, Button, Card, CardHeader, IconButton, Typography } from '@mui/material'
+import { Box, Button, Card, CardHeader, Chip, IconButton, Typography } from '@mui/material'
 import { Link, NavLink } from 'react-router-dom'
 import { Api } from '../../utilities/git-api/storage/api'
 import { Release } from '../../types/releases/release'
 import { useEffect, useState } from 'react'
+import { getTeam } from '../../utilities/teams'
 
 export const Releases = () => {
     const [releases, setReleases] = useState<Release[]>([])
@@ -61,6 +62,14 @@ export const Releases = () => {
                                                 display="flex"
                                                 alignItems="center"
                                             >
+                                                <Chip
+                                                    label={release.team.toUpperCase()}
+                                                    sx={{
+                                                        marginRight: 1,
+                                                        backgroundColor: getTeam(release.team)?.color ?? 'gray',
+                                                        color: 'black'
+                                                    }}
+                                                />
                                                 <Typography variant="h5">
                                                     {release.version}
                                                 </Typography>

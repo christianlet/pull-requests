@@ -8,16 +8,12 @@ import { setTargetBranch } from '../../utilities/set-target-branch'
 import { LoadingButton } from '@mui/lab'
 import { Api } from '../../utilities/git-api/storage/api'
 import { Release } from '../../types/releases/release'
+import { getTeam } from '../../utilities/teams'
 
-const releaseTeamChipColors = (team: string) => {
-    switch (team) {
-        case 'cms1':
-            return 'warning'
-        case 'cms2':
-            return 'info'
-    }
+const releaseTeamChipColors = (context: string) => {
+    const team = getTeam(context)
 
-    return 'success'
+    return team?.color ?? 'gray'
 }
 
 const DEFAULT_TEAM = 'cms3'
@@ -235,12 +231,17 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                                         value={`${formState.team}-${formState.baseBranch}`}
                                         required={formState.branchType === 'release'}
                                         onChange={e => {
-                                            const [team, version] = e.target.value.split('-')
+                                            const release = existingReleases.find(er => er.id === e.target.value)
+
+                                            if(!release) {
+                                                return
+                                            }
 
                                             setFormState({
                                                 ...formState,
-                                                team,
-                                                baseBranch: version
+                                                team: release.team,
+                                                baseBranch: release.version,
+                                                releaseUrl: release.url
                                             })
                                         }}
                                     >
@@ -251,9 +252,10 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                                                         <Chip
                                                             label={item.team.toUpperCase()}
                                                             size="small"
-                                                            color={releaseTeamChipColors(item.team)}
                                                             sx={{
-                                                                marginRight: 2
+                                                                marginRight: 2,
+                                                                backgroundColor: releaseTeamChipColors(item.team),
+                                                                color: 'black'
                                                             }}
                                                         />
                                                     </>

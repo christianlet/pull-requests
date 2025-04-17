@@ -139,7 +139,7 @@ export const Tickets = () => {
                 marginBottom={2}
             >
                 <Pagination
-                    count={Math.ceil((tickets.total / 25) || 0)}
+                    count={Math.ceil((tickets.total / 50) || 0)}
                     page={parseInt(page, 10)}
                     color="primary"
                     variant="outlined"

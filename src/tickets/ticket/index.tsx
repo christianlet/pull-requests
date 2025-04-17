@@ -88,7 +88,7 @@ export const Ticket = (props: TicketProps) => {
                             }}
                         >{props.ticket.number}</Typography>
                         {
-                            props.ticket.release && (
+                            props.ticket.release?.url && (
                                 <IconButton
                                     onClick={() =>
                                         window.open(
