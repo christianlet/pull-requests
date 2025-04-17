@@ -8,6 +8,8 @@ npm i
 echo -e "Building app"
 npm run build
 
+git submodule update --recursive
+
 cd pull-requests-api
 
 echo -e "Installing api packages"
