@@ -2,7 +2,6 @@ name: pull-requests
 
 services:
   app:
-    image: pull-requests:1.0
     build: .
     environment:
       - MONGO_URI=mongodb://mongo:27017
@@ -13,12 +12,12 @@ services:
     depends_on:
       - api
     volumes:
-      - ./:/app
+      - ./src:/app
       - ./public/assets:/app/public/assets
       - /app/node_modules
 
   api:
-    image: pull-requests-api:1.0
+    build: ./pull-requests-api/.
     environment:
       - MONGO_URI=mongodb://mongo:27017
       - DATABASE_NAME=pull-request-app

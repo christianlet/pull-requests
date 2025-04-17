@@ -6,7 +6,19 @@ Duplicate the `.env.local.sample` file with the name `.env.local`
 
 Add your PAT token to the config key `VITE_PAT`
 
-Run `npm start` to start up the application
+Run `docker-compose up -d` to start up the application
+
+## .env
+
+
+|Key|Description|
+|-|-|
+|VITE_CLIENT_ID|Needed if using Oauth authentication|
+|VITE_CLIENT_SECRET|Needed if using Oauth authentication|
+|VITE_PAT|Needed if using PAT authentication|
+|VITE_AUTH_TYPE|'pat' or 'oauth' Specifies the authentication method|
+|VITE_DEV_BRANCH_MANAGER|github username of user|
+
 
 ## Pull Requests
 
