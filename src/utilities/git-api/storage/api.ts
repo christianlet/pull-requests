@@ -11,27 +11,23 @@ export class Api<Type extends Record<string, unknown> = Record<string, unknown>>
     }
 
     public async create(key: string|number, data: Type): Promise<void> {
-        const response = await fetch(this.url, {
+        await fetch(this.url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         })
-
-        console.log(await response.json())
     }
 
     public async update(key: string|number, data: Type): Promise<void> {
-        const response = await fetch(this.url + '/' + key, {
+        await fetch(this.url + '/' + key, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         })
-
-        console.log(await response.json())
     }
 
     public async get(key: string|number): Promise<Type | null> {
@@ -56,13 +52,11 @@ export class Api<Type extends Record<string, unknown> = Record<string, unknown>>
     }
 
     public async delete(key: string|number): Promise<void> {
-        const response = await fetch(this.url + '/' + key.toString(), {
+        await fetch(this.url + '/' + key.toString(), {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             }
         })
-
-        console.log(await response.json())
     }
 }

@@ -85,15 +85,6 @@ function App() {
 }
 
 const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c: boolean) => void }) => {
-    const dispatch = useAppDispatch()
-    const client = useAppSelector(state => state.octokit.value)
-
-    useEffect(() => {
-        OctokitClient.getInstance().then((octo) => {
-            dispatch(octokitSlice.actions.set(octo))
-        })
-    }, [dispatch])
-
     return (
         <Box>
             <AppBar
@@ -185,7 +176,7 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                     overflow: 'auto'
                 }}
             >
-                { client ? <Outlet /> : <div>No auth</div> }
+                <Outlet />
             </Paper>
         </Box>
     )

@@ -247,7 +247,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                                     >
                                         {
                                             existingReleases.map((item, i) => (
-                                                <MenuItem value={item.id}>
+                                                <MenuItem value={item.id} key={i}>
                                                     <>
                                                         <Chip
                                                             label={item.team.toUpperCase()}

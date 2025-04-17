@@ -8,8 +8,6 @@ export const groupPullRequests = (prs: PullRequestFull[]) => {
     const groupedPRs: any[] = []
 
     prs?.forEach(pr => {
-        console.log(pr)
-
         const ticket  = pr.head.ref.split('/').pop() ?? ''
         const [,team, version] = pr.head.ref.match(/^collab\/(.*)\/release\/(.*)$/) || []
         let release = null

@@ -18,9 +18,6 @@ export const teams = [
     }
 ]
 
-console.log(teams);
-
-
 export const getTeam = (team: string) => {
     const teamLower = team.toLowerCase()
     const teamData = teams.find(t => t.name.toLowerCase() === teamLower)
