@@ -5,7 +5,7 @@ import { default as MuiSwitch } from '@mui/material/Switch'
 import { ThemeProvider } from '@emotion/react'
 import { AppBar, Box, Button, createTheme, CssBaseline, FormControlLabel, FormGroup, Paper, Toolbar, Typography, useMediaQuery } from '@mui/material'
 import { OauthCallback } from './components/oauth-callback'
-import { Tickets } from './tickets'
+import { Tickets } from './components/tickets'
 import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
 import { amber, blue, green, yellow } from '@mui/material/colors'
@@ -117,7 +117,7 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                         >
                             <GitHubIcon sx={{ marginRight: 1 }} />
                             <Typography sx={{ flexGrow: 1 }}>
-                                GitHub Manager
+                                Pull Request Manager
                             </Typography>
                         </Button>
                         <Box marginLeft={1}>

@@ -13,3 +13,15 @@
 .branch-chip {
     color: rgba(0,0,0,.6) !important;
 }
+
+.MuiList-root {
+    padding: 0 !important;
+
+    >li {
+        padding: 13px;
+    }
+
+    >li:not(:first-child) {
+        border-top: solid thin #77777740;
+    }
+}

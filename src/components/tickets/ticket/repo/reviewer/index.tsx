@@ -1,8 +1,8 @@
 import { ChangeCircle, CheckCircle } from '@mui/icons-material'
 import { Avatar, Badge, Tooltip } from '@mui/material'
 import { styled } from '@mui/system'
-import { Reviewer as ReviewerType } from '../../../../types/api-types'
-import { fromNow } from '../../../../utilities/from-now'
+import { Reviewer as ReviewerType } from '../../../../../types/api-types'
+import { fromNow } from '../../../../../utilities/from-now'
 
 interface ReviewerProps {
     data: ReviewerType

@@ -18,7 +18,7 @@ The information display in the pull requests:
 - The peer reviews it receives. Shows:
   - Approvals
   - Changes requested
-  - Number of comments
+  - Comments
 
 ## Actions
 

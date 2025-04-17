@@ -1,4 +1,4 @@
-import { PullRequestFull } from '../../../types/api-types'
+import { PullRequestFull } from '../../../../types/api-types'
 import { Box, Button, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
 import { Launch } from '@mui/icons-material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

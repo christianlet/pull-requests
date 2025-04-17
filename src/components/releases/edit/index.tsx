@@ -1,19 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Alert, AlertProps, Box, Button, Card, CardContent, CardHeader, Checkbox, Chip, FormControl, FormControlLabel, FormGroup, FormHelperText, IconButton, InputLabel, MenuItem, Paper, Select, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { Alert, AlertProps, Button, Chip, FormControl, FormGroup, FormHelperText, InputLabel, MenuItem, Paper, Select, Snackbar, TextField } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Release } from '../../../types/releases/release'
 import './styles.scss'
-import { SessionStorage } from '../../../utilities/git-api/storage/session-storage'
+import { Api } from '../../../utilities/git-api/storage/api'
 import { useEffect, useState } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeBranch, faCodeMerge, faCodePullRequest, faX } from '@fortawesome/free-solid-svg-icons'
-import { getPullRequests } from '../../../utilities/git-api/pulls/get-pull-requests'
-import { PullRequestFull } from '../../../types/api-types'
-import { setTargetBranch } from '../../../utilities/set-target-branch'
-import { Launch } from '@mui/icons-material'
-import { mergeAndCreatePr } from '../../../utilities/merge-and-create-pr'
+import { getTeam, teams } from '../../../utilities/teams'
 
 interface FeedbackState {
     severity: AlertProps['severity']
@@ -23,25 +15,25 @@ interface FeedbackState {
 export const Edit = () => {
     const { id } = useParams()
     const navigate = useNavigate()
-    const releaseStorage = new SessionStorage<Release>('releases')
-    const [ticket, setTicket] = useState('')
-    const [searchingBranches, setSearchingBranches] = useState(false)
-    const [timestamp, setTimestamp] = useState(new Date().getTime())
-    const [runningAction, setRunningAction] = useState(false)
     const [feedback, setFeedback] = useState<FeedbackState>({
         severity: 'info',
         message: ''
     })
     const [formData, setFormData] = useState<Release>({
+        id: '',
         team: '',
         url: '',
         version: ''
     })
 
     const handleSubmit = async () => {
+        const releaseStorage = new Api<Release>('releases')
         const releaseId = `${formData.team}-${formData.version}`
 
-        releaseStorage.store(releaseId, formData)
+        await releaseStorage[id ? 'update' : 'create'](releaseId, {
+            ...formData,
+            id: releaseId
+        })
 
         setFeedback({
             severity: 'success',
@@ -53,13 +45,17 @@ export const Edit = () => {
 
     useEffect(() => {
         if(id) {
-            const release = releaseStorage.get(id)
+            const releaseStorage = new Api<Release>('releases')
 
-            if(release) {
-                setFormData(release)
-            }
+            releaseStorage.get(id).then((release) => {
+                console.log(release);
+
+                if(release) {
+                    setFormData(release)
+                }
+            }).catch(e => console.log(e))
         }
-    }, [id, timestamp])
+    }, [id])
 
     return (
         <Paper elevation={5} sx={{ padding: '10px 25px' }}>
@@ -108,9 +104,23 @@ export const Edit = () => {
                             onChange={e => setFormData({ ...formData, team: e.target.value })}
                             required
                         >
-                            <MenuItem value="cms1">CMS1</MenuItem>
-                            <MenuItem value="cms2">CMS2</MenuItem>
-                            <MenuItem value="cms3">CMS3</MenuItem>
+                            {
+                                teams.map(team => (
+                                    <MenuItem value={team.name}>
+                                        <>
+                                            <Chip
+                                                label={team.name}
+                                                size="small"
+                                                sx={{
+                                                    marginRight: 2,
+                                                    backgroundColor: team.color,
+                                                    color: 'black'
+                                                }}
+                                            />
+                                        </>
+                                    </MenuItem>
+                                ))
+                            }
                         </Select>
                     </FormControl>
                 </FormGroup>

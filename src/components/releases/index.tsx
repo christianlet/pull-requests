@@ -1,12 +1,21 @@
 import { AddTask, Edit, Launch } from '@mui/icons-material'
-import { Box, Button, Card, CardHeader, IconButton, Typography } from '@mui/material'
+import { Box, Button, Card, CardHeader, Chip, IconButton, Typography } from '@mui/material'
 import { Link, NavLink } from 'react-router-dom'
-import { SessionStorage } from '../../utilities/git-api/storage/session-storage'
+import { Api } from '../../utilities/git-api/storage/api'
 import { Release } from '../../types/releases/release'
+import { useEffect, useState } from 'react'
+import { getTeam } from '../../utilities/teams'
 
 export const Releases = () => {
-    const releaseStorage = new SessionStorage<Release>('releases')
-    const releases = Object.values(releaseStorage.getAll())
+    const [releases, setReleases] = useState<Release[]>([])
+
+    useEffect(() => {
+        const releaseStorage = new Api<Release>('releases')
+
+        releaseStorage.getAll().then(r => {
+            setReleases(r.items)
+        }).catch(e => console.log(e))
+    }, [])
 
     return (
         <>
@@ -53,6 +62,14 @@ export const Releases = () => {
                                                 display="flex"
                                                 alignItems="center"
                                             >
+                                                <Chip
+                                                    label={release.team.toUpperCase()}
+                                                    sx={{
+                                                        marginRight: 1,
+                                                        backgroundColor: getTeam(release.team)?.color ?? 'gray',
+                                                        color: 'black'
+                                                    }}
+                                                />
                                                 <Typography variant="h5">
                                                     {release.version}
                                                 </Typography>
