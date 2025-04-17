@@ -1,10 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Alert, AlertProps, Button, FormControl, FormGroup, FormHelperText, InputLabel, MenuItem, Paper, Select, Snackbar, TextField } from '@mui/material'
+import { Alert, AlertProps, Button, Chip, FormControl, FormGroup, FormHelperText, InputLabel, MenuItem, Paper, Select, Snackbar, TextField } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Release } from '../../../types/releases/release'
 import './styles.scss'
 import { Api } from '../../../utilities/git-api/storage/api'
 import { useEffect, useState } from 'react'
+import { getTeam, teams } from '../../../utilities/teams'
 
 interface FeedbackState {
     severity: AlertProps['severity']
@@ -103,9 +104,23 @@ export const Edit = () => {
                             onChange={e => setFormData({ ...formData, team: e.target.value })}
                             required
                         >
-                            <MenuItem value="cms1">CMS1</MenuItem>
-                            <MenuItem value="cms2">CMS2</MenuItem>
-                            <MenuItem value="cms3">CMS3</MenuItem>
+                            {
+                                teams.map(team => (
+                                    <MenuItem value={team.name}>
+                                        <>
+                                            <Chip
+                                                label={team.name}
+                                                size="small"
+                                                sx={{
+                                                    marginRight: 2,
+                                                    backgroundColor: team.color,
+                                                    color: 'black'
+                                                }}
+                                            />
+                                        </>
+                                    </MenuItem>
+                                ))
+                            }
                         </Select>
                     </FormControl>
                 </FormGroup>
