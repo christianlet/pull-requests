@@ -1,0 +1,3 @@
+[submodule "pull-requests-api"]
+	path = pull-requests-api
+	url = git@github.com:christianlet/pull-requests-api
