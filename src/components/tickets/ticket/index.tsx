@@ -5,13 +5,13 @@ import { useState } from 'react'
 import './styles.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCodeMerge, faCodePullRequest, faCopy, faFileText, faTimesCircle, faUserClock } from '@fortawesome/free-solid-svg-icons'
-import { TicketsState } from '../../types/api-types'
-import { useAppDispatch } from '../../hooks/redux-hooks'
-import { update } from '../../redux/reducers/peer-reviews-reducer'
-import { requestDevBranch } from '../../utilities/git-api/pulls/request-reviewer'
+import { TicketsState } from '../../../types/api-types'
+import { useAppDispatch } from '../../../hooks/redux-hooks'
+import { update } from '../../../redux/reducers/peer-reviews-reducer'
+import { requestDevBranch } from '../../../utilities/git-api/pulls/request-reviewer'
 import { Repo } from './repo'
 import { useNavigate } from 'react-router-dom'
-import { fromNow } from '../../utilities/from-now'
+import { fromNow } from '../../../utilities/from-now'
 
 interface TicketProps {
     ticket: TicketsState['info']

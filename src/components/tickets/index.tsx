@@ -4,11 +4,11 @@ import { CircularProgress, IconButton, InputAdornment, Pagination, TextField, To
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { Ticket } from './ticket'
-import { getPullRequests } from '../utilities/git-api/pulls/get-pull-requests'
+import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
 import './styles.scss'
 import { useSearchParams } from 'react-router-dom'
-import { TicketsState } from '../types/api-types'
-import { groupPullRequests } from '../utilities/group-pull-requests'
+import { TicketsState } from '../../types/api-types'
+import { groupPullRequests } from '../../utilities/group-pull-requests'
 
 interface State {
     items: null | TicketsState[]
