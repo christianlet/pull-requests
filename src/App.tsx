@@ -10,9 +10,6 @@ import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
 import { amber, blue, green, yellow } from '@mui/material/colors'
 import { Edit } from './components/releases/edit'
-import { OctokitClient } from './utilities/octokit-client'
-import { octokitSlice } from './redux/reducers/octokit-reducer'
-import { useAppDispatch, useAppSelector } from './hooks/redux-hooks'
 
 function App() {
     const [darkMode, setDarkMode] = useState(true)
@@ -120,7 +117,7 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                         >
                             <GitHubIcon sx={{ marginRight: 1 }} />
                             <Typography sx={{ flexGrow: 1 }}>
-                                GitHub Manager
+                                Pull Request Manager
                             </Typography>
                         </Button>
                         <Box marginLeft={1}>

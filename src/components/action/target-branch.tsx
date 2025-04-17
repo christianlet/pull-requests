@@ -228,7 +228,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
                                     <Select
                                         id="existingRelease"
                                         label="Release"
-                                        value={`${formState.team}-${formState.baseBranch}`}
+                                        value={existingReleases.length > 0 && formState.baseBranch ? `${formState.team}-${formState.baseBranch}` : ''}
                                         required={formState.branchType === 'release'}
                                         onChange={e => {
                                             const release = existingReleases.find(er => er.id === e.target.value)
