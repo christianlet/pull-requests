@@ -1,15 +1,19 @@
 # Pull Requests
 
+## Prerequisites
+
+1. Clone down `git @github.com:christianlet/pull-requests-api`
+2. Navigate to the newly cloned directory and run `docker build .`
+
+These commands build the static image for the API.
+
 ## Getting started
 
-Duplicate the `.env.local.sample` file with the name `.env.local`
-
-Add your PAT token to the config key `VITE_PAT`
-
-Run `docker-compose up -d` to start up the application
+1. Duplicate the `.env.local.sample` file with the name `.env.local`
+2. Add your PAT token to the config key `VITE_PAT`
+3. Run `docker-compose up -d` to start up the application
 
 ## .env
-
 
 |Key|Description|
 |-|-|
@@ -18,7 +22,7 @@ Run `docker-compose up -d` to start up the application
 |VITE_PAT|Needed if using PAT authentication|
 |VITE_AUTH_TYPE|'pat' or 'oauth' Specifies the authentication method|
 |VITE_DEV_BRANCH_MANAGER|github username of user|
-
+|VITE_API_URL|The address of the API|
 
 ## Pull Requests
 
@@ -27,10 +31,11 @@ The app groups pull requests by branch name. Links to each PR in github is avail
 The information display in the pull requests:
 - When the PR was created
 - The branch it is targeting
-- The peer reviews it receives. Shows:
+- The peer reviews it receives, it shows:
   - Approvals
   - Changes requested
   - Comments
+  - Merge conflicts
 
 ## Actions
 
