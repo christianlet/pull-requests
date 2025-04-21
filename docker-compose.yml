@@ -12,12 +12,12 @@ services:
     depends_on:
       - api
     volumes:
-      - ./src:/app
+      - ./:/app
       - ./public/assets:/app/public/assets
       - /app/node_modules
 
   api:
-    build: ./pull-requests-api/.
+    image: pull-requests-api:1.0
     environment:
       - MONGO_URI=mongodb://mongo:27017
       - DATABASE_NAME=pull-request-app
