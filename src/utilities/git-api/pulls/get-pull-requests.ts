@@ -38,8 +38,8 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
         let newItem
 
         try {
-            if (repo && owner && pullNumber && item.pull_request?.url ) {
-                const localStorage = await prStorage.get(item.id)
+            if (repo && owner && pullNumber && item.pull_request?.url) {
+                const localStorage = await prStorage.get(item.node_id)
                 const { headers, data } = await getPullRequest({
                     owner,
                     repo,
@@ -71,11 +71,15 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
                     reviewers
                 }
 
-                prStorage.create(item.id, newItem)
+                if(!localStorage) {
+                    prStorage.create(item.node_id, newItem)
+                } else {
+                    prStorage.update(item.node_id, newItem)
+                }
             }
         } catch (error: any) {
             if(error.status === 304) {
-                return prStorage.get(item.id)
+                return prStorage.get(item.node_id)
             } else {
                 console.error(error)
             }
