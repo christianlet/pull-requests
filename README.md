@@ -2,18 +2,57 @@
 
 ## Prerequisites
 
-1. Clone down `git @github.com:christianlet/pull-requests-api`
-2. Navigate to the newly cloned directory and run `docker build .`
+### Clone the API
 
-These commands build the static image for the API.
+```
+git clone git@github.com:christianlet/pull-requests-api
+```
+
+### Build the Static API Image
+
+Navigate to the newly cloned directory and run
+
+```
+docker build . -t pull-requests-api:1.0
+```
 
 ## Getting started
 
-1. Duplicate the `.env.local.sample` file with the name `.env.local`
-2. Add your PAT token to the config key `VITE_PAT`
-3. Run `docker-compose up -d` to start up the application
+### Environment Credentials
 
-## .env
+Copy the .env.local.sample file
+
+```
+cp .env.local.sample .env.local
+```
+
+Add your PAT to the `VITE_PAT` variable
+
+```
+VITE_CLIENT_ID=
+VITE_CLIENT_SECRET=
+VITE_PAT={{PAT_VALUE}}
+VITE_AUTH_TYPE=pat
+VITE_DEV_BRANCH_MANAGER=
+VITE_API_URL=http://localhost:3001
+```
+
+### Startup
+
+Install npm dependencies
+
+```
+npm i
+```
+
+Build the docker image passing the .npmrc secret file then start the container
+
+```
+docker build . --secret id=npmrc,src=$HOME/.npmrc && \
+docker-compose up -d
+```
+
+## .env File
 
 |Key|Description|
 |-|-|
