@@ -74,6 +74,10 @@ function App() {
                             path="octokit-error"
                             element={<div>Octokit error</div>}
                         />
+                        <Route
+                            path="*"
+                            element={<div>No page found</div>}
+                        />
                     </Route>
                 </Routes>
             </ThemeProvider>
