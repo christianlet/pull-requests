@@ -31,7 +31,8 @@ export const Reviewer = (props: ReviewerProps) => {
                                     className="user-badge approved"
                                     fontSize="small"
                                     sx={{
-                                        color: 'success.light'
+                                        color: 'success.main',
+                                        backgroundColor: 'white'
                                     }}
                                 />
                             )
@@ -39,10 +40,11 @@ export const Reviewer = (props: ReviewerProps) => {
                         {
                             props.data.state === "CHANGES_REQUESTED" && (
                                 <ChangeCircle
-                                    className="user-badge change"
+                                    className="change"
                                     fontSize="small"
                                     sx={{
-                                        color: 'error.light'
+                                        color: 'error.main',
+                                        backgroundColor: 'white'
                                     }}
                                 />
                             )
@@ -53,7 +55,7 @@ export const Reviewer = (props: ReviewerProps) => {
                 <Avatar
                     alt={name}
                     src={props.data.user.avatar_url}
-                    sx={{ width: 24, height: 24, border: 'solid thin rgba(0,0,0,.2)' }}
+                    sx={{ width: 30, height: 30, border: 'solid thin rgba(0,0,0,.2)' }}
                 />
             </Badge>
         </Tooltip>
@@ -61,7 +63,7 @@ export const Reviewer = (props: ReviewerProps) => {
 }
 
 const SmallAvatar = styled(Avatar)(() => ({
-    width: 16,
-    height: 16,
-    border: `1px solid white`,
+    width: 19,
+    height: 19,
+    border: `1px solid rgba(255, 255, 255, 0.5)`,
 }));

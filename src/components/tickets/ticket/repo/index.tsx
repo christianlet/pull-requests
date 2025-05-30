@@ -76,7 +76,7 @@ export const Repo = (props: RepoProps) => {
                         padding="0"
                         title="Base branch"
                         sx={{
-                            color: 'text.primary'
+                            color: 'primary'
                         }}
                     >
                         {
@@ -85,7 +85,7 @@ export const Repo = (props: RepoProps) => {
                                     icon={faCodePullRequest}
                                     style={{
                                         marginRight: 5,
-                                        marginLeft: 10
+                                        marginLeft: 0
                                     }}
                                 />
                             ) : (
@@ -100,9 +100,11 @@ export const Repo = (props: RepoProps) => {
                         <span>{ticket.base.ref}</span>
                     </Box>
                 }
-                secondaryTypographyProps={{
-                    component: 'div',
-                    fontSize: '11px'
+                slotProps={{
+                    secondary: {
+                        component: 'div',
+                        fontSize: '11px'
+                    }
                 }}
             />
             <ListItemAvatar sx={{ textAlign: 'right' }}>
