@@ -65,9 +65,11 @@ export const Tickets = () => {
     }
 
     const handlePrState = (event: React.MouseEvent<HTMLElement>, value: 'open' | 'closed') => {
-        searchParams.set('state', value)
+        if(value !== null) {
+            searchParams.set('state', value)
 
-        setSearchParams(searchParams)
+            setSearchParams(searchParams)
+        }
     }
 
     return (

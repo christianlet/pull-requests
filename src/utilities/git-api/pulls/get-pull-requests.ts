@@ -18,7 +18,7 @@ type Arguments = RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["par
 }
 
 export const getPullRequests = async (args: Arguments): Promise<PullRequestWithPagination> => {
-    const searchResponse = await searchOpenPullRequests(args).catch(e => null)
+    const searchResponse = await searchOpenPullRequests(args).catch(e => console.error(e))
 
     if(!searchResponse) {
         return {
