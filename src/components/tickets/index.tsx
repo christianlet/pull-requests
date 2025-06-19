@@ -1,14 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { CircularProgress, IconButton, InputAdornment, Pagination, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { CircularProgress, IconButton, InputAdornment, MenuItem, Pagination, Select, SelectChangeEvent, Switch, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { Ticket } from './ticket'
 import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
 import './styles.scss'
-import { useSearchParams } from 'react-router-dom'
-import { TicketsState } from '../../types/api-types'
+import { useOutletContext, useSearchParams } from 'react-router-dom'
+import { AuthenticatedUser, TicketsState } from '../../types/api-types'
 import { groupPullRequests } from '../../utilities/group-pull-requests'
+import { getUsers } from '../../utilities/git-api/users/get-users'
+import { getAuthenticatedUser } from '../../utilities/git-api/users/get-authenticated-user'
+import { useAuthenticatedUser } from '../../hooks/authenticated-user'
 
 interface State {
     items: null | TicketsState[]
@@ -16,7 +19,9 @@ interface State {
 }
 
 export const Tickets = () => {
+    const { authUser } = useOutletContext<{ authUser: AuthenticatedUser }>()
     const [searchParams, setSearchParams] = useSearchParams()
+    const [authors, setAuthors] = useState<{ username: string; name: string }[]>([])
     const [refresh, setRefresh] = useState(new Date().getTime())
     const [query, setQuery] = useState('')
     const [inputValue, setInputValue] = useState('')
@@ -24,10 +29,26 @@ export const Tickets = () => {
         items: null,
         total: 0
     })
+    const [author, setAuthor] = useState(searchParams.get('author') ?? authUser.login)
     const state = searchParams.get('state') as 'open' | 'closed' ?? 'open'
     const prType = searchParams.get('prType') ?? 'created'
     const page = searchParams.get('page') ?? '1'
     const theme = useTheme()
+
+    useEffect(() => {
+        if(!authUser) {
+            return
+        }
+
+        getUsers()
+            .then(res => {
+                if(!res) {
+                    return
+                }
+
+                setAuthors(res.filter(user => user.username !== authUser.login))
+            })
+    }, [])
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -39,13 +60,25 @@ export const Tickets = () => {
         };
     }, [inputValue]);
 
-    const handleChange = (event: any) => {
+    const handleInputChange = (event: any) => {
         setInputValue(event.target.value);
     };
 
+    const handleSelectChange = (event: SelectChangeEvent) => {
+        setAuthor(event.target.value)
+
+        searchParams.set('author', event.target.value)
+
+        setSearchParams(searchParams)
+    };
+
     useEffect(() => {
+        if(!authUser) {
+            return
+        }
+
         getPeerReviews()
-    }, [searchParams, refresh, query])
+    }, [searchParams, refresh, query, author])
 
     const getPeerReviews = async () => {
         setTickets({
@@ -54,7 +87,7 @@ export const Tickets = () => {
         })
 
         const response  = await getPullRequests({
-            q: `author:@me+is:${state} ${query}`,
+            q: `author:${author}+is:${state} ${query}`,
             page: parseInt(page, 10)
         })
 
@@ -80,6 +113,24 @@ export const Tickets = () => {
                     bgcolor: theme.palette.mode === 'dark' ? '#424242' : 'darkgray'
                 }}
             >
+                <div>
+                    {
+                        authUser && (
+                            <Select
+                                value={author}
+                                onChange={handleSelectChange}
+                                size="small"
+                            >
+                                <MenuItem key={authUser.login} value={authUser.login}>{authUser.name}</MenuItem>
+                                {
+                                    authors.map(author => (
+                                        <MenuItem key={author.username} value={author.username}>{author.name}</MenuItem>
+                                    ))
+                                }
+                            </Select>
+                        )
+                    }
+                </div>
                 <div style={{
                     flexGrow: 1
                 }}>
@@ -88,7 +139,7 @@ export const Tickets = () => {
                         size="small"
                         fullWidth
                         placeholder='Search for Pull Requests'
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         slotProps={{
                             input: {
                                 startAdornment: (

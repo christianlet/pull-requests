@@ -10,6 +10,7 @@ import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
 import { amber, blue, green, yellow } from '@mui/material/colors'
 import { Edit } from './components/releases/edit'
+import { useAuthenticatedUser } from './hooks/authenticated-user'
 
 function App() {
     const [darkMode, setDarkMode] = useState(true)
@@ -86,6 +87,12 @@ function App() {
 }
 
 const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c: boolean) => void }) => {
+    const authUser = useAuthenticatedUser()
+
+    if(!authUser) {
+        return <></>
+    }
+
     return (
         <Box>
             <AppBar
@@ -177,7 +184,7 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                     overflow: 'auto'
                 }}
             >
-                <Outlet />
+                <Outlet context={{authUser}} />
             </Paper>
         </Box>
     )
