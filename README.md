@@ -80,6 +80,10 @@ The information display in the pull requests:
 
 When you are viewing pull requests you have created, you have access to actions that can be run.
 
+### Update Description
+
+Can generate the description based on all branches found and apply it to the selected PRs
+
 ### Update Target Branch
 
 Allows you to set all grouped pull requests target branch.
