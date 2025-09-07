@@ -8,6 +8,7 @@ import { OauthCallback } from './components/oauth-callback'
 import { Tickets } from './components/tickets'
 import { BranchDetail } from './components/branch-detail'
 import { Releases } from './components/releases'
+import { Repositories } from './components/repositories'
 import { amber, blue, green, yellow } from '@mui/material/colors'
 import { Edit } from './components/releases/edit'
 import { useAuthenticatedUser } from './hooks/authenticated-user'
@@ -66,6 +67,11 @@ function App() {
                         >
                             <Route index element={<Releases />} />
                             <Route path="edit/:id?" element={<Edit />} />
+                        </Route>
+                        <Route
+                            path="repositories"
+                        >
+                            <Route index element={<Repositories />} />
                         </Route>
                         <Route
                             path="oauth-callback"
@@ -139,6 +145,17 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                                 sx={{ marginRight: 1, textTransform: 'capitalize' }}
                             >
                                 Pull Requests
+                            </Button>
+                            <Button
+                                component={NavLink}
+                                to="repositories"
+                                color="inherit"
+                                sx={{
+                                    marginRight: 1,
+                                    textTransform: 'capitalize'
+                                }}
+                            >
+                                Repositories
                             </Button>
                             <Button
                                 component={NavLink}

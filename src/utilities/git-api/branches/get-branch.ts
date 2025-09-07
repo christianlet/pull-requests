@@ -1,20 +1,20 @@
+import { RestEndpointMethodTypes } from '@octokit/rest'
 import { OctokitClient } from '../../octokit-client'
 
 
-export const getBranch = async (owner: string, repo: string, branch: string) => {
+export const getBranch = async (
+    owner: string,
+    repo: string,
+    branch: string
+): Promise<null | RestEndpointMethodTypes["git"]["getRef"]["response"]['data']> => {
     const octokit = await OctokitClient.getInstance()
 
-    let exists = false
-
-    await octokit.repos.getBranch({
+    const existingBranch = await octokit.rest.git.getRef({
         owner,
         repo,
-        branch,
+        ref: `heads/${branch}`,
     })
-    .then(results => {
-        exists = results.data.name === branch
-    })
-    .catch(e => {})
+    .catch(e => null)
 
-    return exists
+    return existingBranch?.data || null
 }
