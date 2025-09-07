@@ -31,10 +31,10 @@ interface Repos {
 
 const repoPrefixes = [
     'lib-fox-logger',
-    // 'spark-',
-    // 'mc-',
-    // 'api.',
-    // 'mediacloud-',
+    'spark-',
+    'mc-',
+    'api.',
+    'mediacloud-',
 ]
 
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
@@ -345,27 +345,34 @@ export function Repositories() {
             }
 
             const packageJson = await getFileContents(repo.owner, repo.repo, 'package.json', branch.ref)
+            const packageLockJson = await getFileContents(repo.owner, repo.repo, 'package-lock.json', branch.ref)
 
             if(packageJson && !Array.isArray(packageJson) && 'content' in packageJson && packageJson.content) {
                 const unblobbed = atob(packageJson.content)
                 const parsed = JSON.parse(unblobbed)
                 const version = updateForm.nodeVersion.replace('.x', '')
 
-                if('engines' in parsed) {
-                    if('node' in parsed.engines) {
-                        parsed.engines.node = `>=${version}`
-                    } else {
-                        parsed.engines.node = `>=${version}`
-                    }
-                } else {
-                    parsed.engines = {
-                        node: `>=${version}`
-                    }
-                }
+                addEngine(parsed, version)
 
                 blobs.push(
-                    await createBlob(repo.owner, repo.repo, packageJson.path, JSON.stringify(parsed, undefined, 2))
+                    await createBlob(repo.owner, repo.repo, packageJson.path, JSON.stringify(parsed, undefined, 2) + '\n')
                 )
+
+                if(packageLockJson && !Array.isArray(packageLockJson) && 'content' in packageLockJson && packageLockJson.content) {
+                    const unblobbed = atob(packageLockJson.content)
+                    const parsed = JSON.parse(unblobbed)
+                    const version = updateForm.nodeVersion.replace('.x', '')
+
+                    if('packages' in parsed) {
+                        if('' in parsed.packages) {
+                            addEngine(parsed.packages[''], version)
+                        }
+                    }
+
+                    blobs.push(
+                        await createBlob(repo.owner, repo.repo, packageLockJson.path, JSON.stringify(parsed, undefined, 2) + '\n')
+                    )
+                }
             }
 
             const response = await createCommit(
@@ -377,13 +384,13 @@ export function Repositories() {
             )
 
             if(response.status === 200) {
-                // await octo.pulls.create({
-                //     owner: repo.owner,
-                //     repo: repo.repo,
-                //     title: `Upgrade Node.js to version ${updateForm.nodeVersion}`,
-                //     head: branch.ref,
-                //     base: repo.defaultRef,
-                // }).catch(e => console.log(e))
+                await octo.pulls.create({
+                    owner: repo.owner,
+                    repo: repo.repo,
+                    title: `Upgrade Node.js to version ${updateForm.nodeVersion}`,
+                    head: branch.ref,
+                    base: repo.defaultRef,
+                }).catch(e => console.log(e))
 
                 const newRepos = await Promise.all(repos.items.map(async (r, i) => {
                     if(i === index) {
@@ -411,6 +418,20 @@ export function Repositories() {
             ...aip,
             upgrading: false
         })
+    }
+
+    const addEngine = (item: Record<string, Record<string, string>>, version: string) => {
+        if('engines' in item) {
+            if('node' in item.engines) {
+                item.engines.node = `>=${version}`
+            } else {
+                item.engines.node = `>=${version}`
+            }
+        } else {
+            item.engines = {
+                node: `>=${version}`
+            }
+        }
     }
 
     return (
