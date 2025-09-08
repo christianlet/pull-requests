@@ -30,7 +30,7 @@ interface Repos {
 }
 
 const repoPrefixes = [
-    'lib-fox-logger',
+    'lib-fox-',
     'spark-',
     'mc-',
     'api.',
@@ -45,7 +45,7 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     return chunks;
 }
 
-export function Repositories() {
+export function NodeUpgrade() {
     const octo = useOctokitClient()
     const [selectedRepos, setSelectedRepos] = useState<null | Repos['items'][number]>(null)
     const [aip, setAip] = useState({
@@ -175,7 +175,7 @@ export function Repositories() {
             const fileContent = atob(file.content)
             const fileYml = parse(fileContent)
 
-            if('node_version' in fileYml) {
+            if(fileYml && 'node_version' in fileYml) {
                 versionInConfig = fileYml.node_version
             }
         }
@@ -188,10 +188,10 @@ export function Repositories() {
 
                 if(fileContents !== null && !Array.isArray(fileContents) && 'content' in fileContents) {
                     const unblobbed = atob(fileContents.content)
-                    const match = unblobbed.match(/node-version:(?:\s)(?:['"])?([0-9]{2}(?:\.x))(?:['"])?/)
+                    const match = unblobbed.match(/node-version:(?:\s)(?:['"])?([0-9]{1,4}(?:\.)?(?:[0-9]{1,4})?(?:\.)?(?:[0-9]{1,4}))(?:['"])?/)
 
                     if(match) {
-                        versionInFiles[file.name] = match[1]
+                        versionInFiles[file.name] = match[1].replace('.x', '')
                     }
                 }
             }
@@ -258,11 +258,18 @@ export function Repositories() {
                 for (const job of Object.keys(yaml.jobs)) {
                     let variableFound = false
 
-                    if('with' in yaml.jobs[job] && typeof yaml.jobs[job].with === 'object' && 'node-version' in yaml.jobs[job].with) {
+                    if('uses' in yaml.jobs[job] && yaml.jobs[job].uses.includes('publish-npm-package.yml')) {
+                        if(!('with' in yaml.jobs[job])) {
+                            yaml.jobs[job].with = {}
+                        }
+
+                        yaml.jobs[job].with['node-version'] = '${{ needs.load_config_variables.outputs.node_version }}'
+                    } else if('with' in yaml.jobs[job] && typeof yaml.jobs[job].with === 'object' && 'node-version' in yaml.jobs[job].with) {
                         yaml.jobs[job].with['node-version'] = '${{ needs.load_config_variables.outputs.node_version }}'
 
                         variableFound = true
                     }
+
 
                     if('steps' in yaml.jobs[job]) {
                         const steps = yaml.jobs[job].steps as any[]
@@ -309,7 +316,7 @@ export function Repositories() {
                                     },
                                     {
                                         id: 'config',
-                                        run: 'echo "node_version=$(yq eval \'.node_version\' .github/config.yml)" >> $GITHUB_OUTPUT'
+                                        run: addLoadConfigVariablesRun()
                                     }
                                 ]
                             }
@@ -322,7 +329,8 @@ export function Repositories() {
                     repo.repo,
                     refreshedInfo.path,
                     stringify(yaml, {
-                        blockQuote: 'literal'
+                        blockQuote: 'literal',
+                        lineWidth: 0,
                     }).replace('pull_request: null', 'pull_request:')
                 )
 
@@ -420,6 +428,25 @@ export function Repositories() {
         })
     }
 
+    const addLoadConfigVariablesRun = () => {
+        let run = 'if [ ! -f .github/config.yml ]; then\n'
+        run += '  echo "Error: .github/config.yml not found"\n'
+        run += '  exit 1\n'
+        run += 'fi\n\n'
+        run += 'if ! yq eval \'has("node_version")\' .github/config.yml | grep -q true; then\n'
+        run += '  echo "Error: node_version not found in .github/config.yml"\n'
+        run += '  exit 1\n'
+        run += 'fi\n\n'
+        run += 'node_version=$(yq eval \'.node_version\' .github/config.yml)\n\n'
+        run += 'if [ -z "$node_version" ] || [ "$node_version" = "null" ]; then\n'
+        run += '  echo "Error: node_version is empty or null in .github/config.yml"\n'
+        run += '  exit 1\n'
+        run += 'fi\n\n'
+        run += 'echo "node_version=$node_version" >> $GITHUB_OUTPUT\n'
+
+        return run
+    }
+
     const addEngine = (item: Record<string, Record<string, string>>, version: string) => {
         if('engines' in item) {
             if('node' in item.engines) {
@@ -441,6 +468,7 @@ export function Repositories() {
                     <TextField
                         label='Node Version'
                         defaultValue={updateForm.nodeVersion}
+                        disabled={aip.repos || aip.upgrading}
                         onChange={e => setUpdateForm({ ...updateForm, nodeVersion: e.target.value })}
                     />
                     <TextField
@@ -448,6 +476,7 @@ export function Repositories() {
                         defaultValue={updateForm.branch}
                         onChange={e => setUpdateForm({ ...updateForm, branch: e.target.value })}
                         onBlur={() => setRefresh(Date.now())}
+                        disabled={aip.repos || aip.upgrading}
                         sx={{ flexGrow: 1, marginX: 1 }}
                     />
                 </Box>
@@ -458,8 +487,9 @@ export function Repositories() {
             <TableContainer
                 component={Paper}
                 elevation={0}
+                sx={{ maxHeight: 600}}
             >
-                <Table>
+                <Table stickyHeader>
                     <TableHead>
                         <TableRow>
                             <TableCell>Repo</TableCell>
