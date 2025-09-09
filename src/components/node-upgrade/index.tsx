@@ -1,7 +1,7 @@
 
 
 import { Settings, Upgrade, Work } from '@mui/icons-material'
-import { Box, Button, Chip, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Chip, CircularProgress, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material'
 import { Octokit, RestEndpointMethodTypes } from '@octokit/rest'
 import { useEffect, useState } from 'react'
 import { parse, parseDocument, stringify } from 'yaml'
@@ -284,7 +284,7 @@ export function NodeUpgrade() {
                             }
 
                             const name = steps[step].name
-                            const labelMatch = name.match(/(?:Setup\sNode(?:JS)?\s([0-9]{2}(?:\.x))?)/)
+                            const labelMatch = name.match(/(?:Setup\sNode(?:JS)?(?:\s)(?:['"])?([0-9]{1,4}(?:\.)?(?:[0-9]{1,4})?(?:\.)?(?:[0-9]{1,4}))(?:['"])?)/)
 
                             if(labelMatch) {
                                 steps[step].name = name.replace(labelMatch[1], '${{ needs.load_config_variables.outputs.node_version }}')
@@ -305,20 +305,7 @@ export function NodeUpgrade() {
 
                         if(!('load_config_variables' in yaml.jobs)) {
                             yaml.jobs.load_config_variables = {
-                                'runs-on': 'ubuntu-latest',
-                                outputs: {
-                                    node_version: '${{ steps.config.outputs.node_version }}'
-                                },
-                                steps: [
-                                    {
-                                        name: 'Checkout',
-                                        uses: 'actions/checkout@v3'
-                                    },
-                                    {
-                                        id: 'config',
-                                        run: addLoadConfigVariablesRun()
-                                    }
-                                ]
+                                uses: 'foxcorp/spark-github-actions/.github/workflows/load-config-variables.yml@personal/christianlet/load-config-variables'
                             }
                         }
                     }
@@ -428,25 +415,6 @@ export function NodeUpgrade() {
         })
     }
 
-    const addLoadConfigVariablesRun = () => {
-        let run = 'if [ ! -f .github/config.yml ]; then\n'
-        run += '  echo "Error: .github/config.yml not found"\n'
-        run += '  exit 1\n'
-        run += 'fi\n\n'
-        run += 'if ! yq eval \'has("node_version")\' .github/config.yml | grep -q true; then\n'
-        run += '  echo "Error: node_version not found in .github/config.yml"\n'
-        run += '  exit 1\n'
-        run += 'fi\n\n'
-        run += 'node_version=$(yq eval \'.node_version\' .github/config.yml)\n\n'
-        run += 'if [ -z "$node_version" ] || [ "$node_version" = "null" ]; then\n'
-        run += '  echo "Error: node_version is empty or null in .github/config.yml"\n'
-        run += '  exit 1\n'
-        run += 'fi\n\n'
-        run += 'echo "node_version=$node_version" >> $GITHUB_OUTPUT\n'
-
-        return run
-    }
-
     const addEngine = (item: Record<string, Record<string, string>>, version: string) => {
         if('engines' in item) {
             if('node' in item.engines) {
@@ -481,9 +449,25 @@ export function NodeUpgrade() {
                     />
                 </Box>
             </Paper>
-            <Typography sx={{ marginBottom: 1, marginTop: 5 }}>
-                Total repositories: {repos.total}
-            </Typography>
+            <Stack direction='row' justifyContent='space-between' alignItems='end' marginBottom={1} marginX={2}>
+                <Box>
+                    <Typography sx={{ marginBottom: 1, marginTop: 5 }}>
+                        Total repositories: {repos.total}
+                    </Typography>
+                </Box>
+                <Box>
+                    {
+                        (aip.repos || aip.upgrading) && (
+                            <>
+                                <Typography sx={{ marginRight: 1, display: 'inline-block', verticalAlign: 'top' }}>
+                                    Loading
+                                </Typography>
+                                <CircularProgress size='20px' />
+                            </>
+                        )
+                    }
+                </Box>
+            </Stack>
             <TableContainer
                 component={Paper}
                 elevation={0}
