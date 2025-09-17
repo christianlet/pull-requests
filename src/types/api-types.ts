@@ -1,4 +1,4 @@
-import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods';
+import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 import { Release } from './releases/release'
 
 export type PullRequest = RestEndpointMethodTypes["pulls"]["get"]["response"]["data"]
@@ -8,6 +8,7 @@ export type PullRequestFull =
     & {
         reviewers: Reviewer[]
         lastModifiedSince?: string
+        hasPackages?: boolean
     }
 
 export type User =

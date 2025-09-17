@@ -1,16 +1,13 @@
+import { TabContext, TabList, TabPanel } from '@mui/lab'
+import { Box, Divider, FormControlLabel, Paper, Switch, Tab } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { PullRequest } from '../../types/api-types'
-import { TabContext, TabList, TabPanel } from '@mui/lab'
-import { Paper, Divider, Button, Tab, Box, Switch, FormControl, InputLabel, FormControlLabel } from '@mui/material'
-import { BranchTable } from '../branch-table'
-import { PullRequestDescription } from '../action/pull-request-description'
-import { LongPress } from '../long-press'
-import { MergePRs } from '../action/merge-prs'
-import { TargetBranch } from '../action/target-branch'
-import { EditablePullRequest } from '../action/types/editable-pull-request'
 import { useAuthenticatedUser } from '../../hooks/authenticated-user'
 import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
+import { MergePRs } from '../action/merge-prs'
+import { PullRequestDescription } from '../action/pull-request-description'
+import { TargetBranch } from '../action/target-branch'
+import { EditablePullRequest } from '../action/types/editable-pull-request'
 
 export const BranchDetail = () => {
     const navigate = useNavigate()
@@ -36,7 +33,7 @@ export const BranchDetail = () => {
             q: `${showClosed ? '' : 'is:open'} head:${branch}`,
             hardFetch: true
         })
-            .then(data => {
+            .then(async data => {
                 setRepos(data.items)
             })
             .catch(e => {
