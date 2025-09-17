@@ -1,7 +1,7 @@
 
 
 import { Settings, Upgrade, Work } from '@mui/icons-material'
-import { Box, Button, Chip, CircularProgress, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Chip, CircularProgress, Link, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from '@mui/material'
 import { Octokit, RestEndpointMethodTypes } from '@octokit/rest'
 import { useEffect, useState } from 'react'
 import { parse, parseDocument, stringify } from 'yaml'
@@ -104,7 +104,7 @@ export function NodeUpgrade() {
             }
         }
 
-        repos.items.sort((a, b) => a.repo.localeCompare(b.repo))
+        repos.items.sort((a, b) => a.fullName.localeCompare(b.fullName))
 
         setRepos(repos)
     }
@@ -256,18 +256,14 @@ export function NodeUpgrade() {
                 const yaml = parseDocument(text).toJS()
 
                 for (const job of Object.keys(yaml.jobs)) {
-                    let variableFound = false
-
                     if('uses' in yaml.jobs[job] && yaml.jobs[job].uses.includes('publish-npm-package.yml')) {
                         if(!('with' in yaml.jobs[job])) {
                             yaml.jobs[job].with = {}
                         }
 
-                        yaml.jobs[job].with['node-version'] = '${{ needs.load_config_variables.outputs.node_version }}'
+                        yaml.jobs[job].with['node-version'] = updateForm.nodeVersion
                     } else if('with' in yaml.jobs[job] && typeof yaml.jobs[job].with === 'object' && 'node-version' in yaml.jobs[job].with) {
-                        yaml.jobs[job].with['node-version'] = '${{ needs.load_config_variables.outputs.node_version }}'
-
-                        variableFound = true
+                        yaml.jobs[job].with['node-version'] = updateForm.nodeVersion
                     }
 
 
@@ -287,27 +283,15 @@ export function NodeUpgrade() {
                             const labelMatch = name.match(/(?:Setup\sNode(?:JS)?(?:\s)(?:['"])?([0-9]{1,4}(?:\.)?(?:[0-9]{1,4})?(?:\.)?(?:[0-9]{1,4}))(?:['"])?)/)
 
                             if(labelMatch) {
-                                steps[step].name = name.replace(labelMatch[1], '${{ needs.load_config_variables.outputs.node_version }}')
+                                steps[step].name = name.replace(labelMatch[1], updateForm.nodeVersion)
                             }
 
                             if('with' in steps[step] && typeof steps[step].with === 'object' && 'node-version' in steps[step].with) {
-                                steps[step].with['node-version'] = '${{ needs.load_config_variables.outputs.node_version }}'
-
-                                variableFound = true
+                                steps[step].with['node-version'] = updateForm.nodeVersion
                             }
                         }
 
                         yaml.jobs[job].steps = steps
-                    }
-
-                    if(variableFound && !('needs' in yaml.jobs[job])) {
-                        yaml.jobs[job].needs = 'load_config_variables'
-
-                        if(!('load_config_variables' in yaml.jobs)) {
-                            yaml.jobs.load_config_variables = {
-                                uses: 'foxcorp/spark-github-actions/.github/workflows/load-config-variables.yml@personal/christianlet/load-config-variables'
-                            }
-                        }
                     }
                 }
 
@@ -324,21 +308,6 @@ export function NodeUpgrade() {
                 blobs.push(blob)
             }))
 
-            const configFile = await getFileContents(repo.owner, repo.repo, '.github/config.yml', branch.ref)
-            const config = stringify({
-                node_version: updateForm.nodeVersion
-            })
-
-            if(configFile && !Array.isArray(configFile) && 'content' in configFile) {
-                blobs.push(
-                    await createBlob(repo.owner, repo.repo, '.github/config.yml', config)
-                )
-            } else if(!Array.isArray(configFile)) {
-                const newBlob = await createBlob(repo.owner, repo.repo, '.github/config.yml', config)
-
-                blobs.push(newBlob)
-            }
-
             const packageJson = await getFileContents(repo.owner, repo.repo, 'package.json', branch.ref)
             const packageLockJson = await getFileContents(repo.owner, repo.repo, 'package-lock.json', branch.ref)
 
@@ -349,6 +318,12 @@ export function NodeUpgrade() {
 
                 addEngine(parsed, version)
 
+                const [,major, minor] = parsed.version.match(/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/)
+
+                const newPackageJsonVersion = `${major}.${parseInt(minor) + 1}.0-beta-node-upgrade.0`
+
+                updatePackageJsonVersion(parsed, newPackageJsonVersion)
+
                 blobs.push(
                     await createBlob(repo.owner, repo.repo, packageJson.path, JSON.stringify(parsed, undefined, 2) + '\n')
                 )
@@ -358,9 +333,12 @@ export function NodeUpgrade() {
                     const parsed = JSON.parse(unblobbed)
                     const version = updateForm.nodeVersion.replace('.x', '')
 
+                    updatePackageJsonVersion(parsed, newPackageJsonVersion)
+
                     if('packages' in parsed) {
                         if('' in parsed.packages) {
                             addEngine(parsed.packages[''], version)
+                            updatePackageJsonVersion(parsed.packages[''], newPackageJsonVersion)
                         }
                     }
 
@@ -429,6 +407,12 @@ export function NodeUpgrade() {
         }
     }
 
+    const updatePackageJsonVersion = (item: Record<string, string>, version: string) => {
+        if('version' in item) {
+            item.version = version
+        }
+    }
+
     return (
         <div>
             <Paper variant='elevation' elevation={0} sx={{ marginY: 2, padding: 2 }}>
@@ -470,7 +454,7 @@ export function NodeUpgrade() {
             </Stack>
             <TableContainer
                 component={Paper}
-                elevation={0}
+                variant='outlined'
                 sx={{ maxHeight: 600}}
             >
                 <Table stickyHeader>
@@ -501,7 +485,12 @@ export function NodeUpgrade() {
                             repos.items.map((repo, i) => (
                                 <TableRow key={`${repo.fullName}`}>
                                     <TableCell>
-                                        <a href={repo.url} target='_blank' style={{ color: 'lightblue' }}>{repo.fullName}</a>
+                                        <Link
+                                            href={repo.url}
+                                            target='_blank'
+                                            rel='noreferrer'
+                                            underline='none'
+                                        >{repo.fullName}</Link>
                                     </TableCell>
                                     <TableCell>
                                         <GenerateVersionChips
@@ -524,7 +513,7 @@ export function NodeUpgrade() {
                                             variant='contained'
                                             color='success'
                                             startIcon={<Upgrade />}
-                                            disabled={(!repo.defaultNodeVersionInConfig && Object.keys(repo.defaultNodeVersionInFiles).length === 0) || updateForm.branch === '' || updateForm.nodeVersion === '' || aip.upgrading}
+                                            disabled={(!repo.defaultNodeVersionInConfig && Object.keys(repo.defaultNodeVersionInFiles).length === 0) || updateForm.branch === '' || updateForm.nodeVersion === '' || aip.upgrading || aip.repos}
                                             onClick={async () => await updateFiles(i, repo)}
                                         >
                                             Upgrade
@@ -556,7 +545,7 @@ const GenerateVersionChips = (
                         label={inConfig}
                         variant='outlined'
                         color='primary'
-                        icon={<Settings fontSize='small' />}
+                        icon={<Settings fontSize='small' sx={{ paddingLeft: .5 }} />}
                     />
                 </Tooltip>
             )
@@ -568,12 +557,12 @@ const GenerateVersionChips = (
                                 key={fileName}
                                 title={`Found in .github/workflows/${fileName}`}
                             >
-                                    <Chip
-                                        label={version}
-                                        variant='outlined'
-                                        color='default'
-                                        icon={<Work fontSize='small' />}
-                                    />
+                                <Chip
+                                    label={version}
+                                    variant='outlined'
+                                    color='default'
+                                    icon={<Work fontSize='small' sx={{ paddingLeft: .5 }} />}
+                                />
                             </Tooltip>
                         ))
                     }
