@@ -50,7 +50,27 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
     }
 
     const setVersion = (tags: PullRequestFull['tags']) => {
-        const versionToMatchAgainst = formData.type === 'prerelease' && tags.current ? tags.current : tags.latest
+        const latestTag = tags.latest
+        const currentTag = tags.current
+
+        if(!latestTag && !currentTag) {
+            console.log(`No versions to match against`)
+
+            return null
+        }
+
+        let latestValue = latestTag && latestTag.updated_at ? Date.parse(latestTag.updated_at) : 0
+        let currentValue = currentTag && currentTag.updated_at ? Date.parse(currentTag.updated_at) : 0
+        let versionToMatchAgainst
+
+        switch (true) {
+            case latestValue > currentValue:
+                versionToMatchAgainst = latestTag
+                break
+            case latestValue < currentValue:
+                versionToMatchAgainst = currentTag
+                break
+        }
 
         if(!versionToMatchAgainst) {
             console.log(`No versions to match against`)
@@ -89,7 +109,7 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
             case 'prerelease':
                 prereleaseInt = prereleaseInt !== null && tags.current?.tag_name.includes(formData.identifier) ? (prereleaseInt + 1) : 0
 
-                if(!tags.current) {
+                if(currentValue < latestValue) {
                     patchInt++
                 }
 
