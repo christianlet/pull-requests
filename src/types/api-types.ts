@@ -28,7 +28,7 @@ export type Reviewer =
 
 export interface TicketsState {
     info: {
-        number: string
+        branch: string
         release: null | Release
         link: null | string
     }

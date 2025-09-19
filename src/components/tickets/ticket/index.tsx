@@ -1,17 +1,17 @@
-import { Launch, MoreHoriz } from '@mui/icons-material'
+import { faCodeMerge, faCodePullRequest, faCopy, faFileText } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { AccessTime, Launch, MoreHoriz } from '@mui/icons-material'
 import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import { useState } from 'react'
-import './styles.scss'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCodeMerge, faCodePullRequest, faCopy, faFileText, faTimesCircle, faUserClock } from '@fortawesome/free-solid-svg-icons'
-import { TicketsState } from '../../../types/api-types'
+import { useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '../../../hooks/redux-hooks'
 import { update } from '../../../redux/reducers/peer-reviews-reducer'
+import { TicketsState } from '../../../types/api-types'
+import { fromNow } from '../../../utilities/from-now'
 import { requestDevBranch } from '../../../utilities/git-api/pulls/request-reviewer'
 import { Repo } from './repo'
-import { useNavigate } from 'react-router-dom'
-import { fromNow } from '../../../utilities/from-now'
+import './styles.scss'
 
 interface TicketProps {
     ticket: TicketsState['info']
@@ -31,6 +31,9 @@ export const Ticket = (props: TicketProps) => {
     const myPR = true
     const jiraLink = props.ticket.link
     const devBranchManager = import.meta.env.VITE_DEV_BRANCH_MANAGER
+    const branchSplit = props.ticket.branch.split('/')
+    const branchPath = branchSplit.slice(0, -1).join('/')
+    const branchName = branchSplit.slice(-1).join('/')
     const devBranchRequested = props.data.filter(repo =>
         (repo.requested_reviewers?.filter(reviewer => reviewer.login === devBranchManager) ?? []).length > 0
     ).length > 0
@@ -76,17 +79,28 @@ export const Ticket = (props: TicketProps) => {
                     color: 'text.primary'
                 }}
             >
-                <div>
+                <Box>
+
                     <Box
                         display="flex"
                         alignItems="center"
                     >
-                        <Typography
-                            className="title"
-                            sx={{
-                                color: 'text.secondary'
-                            }}
-                        >{props.ticket.number}</Typography>
+                        <Box sx={{
+                            marginRight: 1
+                        }}>
+                            <Typography
+                                sx={{
+                                    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
+                                    fontSize: '12px'
+                                }}
+                            >{branchPath}</Typography>
+                            <Typography
+                                className="title"
+                                sx={{
+                                    color: 'text.secondary'
+                                }}
+                            >{branchName}</Typography>
+                        </Box>
                         {
                             props.ticket.release?.url && (
                                 <IconButton
@@ -116,7 +130,7 @@ export const Ticket = (props: TicketProps) => {
                                     }
                                     size="small"
                                     sx={{
-                                        color: 'text.primary'
+                                        color: 'text.secondary'
                                     }}
                                 >
                                     <Launch fontSize="small" />
@@ -124,88 +138,104 @@ export const Ticket = (props: TicketProps) => {
                             )
                         }
                     </Box>
-                    <Typography
-                        className="subtitle"
+                    <Box
+                        display='flex'
+                        alignItems='center'
                         sx={{
-                            color: 'text.disabled'
+                            bgcolor: theme.palette.mode === 'dark' ? 'grey.800' : 'grey.300',
+                            color: 'text.primary'
                         }}
                     >
-                        {relativeTime} by {authorData?.name || authorData?.login}
-                    </Typography>
-                </div>
+                        <AccessTime
+                            sx={{
+                                color: 'text.disabled',
+                                fontSize: '12px',
+                                marginRight: '5px'
+                            }}
+                        />
+                        <Typography
+                            className="subtitle"
+                            sx={{
+                                color: 'text.disabled'
+                            }}
+                        >
+                            {relativeTime} by {authorData?.name || authorData?.login}
+                        </Typography>
+                    </Box>
+                </Box>
                 <IconButton
                     onClick={handleMenuClick}
                     color="inherit"
                 >
                     <MoreHoriz fontSize="small" />
                 </IconButton>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={menuOpen}
-                    onClose={handleMenuClose}
-                    sx={{
-                        width: 300
-                    }}
-                >
-                    {
-                        myPR && (
-                            <MenuItem
-                                onClick={() => navigateToPage('description')}
-                                divider={true}
-                            >
-                                <ListItemIcon>
-                                    <FontAwesomeIcon icon={faFileText} />
-                                </ListItemIcon>
-                                <ListItemText>Update PR Description</ListItemText>
-                            </MenuItem>
-                        )
-                    }
-                    <MenuItem
-                        onClick={() => navigateToPage('target-branch')}
-                        divider={true}
-                    >
-                        <ListItemIcon>
-                            <FontAwesomeIcon icon={faCodePullRequest} />
-                        </ListItemIcon>
-                        <ListItemText>Update Target Branch</ListItemText>
-                    </MenuItem>
-                    {
-                        myPR && (
-                            <MenuItem
-                                onClick={() => {
-                                    let text = `:alert: Hey team, ${props.ticket.link} is ready for review\n\nPRs:\n`
-
-                                    text += props.data.map(pr => `- ${pr.html_url}`).join('\n')
-                                    text += '\n\ncc: @sarmad.ansari @matthew.bentley @rich.trunzo'
-
-                                    navigator.clipboard.writeText(text)
-
-                                    handleMenuClose()
-                                }}
-                                divider={true}
-                            >
-                                <ListItemIcon>
-                                    <FontAwesomeIcon icon={faCopy} />
-                                </ListItemIcon>
-                                <ListItemText>Copy For Team Review</ListItemText>
-                            </MenuItem>
-                        )
-                    }
-                    {
-                        myPR && (
-                            <MenuItem
-                                onClick={() => navigateToPage('merge')}
-                                divider={true}
-                            >
-                                <ListItemIcon>
-                                    <FontAwesomeIcon icon={faCodeMerge} />
-                                </ListItemIcon>
-                                <ListItemText>Merge PRs</ListItemText>
-                            </MenuItem>
-                        )
-                    }
-                </Menu>
             </Box>
+            <Menu
+                anchorEl={anchorEl}
+                open={menuOpen}
+                onClose={handleMenuClose}
+                sx={{
+                    width: 300
+                }}
+            >
+                {
+                    myPR && (
+                        <MenuItem
+                            onClick={() => navigateToPage('description')}
+                            divider={true}
+                        >
+                            <ListItemIcon>
+                                <FontAwesomeIcon icon={faFileText} />
+                            </ListItemIcon>
+                            <ListItemText>Update PR Description</ListItemText>
+                        </MenuItem>
+                    )
+                }
+                <MenuItem
+                    onClick={() => navigateToPage('target-branch')}
+                    divider={true}
+                >
+                    <ListItemIcon>
+                        <FontAwesomeIcon icon={faCodePullRequest} />
+                    </ListItemIcon>
+                    <ListItemText>Update Target Branch</ListItemText>
+                </MenuItem>
+                {
+                    myPR && (
+                        <MenuItem
+                            onClick={() => {
+                                let text = `:alert: Hey team, ${props.ticket.link} is ready for review\n\nPRs:\n`
+
+                                text += props.data.map(pr => `- ${pr.html_url}`).join('\n')
+                                text += '\n\ncc: @sarmad.ansari @matthew.bentley @rich.trunzo'
+
+                                navigator.clipboard.writeText(text)
+
+                                handleMenuClose()
+                            }}
+                            divider={true}
+                        >
+                            <ListItemIcon>
+                                <FontAwesomeIcon icon={faCopy} />
+                            </ListItemIcon>
+                            <ListItemText>Copy For Team Review</ListItemText>
+                        </MenuItem>
+                    )
+                }
+                {
+                    myPR && (
+                        <MenuItem
+                            onClick={() => navigateToPage('merge')}
+                            divider={true}
+                        >
+                            <ListItemIcon>
+                                <FontAwesomeIcon icon={faCodeMerge} />
+                            </ListItemIcon>
+                            <ListItemText>Merge PRs</ListItemText>
+                        </MenuItem>
+                    )
+                }
+            </Menu>
             <Divider />
             <Box
                 className="repo-container"

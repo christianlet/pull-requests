@@ -17,12 +17,12 @@ export const groupPullRequests = (prs: PullRequestFull[]) => {
         }
 
         const link = jiraTicket(ticket)
-        const prIndex = groupedPRs.findIndex(repo => repo.info.number === ticket)
+        const prIndex = groupedPRs.findIndex(repo => repo.info.branch === pr.head.ref)
 
         if(prIndex === -1) {
             groupedPRs.push({
                 info: {
-                    number: ticket,
+                    branch: pr.head.ref,
                     release,
                     link
                 },
