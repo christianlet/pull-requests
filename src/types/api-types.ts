@@ -8,7 +8,10 @@ export type PullRequestFull =
     & {
         reviewers: Reviewer[]
         lastModifiedSince?: string
-        hasPackages?: boolean
+        tags: {
+            latest?: RestEndpointMethodTypes["repos"]["getLatestRelease"]["response"]["data"]
+            current?: RestEndpointMethodTypes["repos"]["getLatestRelease"]["response"]["data"]
+        }
     }
 
 export type User =

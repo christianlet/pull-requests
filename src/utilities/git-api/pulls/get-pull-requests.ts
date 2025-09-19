@@ -2,6 +2,7 @@ import { RestEndpointMethodTypes } from '@octokit/rest'
 import { PullRequestFull, Reviewer } from '../../../types/api-types'
 import { searchOpenPullRequests } from '../search/get-open-pull-requests'
 import { Api } from '../storage/api'
+import { getTags } from '../tags/get-tags'
 import { getUserInfo } from '../users/get-user-info'
 import { getPullRequest } from './get-pull-request'
 import { getPullRequestReviews } from './get-pull-request-reviews'
@@ -65,10 +66,13 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
                         }
                     }))
 
+                const packages = await getTags(owner, repo, data.head.ref)
+
                 newItem = {
                     ...data,
                     lastModifiedSince: headers['last-modified'],
-                    reviewers
+                    reviewers,
+                    tags: packages
                 }
 
                 if(!localStorage) {

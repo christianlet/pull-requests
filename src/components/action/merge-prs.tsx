@@ -1,11 +1,11 @@
 import { Box, Button, Checkbox, FormControl, FormControlLabel } from '@mui/material'
-import './styles.scss'
-import { ActionProps } from './types/action-props'
 import { useState } from 'react'
-import { BranchTable } from '../branch-table'
-import { LongPress } from '../long-press'
 import { useNavigate } from 'react-router-dom'
 import { mergeAndCreatePr } from '../../utilities/merge-and-create-pr'
+import { BranchTable } from '../branch-table'
+import { LongPress } from '../long-press'
+import './styles.scss'
+import { ActionProps } from './types/action-props'
 
 export const MergePRs = (props: ActionProps) => {
     const navigate = useNavigate()
@@ -43,7 +43,7 @@ export const MergePRs = (props: ActionProps) => {
                 selectedRepos={props.selectedRepos}
                 aip={isSubmitting}
                 setSelectedRepos={props.setSelectedRepos}
-                hideUnmergeable={true}
+                disableCheckbox={(repo) => !repo.mergeable || repo.mergeable_state !== 'clean'}
             />
             <div style={{
                 display: 'flex',

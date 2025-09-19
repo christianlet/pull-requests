@@ -34,6 +34,7 @@ const repoPrefixes = [
     'spark-',
     'mc-',
     'api.',
+    'fox-',
     'mediacloud-',
 ]
 
@@ -71,7 +72,8 @@ export function NodeUpgrade() {
         const chunks = chunkArray(repoPrefixes, 5)
 
         for (const chunk of chunks) {
-            const initial = await search(client, `${chunk.join(' OR ')} in:name org:foxcorp org:foxnews language:TypeScript,JavaScript`)
+            const searchQuery = `${chunk.join(' OR ')} in:name org:foxcorp,foxnews language:TypeScript,JavaScript`
+            const initial = await search(client, searchQuery)
             const totalForChunk = initial.data.total_count
 
             repos.total += totalForChunk
@@ -89,7 +91,7 @@ export function NodeUpgrade() {
                 const pages = Math.ceil(totalForChunk / 100)
 
                 for (let i = 2; i < pages; i++) {
-                    const pageResponse = await search(client, `${chunk.join(' OR ')} in:name org:foxcorp org:foxnews language:TypeScript,JavaScript`, i)
+                    const pageResponse = await search(client, searchQuery, i)
 
                     repos.items = repos.items.concat(
                         await mapRepos(pageResponse.data.items.map(item => ({
@@ -318,11 +320,16 @@ export function NodeUpgrade() {
 
                 addEngine(parsed, version)
 
-                const [,major, minor] = parsed.version.match(/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/)
+                const matches = (parsed.version as string).match(/([0-9]{1,3}).([0-9]{1,3}).([0-9]{1,3})/)
+                let newPackageJsonVersion = null
 
-                const newPackageJsonVersion = `${major}.${parseInt(minor) + 1}.0-beta-node-upgrade.0`
+                if(matches) {
+                    const [, major, minor] = matches
 
-                updatePackageJsonVersion(parsed, newPackageJsonVersion)
+                    newPackageJsonVersion = `${major}.${parseInt(minor) + 1}.0-beta-node-upgrade.0`
+
+                    updatePackageJsonVersion(parsed, newPackageJsonVersion)
+                }
 
                 blobs.push(
                     await createBlob(repo.owner, repo.repo, packageJson.path, JSON.stringify(parsed, undefined, 2) + '\n')
@@ -333,12 +340,17 @@ export function NodeUpgrade() {
                     const parsed = JSON.parse(unblobbed)
                     const version = updateForm.nodeVersion.replace('.x', '')
 
-                    updatePackageJsonVersion(parsed, newPackageJsonVersion)
+                    if(newPackageJsonVersion) {
+                        updatePackageJsonVersion(parsed, newPackageJsonVersion)
+                    }
 
                     if('packages' in parsed) {
                         if('' in parsed.packages) {
                             addEngine(parsed.packages[''], version)
-                            updatePackageJsonVersion(parsed.packages[''], newPackageJsonVersion)
+
+                            if(newPackageJsonVersion) {
+                                updatePackageJsonVersion(parsed.packages[''], newPackageJsonVersion)
+                            }
                         }
                     }
 
@@ -346,6 +358,7 @@ export function NodeUpgrade() {
                         await createBlob(repo.owner, repo.repo, packageLockJson.path, JSON.stringify(parsed, undefined, 2) + '\n')
                     )
                 }
+
             }
 
             const response = await createCommit(
