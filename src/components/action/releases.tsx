@@ -43,7 +43,7 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
             })
         )
 
-        await sleep(1000)
+        await sleep(3000)
 
         setIsSubmitting(false)
         setRefreshRepos(new Date().getTime())
