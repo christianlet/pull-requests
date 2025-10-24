@@ -1,7 +1,7 @@
 
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { OctokitClient } from '../../octokit-client'
-import { getRepository } from '../repository/get-repository'
+import { getRepository } from '../repositories/get-repository'
 import { getBranch } from './get-branch'
 
 type GitRef = RestEndpointMethodTypes["git"]["getRef"]["response"]['data'] | RestEndpointMethodTypes["git"]["createRef"]["response"]['data']

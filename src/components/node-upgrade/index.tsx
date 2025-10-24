@@ -538,8 +538,6 @@ export function NodeUpgrade() {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <ul>
-            </ul>
         </div>
     )
 }
