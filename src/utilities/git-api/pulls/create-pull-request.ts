@@ -1,6 +1,6 @@
 
-import { getRepository } from '../repository/get-repository'
 import { OctokitClient } from '../../octokit-client'
+import { getRepository } from '../repositories/get-repository'
 
 export const createPullRequest = async (owner: string, repo: string, branch: string, title: string, description: string) => {
 
