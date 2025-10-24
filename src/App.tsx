@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState } from 'react';
-import { BrowserRouter, NavLink, Outlet, Route, Routes } from "react-router-dom";
-import GitHubIcon from '@mui/icons-material/GitHub';
-import { default as MuiSwitch } from '@mui/material/Switch'
 import { ThemeProvider } from '@emotion/react'
+import GitHubIcon from '@mui/icons-material/GitHub'
 import { AppBar, Box, Button, createTheme, CssBaseline, FormControlLabel, FormGroup, Paper, Toolbar, Typography, useMediaQuery } from '@mui/material'
-import { OauthCallback } from './components/oauth-callback'
-import { Tickets } from './components/tickets'
-import { BranchDetail } from './components/branch-detail'
-import { Releases } from './components/releases'
 import { amber, blue, green, yellow } from '@mui/material/colors'
+import { default as MuiSwitch } from '@mui/material/Switch'
+import { useEffect, useMemo, useState } from 'react'
+import { BrowserRouter, NavLink, Outlet, Route, Routes } from "react-router-dom"
+import { BranchDetail } from './components/branch-detail'
+import { NodeUpgrade } from './components/node-upgrade'
+import { OauthCallback } from './components/oauth-callback'
+import { Releases } from './components/releases'
 import { Edit } from './components/releases/edit'
+import { Tickets } from './components/tickets'
 import { useAuthenticatedUser } from './hooks/authenticated-user'
 
 function App() {
@@ -66,6 +67,11 @@ function App() {
                         >
                             <Route index element={<Releases />} />
                             <Route path="edit/:id?" element={<Edit />} />
+                        </Route>
+                        <Route
+                            path="node-upgrade"
+                        >
+                            <Route index element={<NodeUpgrade />} />
                         </Route>
                         <Route
                             path="oauth-callback"
@@ -139,6 +145,17 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                                 sx={{ marginRight: 1, textTransform: 'capitalize' }}
                             >
                                 Pull Requests
+                            </Button>
+                            <Button
+                                component={NavLink}
+                                to="node-upgrade"
+                                color="inherit"
+                                sx={{
+                                    marginRight: 1,
+                                    textTransform: 'capitalize'
+                                }}
+                            >
+                                Node Upgrade
                             </Button>
                             <Button
                                 component={NavLink}

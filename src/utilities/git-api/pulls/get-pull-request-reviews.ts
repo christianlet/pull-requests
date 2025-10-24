@@ -1,9 +1,8 @@
 
 import { OctokitClient } from '../../octokit-client'
 
-export const getPullRequestReviews = async (owner: string, repo: string, pullNumber: number) => {
+export const getPullRequestReviews = async (owner: string, repo: string, pullNumber: number, lastSearched?: string) => {
     const octokit = await OctokitClient.getInstance()
-    const lastSearched = sessionStorage.getItem('lastSearched')
     const { data } = await octokit.pulls.listReviews({
         owner,
         repo,

@@ -1,17 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { CircularProgress, IconButton, InputAdornment, MenuItem, Pagination, Select, SelectChangeEvent, Switch, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { CircularProgress, IconButton, InputAdornment, MenuItem, Pagination, Select, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
-import { Ticket } from './ticket'
-import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
-import './styles.scss'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
+import { useUsers } from '../../hooks/users'
 import { AuthenticatedUser, TicketsState } from '../../types/api-types'
+import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
 import { groupPullRequests } from '../../utilities/group-pull-requests'
-import { getUsers } from '../../utilities/git-api/users/get-users'
-import { getAuthenticatedUser } from '../../utilities/git-api/users/get-authenticated-user'
-import { useAuthenticatedUser } from '../../hooks/authenticated-user'
+import './styles.scss'
+import { Ticket } from './ticket'
 
 interface State {
     items: null | TicketsState[]
@@ -21,7 +19,6 @@ interface State {
 export const Tickets = () => {
     const { authUser } = useOutletContext<{ authUser: AuthenticatedUser }>()
     const [searchParams, setSearchParams] = useSearchParams()
-    const [authors, setAuthors] = useState<{ username: string; name: string }[]>([])
     const [refresh, setRefresh] = useState(new Date().getTime())
     const [query, setQuery] = useState('')
     const [inputValue, setInputValue] = useState('')
@@ -34,21 +31,7 @@ export const Tickets = () => {
     const prType = searchParams.get('prType') ?? 'created'
     const page = searchParams.get('page') ?? '1'
     const theme = useTheme()
-
-    useEffect(() => {
-        if(!authUser) {
-            return
-        }
-
-        getUsers()
-            .then(res => {
-                if(!res) {
-                    return
-                }
-
-                setAuthors(res.filter(user => user.username !== authUser.login))
-            })
-    }, [])
+    const authors = useUsers()
 
     useEffect(() => {
         const handler = setTimeout(() => {

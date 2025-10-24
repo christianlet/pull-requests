@@ -1,5 +1,5 @@
-import { Box, Checkbox, Chip, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import { ErrorOutline, KeyboardBackspace, Launch } from '@mui/icons-material'
+import { Box, Checkbox, Chip, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { EditablePullRequest } from '../action/types/editable-pull-request'
 
@@ -9,12 +9,12 @@ interface Props {
     aip: boolean
     selectedRepos: EditablePullRequest[]
     setSelectedRepos: (repos: EditablePullRequest[]) => void
-    hideUnmergeable?: boolean
+    disableCheckbox?: (repo: EditablePullRequest) => boolean
 }
 
 export const BranchTable = ({ repos, ...props }: Props) => {
     const [toggleSelect, setToggleSelect] = useState(false)
-
+    const isCheckboxDisabled = !props.disableCheckbox ? (repo: EditablePullRequest) => false : props.disableCheckbox
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const id = parseInt(event.target.id, 10)
 
@@ -47,6 +47,10 @@ export const BranchTable = ({ repos, ...props }: Props) => {
             <Table size="small">
                 <TableHead>
                     <TableRow>
+                        <TableCell colSpan={3}></TableCell>
+                        <TableCell colSpan={2} align='center'>Releases</TableCell>
+                    </TableRow>
+                    <TableRow>
                         <TableCell align="center">
                             <Checkbox
                                 checked={toggleSelect}
@@ -54,7 +58,7 @@ export const BranchTable = ({ repos, ...props }: Props) => {
                                 onChange={(event) => {
                                     if(event.target.checked) {
                                         const allRepos = repos
-                                            .filter(repo => props.hideUnmergeable ? repo.mergeable : true)
+                                            .filter(repo => !isCheckboxDisabled(repo))
                                             .filter(repo => repo.state === 'open')
 
                                         props.setSelectedRepos(allRepos)
@@ -68,19 +72,21 @@ export const BranchTable = ({ repos, ...props }: Props) => {
                         </TableCell>
                         <TableCell>Repository</TableCell>
                         <TableCell>Branch</TableCell>
+                        <TableCell>Latest</TableCell>
+                        <TableCell>Current</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
                     { props.loadingRepos && (
                         <TableRow>
-                            <TableCell colSpan={3} align='center'>Loading...</TableCell>
+                            <TableCell colSpan={5} align='center'>Loading...</TableCell>
                         </TableRow>
                     )}
                     {
                         repos.map((repo, i) => {
                             const mainBranch = repo.base.ref === repo.base.repo.default_branch && !repo.head.ref.includes('/release/')
                             const selected = props.selectedRepos.find(selectedRepo => selectedRepo.id === repo.id)
-                            const isActionable = props.hideUnmergeable ? (repo.mergeable && repo.mergeable_state === 'clean') : true
+                            const isActionable = !isCheckboxDisabled(repo)
 
                             return (
                                 <TableRow key={repo.id}>
@@ -142,11 +148,33 @@ export const BranchTable = ({ repos, ...props }: Props) => {
                                                             fontSize={12}
                                                             color="warning"
                                                             marginLeft={1}
-                                                        >Targeting main branch</Typography>
+                                                        >Targeting default branch</Typography>
                                                     </div>
                                                 )
                                             }
                                         </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {
+                                            repo.tags.latest && (
+                                                <Chip
+                                                    label={repo.tags.latest?.tag_name}
+                                                    size='small'
+                                                    color='primary'
+                                                />
+                                            )
+                                        }
+                                    </TableCell>
+                                    <TableCell>
+                                        {
+                                            repo.tags.current && (
+                                                <Chip
+                                                    label={repo.tags.current?.tag_name}
+                                                    size='small'
+                                                    color='default'
+                                                />
+                                            )
+                                        }
                                     </TableCell>
                                 </TableRow>
                             )

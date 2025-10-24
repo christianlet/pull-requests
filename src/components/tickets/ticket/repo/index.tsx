@@ -1,8 +1,8 @@
-import { PullRequestFull } from '../../../../types/api-types'
-import { Box, Button, IconButton, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Tooltip } from '@mui/material'
-import { Launch } from '@mui/icons-material'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCodeMerge, faCodePullRequest, faComment, faUserShield } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Error, Launch } from '@mui/icons-material'
+import { Box, Button, IconButton, ListItem, ListItemAvatar, ListItemText, Tooltip } from '@mui/material'
+import { PullRequestFull } from '../../../../types/api-types'
 import { Reviewer } from './reviewer'
 
 interface RepoProps {
@@ -23,22 +23,7 @@ export const Repo = (props: RepoProps) => {
             className="list-item"
             divider={props.divider}
             dense={true}
-            sx={{
-                borderLeft: '5px solid',
-                borderLeftColor: ticket.mergeable_state === 'dirty' ? 'error.main' : 'transparent',
-            }}
         >
-            <ListItemIcon>
-                <IconButton
-                    onClick={() => window.open(ticket.html_url, '_blank')}
-                    size="small"
-                    sx={{
-                        color: 'text.primary',
-                    }}
-                >
-                    <Launch fontSize="small" />
-                </IconButton>
-            </ListItemIcon>
             <ListItemText
                 sx={{
                     alignItems: 'center'
@@ -47,6 +32,15 @@ export const Repo = (props: RepoProps) => {
                     <>
                         <Box>
                             {ticket.base.repo.name}
+                            <IconButton
+                                onClick={() => window.open(ticket.html_url, '_blank')}
+                                size='small'
+                                sx={{
+                                    color: 'text.secondary'
+                                }}
+                            >
+                                <Launch fontSize="small" />
+                            </IconButton>
                         </Box>
                         {
                             releaseManagerRequested &&
@@ -80,7 +74,7 @@ export const Repo = (props: RepoProps) => {
                         }}
                     >
                         {
-                            !ticket.merged ? (
+                            !ticket.merged && ticket.mergeable_state !== 'dirty' ? (
                                 <FontAwesomeIcon
                                     icon={faCodePullRequest}
                                     style={{
@@ -88,6 +82,20 @@ export const Repo = (props: RepoProps) => {
                                         marginLeft: 0
                                     }}
                                 />
+                            ) : ticket.mergeable_state === 'dirty' ? (
+                                <Tooltip
+                                    arrow={true}
+                                    title='Merge conflict'
+                                >
+                                    <Error
+                                        color='error'
+                                        style={{
+                                            fontSize: 16,
+                                            marginRight: 5,
+                                            marginLeft: 0
+                                        }}
+                                    />
+                                </Tooltip>
                             ) : (
                                 <FontAwesomeIcon
                                     icon={faCodeMerge}

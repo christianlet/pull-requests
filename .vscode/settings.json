@@ -1,3 +1,6 @@
 {
-    // "files.autoSave": "on"
+    "cSpell.words": [
+        "octo"
+    ],
+    "files.autoSave": "off"
 }

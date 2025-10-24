@@ -1,7 +1,8 @@
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { PullRequestFull, Reviewer } from '../../../types/api-types'
-import { Api } from '../storage/api'
 import { searchOpenPullRequests } from '../search/get-open-pull-requests'
+import { Api } from '../storage/api'
+import { getTags } from '../tags/get-tags'
 import { getUserInfo } from '../users/get-user-info'
 import { getPullRequest } from './get-pull-request'
 import { getPullRequestReviews } from './get-pull-request-reviews'
@@ -46,12 +47,12 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
                     pull_number: pullNumber
                 }, args.hardFetch ? '' : (localStorage?.lastModifiedSince || ''))
 
-                const reviews = await getPullRequestReviews(owner, repo, pullNumber)
+                const reviews = await getPullRequestReviews(owner, repo, pullNumber, localStorage?.lastModifiedSince)
 
                 reviewers = await Promise.all(reviews
                     .filter(r => r.state === 'APPROVED' || r.state === 'CHANGES_REQUESTED')
                     .map(async r => {
-                        let user = await userStorage.get(r.user?.login ?? '')
+                        let user = await userStorage.get(r.user!.id.toString())
 
                         if(!user) {
                             user = await getUserInfo(r.user?.login ?? '')
@@ -65,10 +66,13 @@ export const getPullRequests = async (args: Arguments): Promise<PullRequestWithP
                         }
                     }))
 
+                const packages = await getTags(owner, repo, data.head.ref)
+
                 newItem = {
                     ...data,
                     lastModifiedSince: headers['last-modified'],
-                    reviewers
+                    reviewers,
+                    tags: packages
                 }
 
                 if(!localStorage) {

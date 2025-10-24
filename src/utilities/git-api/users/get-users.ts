@@ -1,9 +1,9 @@
 
-import { getAuthenticatedUser } from './get-authenticated-user'
-import { getUserInfo } from './get-user-info'
-import { Api } from '../storage/api'
 import { RestEndpointMethodTypes } from '@octokit/rest'
 import { OctokitClient } from '../../octokit-client'
+import { Api } from '../storage/api'
+import { getAuthenticatedUser } from './get-authenticated-user'
+import { getUserInfo } from './get-user-info'
 
 type GhUser = RestEndpointMethodTypes["users"]["getByUsername"]["response"]['data']
 
@@ -30,7 +30,7 @@ export const getUsers = async () => {
             if(!members.includes(member.login)) {
                 members.push(member.login)
 
-                let user = await userStorage.get(member.login)
+                let user = await userStorage.get(member.id)
 
                 if(!user) {
                     if(member.login === authenticatedUser.login) {
