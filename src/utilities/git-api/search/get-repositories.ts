@@ -12,5 +12,6 @@ export const getRepositories = async (
         q,
         per_page: pageSize,
         page,
+        sort: 'updated'
     })
 }

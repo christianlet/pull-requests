@@ -1,5 +1,5 @@
 import { CopyAll, Search } from '@mui/icons-material'
-import { Box, Button, CircularProgress, InputAdornment, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
+import { Box, Button, Checkbox, Chip, CircularProgress, InputAdornment, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
 import { Endpoints } from '@octokit/types'
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
@@ -23,6 +23,7 @@ export const Repositories = () => {
         total: 0,
         items: []
     })
+    const [reposSelected, setReposSelected] = useState<Repos['items']>([])
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -36,18 +37,14 @@ export const Repositories = () => {
 
     useEffect(() => {
         setAip(true)
+        setReposSelected([])
+        setRepos({
+            total: 0,
+            items: []
+        })
 
         getRepos().then(async initialRes => {
             let data = initialRes.items
-            const pages = Array.from({ length: Math.ceil(initialRes.total_count / 100) }).map((v, i) => i+1).slice(1)
-
-            await Promise.all(
-                pages.map(async page => {
-                    const res = await getRepos(page)
-
-                    data = data.concat(res.items)
-                })
-            )
 
             data.sort((a, b) => a.full_name.localeCompare(b.full_name))
 
@@ -65,6 +62,25 @@ export const Repositories = () => {
         const { data } = await getRepositories(query, 100, page)
 
         return data
+    }
+
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const id = parseInt(event.target.id, 10)
+
+        if(event.target.checked) {
+            const repo = repos.items.find(repo => repo.id === id)
+
+            if(repo) {
+                setReposSelected([...reposSelected, repo])
+            }
+        } else {
+            const newSelectedRepos = [...reposSelected]
+            const index = reposSelected.findIndex(sr => sr.id === id)
+
+            newSelectedRepos.splice(index, 1)
+
+            setReposSelected(newSelectedRepos)
+        }
     }
 
     return (
@@ -97,21 +113,10 @@ export const Repositories = () => {
             </Paper>
             <Stack direction='row' justifyContent='space-between' alignItems='end' marginBottom={1} marginX={2}>
                 <Box>
-                    <Typography sx={{ marginBottom: 1, marginTop: 5 }}>
-                        Total repositories: {repos.total}
-                    </Typography>
-                </Box>
-                <Box>
-                    {
-                        aip && (
-                            <>
-                                <Typography sx={{ marginRight: 1, display: 'inline-block', verticalAlign: 'top' }}>
-                                    Loading
-                                </Typography>
-                                <CircularProgress size='20px' />
-                            </>
-                        )
-                    }
+                    <Chip
+                        label={`Total repositories: ${repos.total}`}
+                        sx={{ marginBottom: 1, marginTop: 5 }}
+                    />
                 </Box>
             </Stack>
             <TableContainer
@@ -119,20 +124,51 @@ export const Repositories = () => {
                 variant='outlined'
                 sx={{ maxHeight: 600}}
             >
-                <Table stickyHeader>
+                <Table
+                    stickyHeader
+                >
                     <TableHead>
                         <TableRow>
+                            <TableCell>
+                                <Button
+                                    variant='contained'
+                                    color='success'
+                                    startIcon={<CopyAll />}
+                                    disabled={reposSelected.length === 0}
+                                    onClick={() => {
+                                        let reposToCopy = reposSelected.map(repo => {
+                                            const dir = localRepositoriesDirectory + '/' + repo.name
+
+                                            return `git clone git@github.com:${repo.full_name} ${dir}`
+                                        })
+
+                                        navigator.clipboard.writeText(reposToCopy.join(' && '))
+                                    }}
+                                >
+                                    Clone
+                                </Button>
+                            </TableCell>
+                            <TableCell>Org</TableCell>
                             <TableCell>Repo</TableCell>
                             <TableCell>Main Branch</TableCell>
-                            <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {
+                            aip && (
+                                <TableCell colSpan={4}>
+                                    <Typography sx={{ marginRight: 1, display: 'inline-block', verticalAlign: 'center' }}>
+                                        Loading
+                                    </Typography>
+                                    <CircularProgress size='20px' />
+                                </TableCell>
+                            )
+                        }
+                        {
                             repos.items.length === 0 && !aip && (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={3}
+                                        colSpan={4}
                                         align='center'
                                     >No data found</TableCell>
                                 </TableRow>
@@ -140,22 +176,18 @@ export const Repositories = () => {
                         }
                         {
                             repos.items.map((repo, i) => {
-                                const dir = localRepositoriesDirectory + '/' + repo.name
-
                                 return (
                                     <TableRow key={`${repo.full_name}`}>
-                                        <TableCell>{repo.full_name}</TableCell>
-                                        <TableCell>{repo.default_branch}</TableCell>
-                                        <TableCell align="right">
-                                            <Button
-                                                variant='contained'
-                                                color='success'
-                                                startIcon={<CopyAll />}
-                                                onClick={() => navigator.clipboard.writeText(`git clone git@github.com:${repo.full_name} ${localRepositoriesDirectory}/${repo.name}`)}
-                                            >
-                                                Clone
-                                            </Button>
+                                        <TableCell>
+                                            <Checkbox
+                                                id={repo.id.toString()}
+                                                onChange={handleCheckboxChange}
+                                                checked={reposSelected.find(selectedRepo => selectedRepo.id === repo.id) !== undefined}
+                                            />
                                         </TableCell>
+                                        <TableCell>{repo.owner?.login}</TableCell>
+                                        <TableCell>{repo.name}</TableCell>
+                                        <TableCell>{repo.default_branch}</TableCell>
                                     </TableRow>
                                 )
                             })
