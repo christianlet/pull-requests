@@ -207,7 +207,7 @@ export const Ticket = (props: TicketProps) => {
                                 let text = `:alert: Hey team, ${props.ticket.link} is ready for review\n\nPRs:\n`
 
                                 text += props.data.map(pr => `- ${pr.html_url}`).join('\n')
-                                text += '\n\ncc: @sarmad.ansari @matthew.bentley @rich.trunzo'
+                                text += `\n\ncc: ${import.meta.env.VITE_PR_REVIEWERS}`
 
                                 navigator.clipboard.writeText(text)
 
