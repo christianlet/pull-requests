@@ -6,10 +6,8 @@ import { Box, useTheme } from '@mui/system'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppDispatch } from '../../../hooks/redux-hooks'
-import { update } from '../../../redux/reducers/peer-reviews-reducer'
 import { TicketsState } from '../../../types/api-types'
 import { fromNow } from '../../../utilities/from-now'
-import { requestDevBranch } from '../../../utilities/git-api/pulls/request-reviewer'
 import { Repo } from './repo'
 import './styles.scss'
 
@@ -43,21 +41,19 @@ export const Ticket = (props: TicketProps) => {
     )
     const handleMenuClose = () => setAnchorEl(null)
 
-    const devBranch = async () => {
-        handleMenuClose()
+    const copy = () => {
+        const reviewers = import.meta.env.VITE_PR_REVIEWERS
+        let text = `:alert: Hey team, ${props.ticket.link} is ready for review\n\nPRs:\n`
 
-        for (const repo of props.data) {
-            const response = await requestDevBranch(repo.base.repo.owner.login, repo.base.repo.name, repo.number)
+        text += props.data.map(pr => `- ${pr.html_url}`).join('\n')
 
-            if(response) {
-                dispatch(
-                    update({
-                        ...repo,
-                        requested_reviewers: response
-                    })
-                )
-            }
+        if (reviewers) {
+            text += `\n\ncc: ${reviewers}`
         }
+
+        navigator.clipboard.writeText(text)
+
+        handleMenuClose()
     }
 
     const navigateToPage = (tab: string) => {
@@ -231,16 +227,7 @@ export const Ticket = (props: TicketProps) => {
                 {
                     myPR && (
                         <MenuItem
-                            onClick={() => {
-                                let text = `:alert: Hey team, ${props.ticket.link} is ready for review\n\nPRs:\n`
-
-                                text += props.data.map(pr => `- ${pr.html_url}`).join('\n')
-                                text += `\n\ncc: ${import.meta.env.VITE_PR_REVIEWERS}`
-
-                                navigator.clipboard.writeText(text)
-
-                                handleMenuClose()
-                            }}
+                            onClick={copy}
                             divider={true}
                         >
                             <ListItemIcon>
