@@ -1,5 +1,4 @@
-import { LoadingButton } from '@mui/lab'
-import { Box, Button, FormControl, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material'
+import { Box, Button, Checkbox, FormControl, FormControlLabel, FormGroup, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PullRequestFull } from '../../types/api-types'
@@ -15,11 +14,15 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
     const navigate = useNavigate()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [formData, setFormData] = useState({
-        type: 'prerelease',
+        type: 'patch',
         identifier: ''
     })
 
     const submit = async () => {
+        if (!formData.identifier) {
+            return
+        }
+
         setIsSubmitting(true)
 
         const client = await OctokitClient.getInstance()
@@ -78,7 +81,7 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
             return null
         }
 
-        const matches = versionToMatchAgainst.tag_name.match(/^([0-9]+).([0-9]+).([0-9]+)(?:-beta-\S+.([0-9]+))?/)
+        const matches = versionToMatchAgainst.tag_name.match(/^(?:release--)?([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta-\S+\.([0-9]+))?/)
 
         if(!matches) {
             console.log(`No matches found in version`)
@@ -90,34 +93,30 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
         let majorInt = parseInt(matches[1])
         let minorInt = parseInt(matches[2])
         let patchInt = parseInt(matches[3])
-        let prereleaseInt = matches[4] ? parseInt(matches[4]) : null
-        let newVersion = null
+        let prereleaseInt = matches[4] ? parseInt(matches[4]) : 0
 
         switch (formData.type) {
             case 'major':
                 majorInt++
-                newVersion = `${majorInt}.0.0`
+                minorInt = 0
+                patchInt = 0
                 break
             case 'minor':
                 minorInt++
-                newVersion = `${majorInt}.${minorInt}.0`
+                patchInt = 0
                 break
             case 'patch':
                 patchInt++
-                newVersion = `${majorInt}.${minorInt}.${patchInt}`
-                break
-            case 'prerelease':
-                prereleaseInt = prereleaseInt !== null && tags.current?.tag_name.includes(formData.identifier) ? (prereleaseInt + 1) : 0
-
-                if(currentValue < latestValue) {
-                    patchInt++
-                }
-
-                newVersion = `${majorInt}.${minorInt}.${patchInt}-beta-${formData.identifier}.${prereleaseInt}`
                 break
         }
 
-        return newVersion
+        prereleaseInt = prereleaseInt !== null && tags.current?.tag_name.includes(formData.identifier) ? (prereleaseInt + 1) : 0
+
+        if (currentValue < latestValue) {
+            patchInt++
+        }
+
+        return `${majorInt}.${minorInt}.${patchInt}-beta-${formData.identifier}.${prereleaseInt}`
     }
 
     return (
@@ -126,7 +125,7 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
                 component='form'
                 sx={{
                     marginTop: 3,
-                    marginBottom: 5,
+                    marginBottom: 1,
                     display: 'flex'
                 }}
             >
@@ -140,11 +139,13 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
                     <InputLabel id="release-type">Release Type</InputLabel>
                     <Select
                         labelId='release-type'
-                        defaultValue='prerelease'
+                        defaultValue='patch'
                         variant='filled'
                         onChange={event => setFormData({ ...formData, type: event.target.value })}
                     >
-                        <MenuItem title='Prerelease' value='prerelease'>Prerelease</MenuItem>
+                        <MenuItem title='Major' value='major'>Major</MenuItem>
+                        <MenuItem title='Minor' value='minor'>Minor</MenuItem>
+                        <MenuItem title='Patch' value='patch'>Patch</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControl fullWidth>
@@ -162,6 +163,23 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
                         }}
                     />
                 </FormControl>
+            </Box>
+            <Box
+                sx={{
+                    marginBottom: 1
+                }}
+            >
+                <FormGroup>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                defaultChecked
+                                disabled
+                            />
+                        }
+                        label="Pre-release"
+                    />
+                </FormGroup>
             </Box>
             <BranchTable
                 repos={repos || []}
@@ -182,15 +200,15 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
                     onClick={() => navigate('/prs')}
                     sx={{ marginRight: 2 }}
                 >Back</Button>
-                <LoadingButton
+                <Button
                     loading={isSubmitting}
                     variant="contained"
                     color="info"
                     size="large"
-                    disabled={selectedRepos.length === 0 || formData.type === '' || (formData.type === 'prerelease' && formData.identifier === '')}
+                    disabled={selectedRepos.length === 0 || formData.type === '' || formData.identifier === ''}
                     onClick={submit}
                     type="button"
-                >Submit</LoadingButton>
+                >Submit</Button>
             </div>
         </Box>
     )
