@@ -13,7 +13,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@mui/icons-material": "7.3.6",
     "@mui/lab": "7.0.1-beta.20",
-    "@mui/material": "7.3.6",
+    "@mui/material": "^7.3.7",
     "@mui/x-date-pickers": "^7.23.3",
     "@octokit/auth-oauth-app": "^4.3.0",
     "@octokit/rest": "22.0.0",

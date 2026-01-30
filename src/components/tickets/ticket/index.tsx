@@ -1,4 +1,4 @@
-import { faCodeMerge, faCodePullRequest, faCopy, faFileText } from '@fortawesome/free-solid-svg-icons'
+import { faCodeMerge, faCodePullRequest, faCopy, faFileText, faTags } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { AccessTime, Launch, MoreHoriz } from '@mui/icons-material'
 import { Divider, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material'
@@ -94,49 +94,51 @@ export const Ticket = (props: TicketProps) => {
                                     fontSize: '12px'
                                 }}
                             >{branchPath}</Typography>
-                            <Typography
-                                className="title"
-                                sx={{
-                                    color: 'text.secondary'
-                                }}
-                            >{branchName}</Typography>
-                        </Box>
-                        {
-                            props.ticket.release?.url && (
-                                <IconButton
-                                    onClick={() =>
-                                        window.open(
-                                            props.ticket.release?.url,
-                                            '_blank'
-                                        )
-                                    }
-                                    size="small"
-                                    sx={{
-                                        color: 'text.primary'
-                                    }}
-                                >
-                                    <Launch fontSize="small" />
-                                </IconButton>
-                            )
-                        }
-                        {
-                            jiraLink && (
-                                <IconButton
-                                    onClick={() =>
-                                        window.open(
-                                            jiraLink,
-                                            '_blank'
-                                        )
-                                    }
-                                    size="small"
+                            <Box display="flex" alignItems="center">
+                                <Typography
+                                    className="title"
                                     sx={{
                                         color: 'text.secondary'
                                     }}
-                                >
-                                    <Launch fontSize="small" />
-                                </IconButton>
-                            )
-                        }
+                                >{branchName}</Typography>
+                                {
+                                    props.ticket.release?.url && (
+                                        <IconButton
+                                            onClick={() =>
+                                                window.open(
+                                                    props.ticket.release?.url,
+                                                    '_blank'
+                                                )
+                                            }
+                                            size="small"
+                                            sx={{
+                                                color: 'text.primary'
+                                            }}
+                                        >
+                                            <Launch fontSize="small" />
+                                        </IconButton>
+                                    )
+                                }
+                                {
+                                    jiraLink && (
+                                        <IconButton
+                                            onClick={() =>
+                                                window.open(
+                                                    jiraLink,
+                                                    '_blank'
+                                                )
+                                            }
+                                            size="small"
+                                            sx={{
+                                                color: 'text.secondary'
+                                            }}
+                                        >
+                                            <Launch fontSize="small" />
+                                        </IconButton>
+                                    )
+                                }
+                            </Box>
+                        </Box>
                     </Box>
                     <Box
                         display='flex'
@@ -187,7 +189,7 @@ export const Ticket = (props: TicketProps) => {
                             <ListItemIcon>
                                 <FontAwesomeIcon icon={faFileText} />
                             </ListItemIcon>
-                            <ListItemText>Update PR Description</ListItemText>
+                            <ListItemText>Pull Request Description</ListItemText>
                         </MenuItem>
                     )
                 }
@@ -198,8 +200,34 @@ export const Ticket = (props: TicketProps) => {
                     <ListItemIcon>
                         <FontAwesomeIcon icon={faCodePullRequest} />
                     </ListItemIcon>
-                    <ListItemText>Update Target Branch</ListItemText>
+                    <ListItemText>Target Branch</ListItemText>
                 </MenuItem>
+                {
+                    myPR && (
+                        <MenuItem
+                            onClick={() => navigateToPage('merge')}
+                            divider={true}
+                        >
+                            <ListItemIcon>
+                                <FontAwesomeIcon icon={faCodeMerge} />
+                            </ListItemIcon>
+                            <ListItemText>Merge</ListItemText>
+                        </MenuItem>
+                    )
+                }
+                {
+                    myPR && (
+                        <MenuItem
+                            onClick={() => navigateToPage('releases')}
+                            divider={true}
+                        >
+                            <ListItemIcon>
+                                <FontAwesomeIcon icon={faTags} />
+                            </ListItemIcon>
+                            <ListItemText>Releases</ListItemText>
+                        </MenuItem>
+                    )
+                }
                 {
                     myPR && (
                         <MenuItem
@@ -219,19 +247,6 @@ export const Ticket = (props: TicketProps) => {
                                 <FontAwesomeIcon icon={faCopy} />
                             </ListItemIcon>
                             <ListItemText>Copy For Team Review</ListItemText>
-                        </MenuItem>
-                    )
-                }
-                {
-                    myPR && (
-                        <MenuItem
-                            onClick={() => navigateToPage('merge')}
-                            divider={true}
-                        >
-                            <ListItemIcon>
-                                <FontAwesomeIcon icon={faCodeMerge} />
-                            </ListItemIcon>
-                            <ListItemText>Merge PRs</ListItemText>
                         </MenuItem>
                     )
                 }

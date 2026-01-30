@@ -1,9 +1,10 @@
 import { faCodeMerge, faCodePullRequest, faComment, faUserShield } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Error, Launch } from '@mui/icons-material'
-import { Box, Button, IconButton, ListItem, ListItemAvatar, ListItemText, Tooltip } from '@mui/material'
+import { Error } from '@mui/icons-material'
+import { Box, Button, ListItem, ListItemAvatar, ListItemText, Tooltip, Typography } from '@mui/material'
 import { PullRequestFull } from '../../../../types/api-types'
 import { Reviewer } from './reviewer'
+import './styles.scss'
 
 interface RepoProps {
     data: PullRequestFull
@@ -31,16 +32,12 @@ export const Repo = (props: RepoProps) => {
                 primary={
                     <>
                         <Box>
-                            {ticket.base.repo.name}
-                            <IconButton
-                                onClick={() => window.open(ticket.html_url, '_blank')}
-                                size='small'
-                                sx={{
-                                    color: 'text.secondary'
-                                }}
+                            <Typography
+                                className="repo-name"
+                                fontSize={15}
                             >
-                                <Launch fontSize="small" />
-                            </IconButton>
+                                <a href={ticket.html_url} target="_blank">{ticket.base.repo.name}</a>
+                            </Typography>
                         </Box>
                         {
                             releaseManagerRequested &&

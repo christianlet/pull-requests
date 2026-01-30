@@ -184,7 +184,7 @@ const Header = ({ darkMode, setDarkMode }: { darkMode: boolean; setDarkMode: (c:
                             </Button>
                         </Box>
                     </Box>
-                    <Box>
+                    <Box display="none">
                         <FormGroup>
                             <FormControlLabel
                                 control={
