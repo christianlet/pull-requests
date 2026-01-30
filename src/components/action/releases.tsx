@@ -10,6 +10,7 @@ import { BranchTable } from '../branch-table'
 import './styles.scss'
 import { ActionProps } from './types/action-props'
 
+
 export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -95,26 +96,24 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
         let patchInt = parseInt(matches[3])
         let prereleaseInt = matches[4] ? parseInt(matches[4]) : 0
 
-        switch (formData.type) {
-            case 'major':
-                majorInt++
-                minorInt = 0
-                patchInt = 0
-                break
-            case 'minor':
-                minorInt++
-                patchInt = 0
-                break
-            case 'patch':
-                patchInt++
-                break
+        if (!currentTag) {
+            switch (formData.type) {
+                case 'major':
+                    majorInt++
+                    minorInt = 0
+                    patchInt = 0
+                    break
+                case 'minor':
+                    minorInt++
+                    patchInt = 0
+                    break
+                case 'patch':
+                    patchInt++
+                    break
+            }
         }
 
-        prereleaseInt = prereleaseInt !== null && tags.current?.tag_name.includes(formData.identifier) ? (prereleaseInt + 1) : 0
-
-        if (currentValue < latestValue) {
-            patchInt++
-        }
+        prereleaseInt = prereleaseInt !== null && versionToMatchAgainst?.tag_name.includes(formData.identifier) ? (prereleaseInt + 1) : 0
 
         return `${majorInt}.${minorInt}.${patchInt}-beta-${formData.identifier}.${prereleaseInt}`
     }
