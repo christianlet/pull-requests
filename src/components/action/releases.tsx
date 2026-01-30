@@ -10,6 +10,7 @@ import { BranchTable } from '../branch-table'
 import './styles.scss'
 import { ActionProps } from './types/action-props'
 
+
 export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
     const [isSubmitting, setIsSubmitting] = useState(false)
