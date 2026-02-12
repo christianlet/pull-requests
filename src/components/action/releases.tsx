@@ -1,5 +1,5 @@
 import { Box, Button, Checkbox, FormControl, FormControlLabel, FormGroup, InputAdornment, InputLabel, MenuItem, Select, TextField } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PullRequestFull } from '../../types/api-types'
 import { createRelease } from '../../utilities/git-api/releases/create-release'
@@ -118,6 +118,23 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
         return `${majorInt}.${minorInt}.${patchInt}-beta-${formData.identifier}.${prereleaseInt}`
     }
 
+    useEffect(() => {
+        const branchIdentifier = repos ? repos[0]?.head.ref.split('/').pop()?.toLowerCase() : ''
+
+        if (selectedRepos.length > 0 && branchIdentifier && !formData.identifier) {
+            setFormData({
+                ...formData,
+                identifier: branchIdentifier
+            })
+        } else if(!selectedRepos.length && formData.identifier === branchIdentifier) {
+            setFormData({
+                ...formData,
+                identifier: ''
+            })
+        }
+    }, [selectedRepos])
+
+
     return (
         <Box>
             <Box
@@ -153,6 +170,7 @@ export const Releases = ({ repos, selectedRepos, branch, setRefreshRepos, ...pro
                         variant='filled'
                         fullWidth
                         autoComplete='off'
+                        value={formData.identifier}
                         onChange={event => setFormData({ ...formData, identifier: event.target.value })}
                         slotProps={{
                             input: {
