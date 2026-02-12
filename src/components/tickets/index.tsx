@@ -103,12 +103,20 @@ export const Tickets = () => {
                                 value={author}
                                 onChange={handleSelectChange}
                                 size="small"
+                                disabled={authors.length === 0 || tickets.items === null}
                             >
-                                <MenuItem key={authUser.login} value={authUser.login}>{authUser.name}</MenuItem>
+                                <MenuItem
+                                    key={authUser.login}
+                                    value={authUser.login}
+                                >
+                                    {authUser.name}
+                                </MenuItem>
                                 {
-                                    authors.map(author => (
-                                        <MenuItem key={author.username} value={author.username}>{author.name}</MenuItem>
-                                    ))
+                                    authors
+                                        .filter(author => author.username !== authUser.login)
+                                        .map(author => (
+                                            <MenuItem key={author.username} value={author.username}>{author.name}</MenuItem>
+                                        ))
                                 }
                             </Select>
                         )
