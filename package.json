@@ -8,8 +8,9 @@
         "api"
     ],
     "scripts": {
-        "start": "npm run start --workspaces --if-present",
-        "build": "npm run build --workspaces --if-present"
+        "start": "npm run start --ws --if-present",
+        "build": "npm run build --ws --if-present",
+        "docker:build": "npm run docker:build --ws --if-present"
     },
     "devDependencies": {
         "@octokit/rest": "22.0.0"
