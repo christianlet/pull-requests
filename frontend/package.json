@@ -1,0 +1,71 @@
+{
+  "browserslist": {
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ]
+  },
+  "dependencies": {
+    "@christianlet/github-api-client": "^4.0.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fortawesome/fontawesome-svg-core": "^6.5.1",
+    "@fortawesome/free-brands-svg-icons": "^6.5.1",
+    "@fortawesome/free-regular-svg-icons": "^6.5.1",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@mui/icons-material": "7.3.6",
+    "@mui/lab": "7.0.1-beta.20",
+    "@mui/material": "^7.3.7",
+    "@mui/x-date-pickers": "^7.23.3",
+    "@octokit/auth-oauth-app": "^4.3.0",
+    "@reduxjs/toolkit": "^2.5.0",
+    "dayjs": "^1.11.13",
+    "isomorphic-fetch": "^3.0.0",
+    "mongodb": "6.15",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-redux": "^9.2.0",
+    "react-select": "^5.2.0",
+    "sass": "^1.69.5",
+    "use-long-press": "^3.2.0",
+    "web-vitals": "^1.1.2",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@octokit/types": "15.0.0",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/aws-lambda": "^8.10.100",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react-router-dom": "^7.5.1",
+    "ts-node": "10.9.2",
+    "typescript": "^5.8.3",
+    "vite": "7.2.6"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "name": "@christianlet/pull-requests-fe",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "start": "vite"
+  },
+  "version": "1.3.0"
+}
