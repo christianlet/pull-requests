@@ -4,8 +4,8 @@
     "private": true,
     "dependencies": {},
     "workspaces": [
-        "frontend",
-        "api"
+        "frontend/",
+        "api/"
     ],
     "scripts": {
         "start": "npm run start --ws --if-present",
