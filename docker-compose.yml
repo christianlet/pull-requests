@@ -2,8 +2,10 @@ name: pull-requests
 
 services:
   app:
-    build: ./frontend
-    image: frontend
+    build:
+      context: ./frontend
+      secrets:
+        - npmrc
     environment:
       - MONGO_URI=mongodb://mongo:27017
       - DATABASE_NAME=pull-request-app
@@ -13,22 +15,19 @@ services:
     depends_on:
       - api
     volumes:
-      - ./frontend:/frontend
-      - ./frontend/public/assets:/frontend/public/assets
-      - /frontend/node_modules
+      - ./frontend/:/app
+      - ./frontend/public/assets:/app/public/assets
+      - /app/node_modules
 
   api:
     build:
       context: ./api
       secrets:
         - npmrc
-    image: api
     environment:
       - MONGO_URI=mongodb://mongo:27017
       - DATABASE_NAME=pull-request-app
       - COLLECTION_PULL_REQUESTS=pull-requests
-    volumes:
-      - ./api:/api # Bind mount to sync local files with the container
     command: npm run dev
     ports:
       - 3001:3000
