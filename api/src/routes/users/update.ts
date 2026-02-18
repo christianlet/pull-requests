@@ -1,9 +1,10 @@
 import { RequestHandler } from 'express'
 import { MongoDb } from '../../clients/mongo-db'
+import { CollectionName } from '../../enums/collection-name'
 
 export const update: RequestHandler<{ id: string }> = async (req, res) => {
     try {
-        const collection = MongoDb.getCollection('users')
+        const collection = MongoDb.getCollection(CollectionName.USERS)
         const result = await collection.updateOne(
             { id: parseInt(req.params.id) },
             { $set: req.body }

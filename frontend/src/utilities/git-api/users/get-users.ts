@@ -1,58 +1,14 @@
 
-import { RestEndpointMethodTypes } from '@octokit/rest'
-import { OctokitClient } from '../../octokit-client'
-import { Api } from '../storage/api'
-import { getAuthenticatedUser } from './get-authenticated-user'
-import { getUserInfo } from './get-user-info'
-
-type GhUser = RestEndpointMethodTypes["users"]["getByUsername"]["response"]['data']
+import { ApiClient } from '../../../clients/ApiClient'
+import { User } from '../../../types/api-types'
 
 export const getUsers = async () => {
-    const octokit = await OctokitClient.getInstance()
-    const authenticatedUser = await getAuthenticatedUser()
-    const userStorage = new Api<GhUser>('users')
-    const lastSearched = sessionStorage.getItem('lastSearched')
-    const { data } = await octokit.request('GET /user/teams')
-    let members: string[] = []
-    let users = []
-
-    for(let team of data) {
-        const { data } = await octokit.request('GET /orgs/{org}/teams/{team_slug}/members', {
-            org: team.organization.login,
-            team_slug: team.slug,
-            headers:
-                lastSearched
-                ? { "If-Modified-Since": lastSearched }
-                : {}
-        })
-
-        for(let member of data) {
-            if(!members.includes(member.login)) {
-                members.push(member.login)
-
-                let user = await userStorage.get(member.id)
-
-                if(!user) {
-                    if(member.login === authenticatedUser.login) {
-                        user = authenticatedUser
-                    } else {
-                        user = await getUserInfo(member.login)
-                    }
-
-                    userStorage.create(user.login, user)
-                }
-
-                if(!user) {
-                    return null
-                }
-
-                users.push({
-                    username: user.login,
-                    name: user?.name ?? member.login
-                })
-            }
-        }
-    }
+    const client = ApiClient.getInstance()
+    const response = await client.request<{ items: User[] }>('/github/users')
+    const users = response.items.map(item => ({
+        ...item,
+        name: item.name || item.login
+    }))
 
     return users.sort(
         (a, b) => (a.name.toLowerCase() > b.name.toLowerCase())

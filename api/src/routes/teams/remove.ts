@@ -1,9 +1,10 @@
 import { RequestHandler } from 'express'
 import { MongoDb } from '../../clients/mongo-db'
+import { CollectionName } from '../../enums/collection-name'
 
 export const remove: RequestHandler = async (req, res) => {
     try {
-        const collection = MongoDb.getCollection('teams')
+        const collection = MongoDb.getCollection(CollectionName.TEAMS)
         const result = await collection.deleteOne(
             { id: req.params.id }
         )

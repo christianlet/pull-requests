@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express'
 import { MongoDb } from '../../clients/mongo-db'
+import { CollectionName } from '../../enums/collection-name'
 
 interface Params {
     size?: string
@@ -12,7 +13,7 @@ export const search: RequestHandler = async (req, res) => {
     const page = params.page ? parseInt(params.page) : 1
 
     try {
-        const collection = MongoDb.getCollection('pull-requests')
+        const collection = MongoDb.getCollection(CollectionName.PULL_REQUESTS)
         const items = await collection.find()
             .limit(size)
             .skip((page - 1) * size)

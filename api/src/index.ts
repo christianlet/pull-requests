@@ -1,5 +1,6 @@
 import cors from 'cors'
 import express from 'express'
+import { githubRouter } from './routes/github'
 import { pullRequestRouter } from './routes/pull-requests'
 import { releasesRouter } from './routes/releases'
 import { teamsRouter } from './routes/teams'
@@ -16,5 +17,6 @@ app.use('/pull-requests', pullRequestRouter)
 app.use('/users', usersRouter)
 app.use('/releases', releasesRouter)
 app.use('/teams', teamsRouter)
+app.use('/github', githubRouter)
 
 export default app

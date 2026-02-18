@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express'
 import { MongoDb } from '../../clients/mongo-db'
+import { CollectionName } from '../../enums/collection-name'
 
 
 export const find: RequestHandler<{ id: string }> = async (
@@ -9,7 +10,7 @@ export const find: RequestHandler<{ id: string }> = async (
     const id = parseInt(req.params.id)
 
     try {
-        const collection = MongoDb.getCollection('users')
+        const collection = MongoDb.getCollection(CollectionName.USERS)
         const item = await collection.findOne({ id })
 
         res.status(200).json({

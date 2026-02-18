@@ -1,9 +1,10 @@
 import { RequestHandler } from 'express-serve-static-core'
 import { MongoDb } from '../../clients/mongo-db'
+import { CollectionName } from '../../enums/collection-name'
 
 export const create: RequestHandler = async (req, res) => {
     try {
-        const collection = MongoDb.getCollection('pull-requests')
+        const collection = MongoDb.getCollection(CollectionName.PULL_REQUESTS)
 
         const exists = await collection.findOne({ node_id: req.body.node_id })
 
