@@ -1,9 +1,9 @@
-import express from 'express'
 import cors from 'cors'
-import pullRequest from './routes/pull-requests'
-import users from './routes/users'
+import express from 'express'
+import { pullRequestRouter } from './routes/pull-requests'
 import releases from './routes/releases'
 import teams from './routes/teams'
+import users from './routes/users'
 
 const app = express()
 
@@ -11,8 +11,9 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-// CRUD Routes
-pullRequest(app)
+// Crud routes
+app.use('/pull-requests', pullRequestRouter)
+
 users(app)
 releases(app)
 teams(app)

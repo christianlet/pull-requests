@@ -1,14 +1,14 @@
-import { Express } from 'express-serve-static-core'
+import { Router } from 'express'
 import { create } from './create'
 import { find } from './find'
 import { getAll } from './get-all'
-import { update } from './update'
 import { remove } from './remove'
+import { update } from './update'
 
-export default (app: Express) => {
-    create(app)
-    find(app)
-    getAll(app)
-    update(app)
-    remove(app)
-}
+export const pullRequestRouter = Router()
+
+pullRequestRouter.post('/', create)
+pullRequestRouter.get('/', getAll)
+pullRequestRouter.get('/:id', find)
+pullRequestRouter.put('/:id', update)
+pullRequestRouter.delete('/:id', remove)
