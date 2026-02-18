@@ -6,13 +6,13 @@ interface Params {
     page?: string
 }
 
-export const getAll: RequestHandler = async (req, res) => {
+export const search: RequestHandler = async (req, res) => {
     const params = req.query as Params
     const size = params.size ? parseInt(params.size) : 50
     const page = params.page ? parseInt(params.page) : 1
 
     try {
-        const collection = MongoDb.getCollection('pull-requests')
+        const collection = MongoDb.getCollection('teams')
         const items = await collection.find()
             .limit(size)
             .skip((page - 1) * size)

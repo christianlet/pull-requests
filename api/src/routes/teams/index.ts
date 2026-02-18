@@ -1,14 +1,14 @@
-import { Express } from 'express-serve-static-core'
+import { Router } from 'express'
 import { create } from './create'
 import { find } from './find'
-import { getAll } from './get-all'
-import { update } from './update'
 import { remove } from './remove'
+import { search } from './search'
+import { update } from './update'
 
-export default (app: Express) => {
-    create(app)
-    find(app)
-    getAll(app)
-    update(app)
-    remove(app)
-}
+export const teamsRouter = Router()
+
+teamsRouter.post('/', create)
+teamsRouter.get('/', search)
+teamsRouter.get('/:id', find)
+teamsRouter.put('/:id', update)
+teamsRouter.delete('/:id', remove)
