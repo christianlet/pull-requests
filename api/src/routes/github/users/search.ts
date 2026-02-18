@@ -6,12 +6,14 @@ import { CollectionName } from '../../../enums/collection-name'
 import { GitHubRequest } from '../types'
 
 export const search: RequestHandler = async (req: GitHubRequest, res) => {
+    const hardFetch = req.query.hardFetch === 'true'
+
     try {
         const octokit = OctokitClient.getInstance(req.user)
         const usersCollection = MongoDb.getCollection(CollectionName.USERS)
         const { data: teams } = await octokit.teams.listForAuthenticatedUser()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const usersToAdd: any[] = []
+        const usersToUpdate: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const allMembers: any[] = []
 
@@ -37,26 +39,49 @@ export const search: RequestHandler = async (req: GitHubRequest, res) => {
             }))
         }).toArray()
 
-        for (const member of allMembers) {
-            const memberExists = existingMembers.find(em => em.login === member.login)
+        await Promise.all(
+            allMembers.map(async member => {
 
-            if (!memberExists) {
-                usersToAdd.push(member)
-            }
-        }
+                const existingMember = existingMembers.find(em => em.login === member.login)
+
+                try {
+                    const userInfo = await octokit.users.getByUsername({
+                        username: member.login,
+                        headers: hardFetch ? {} : {
+                            'If-Modified-Since': existingMember?.lastModifiedDate
+                        }
+                    })
+
+                    usersToUpdate.push({
+                        ...userInfo.data,
+                        lastModifiedDate: userInfo.headers['last-modified']
+                    })
+                } catch (error) {
+                    if (error.status === 304) {
+                        console.log(`User ${member.login} has no changes since last fetch ${existingMember?.lastModifiedDate}`)
+                    } else {
+                        console.error(error)
+                    }
+                }
+            })
+        )
 
         let response
 
-        if (usersToAdd.length) {
-            response = await usersCollection.insertMany(usersToAdd)
+        if (usersToUpdate.length) {
+            response = await usersCollection.bulkWrite(
+                usersToUpdate.map(user => ({
+                    updateOne: {
+                        filter: { login: user.login },
+                        update: { $set: user },
+                        upsert: true
+                    }
+                }))
+            )
+
+            console.log(response)
         }
 
-        console.log({
-            membersMissingFromGitHub: usersToAdd.length,
-            membersAddedToCollection: response?.insertedCount || 0,
-            existingMembersInCollection: existingMembers.length,
-            totalGitHubTeamMembers: allMembers.length
-        })
 
         return res.status(200).json({
             items: allMembers
