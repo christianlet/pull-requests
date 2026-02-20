@@ -1,15 +1,16 @@
 import { RequestHandler } from 'express'
-import { MongoDb } from '../../clients/mongo-db'
-import { CollectionName } from '../../enums/collection-name'
+import { MongoDb } from '../../../clients/mongo-db'
+import { CollectionName } from '../../../enums/collection-name'
 
-export const remove: RequestHandler<{ id: string }> = async (req, res) => {
+export const update: RequestHandler<{ id: string }> = async (req, res) => {
     try {
         const collection = MongoDb.getCollection(CollectionName.USERS)
-        const result = await collection.deleteOne(
-            { id: parseInt(req.params.id) }
+        const result = await collection.updateOne(
+            { id: parseInt(req.params.id) },
+            { $set: req.body }
         )
 
-        if (!result.deletedCount) {
+        if (result.matchedCount === 0) {
             res.status(404).json({ error: 'Item not found' })
 
             return

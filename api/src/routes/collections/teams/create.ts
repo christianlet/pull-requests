@@ -1,10 +1,10 @@
 import { RequestHandler } from 'express'
-import { MongoDb } from '../../clients/mongo-db'
-import { CollectionName } from '../../enums/collection-name'
+import { MongoDb } from '../../../clients/mongo-db'
+import { CollectionName } from '../../../enums/collection-name'
 
 export const create: RequestHandler = async (req, res) => {
     try {
-        const collection = MongoDb.getCollection(CollectionName.USERS)
+        const collection = MongoDb.getCollection(CollectionName.TEAMS)
         const result = await collection.insertOne(req.body)
         res.status(201).json(result)
     } catch (err) {

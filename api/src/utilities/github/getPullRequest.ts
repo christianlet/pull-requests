@@ -44,7 +44,7 @@ export const getFullPullRequests = async (
                     ...data,
                     reviewers: await getPullRequestReviews(octokit, owner, repo, pullNumber),
                     tags: await getTags(octokit, owner, repo, data.head.ref),
-                    lastModifiedSince: headers['last-modified']
+                    lastModifiedDate: headers['last-modified']
                 } as unknown as WithId<PullRequestFull>
 
                 writeToCollection.push(existingLocalData)

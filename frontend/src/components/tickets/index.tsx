@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { CircularProgress, IconButton, InputAdornment, MenuItem, Pagination, Select, SelectChangeEvent, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Autocomplete, CircularProgress, IconButton, InputAdornment, Pagination, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
-import { useUsers } from '../../hooks/users'
-import { AuthenticatedUser, TicketsState } from '../../types/api-types'
+import { AuthenticatedUser, TicketsState, User } from '../../types/api-types'
 import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
+import { getUsers } from '../../utilities/git-api/users/get-users'
 import { groupPullRequests } from '../../utilities/group-pull-requests'
 import './styles.scss'
 import { Ticket } from './ticket'
@@ -26,12 +26,14 @@ export const Tickets = () => {
         items: null,
         total: 0
     })
-    const [author, setAuthor] = useState(searchParams.get('author') ?? authUser.login)
+    const [author, setAuthor] = useState(searchParams.get('author')?.split(',') ?? [authUser.login])
+    const [open, setOpen] = React.useState(false)
+    const [options, setOptions] = React.useState<readonly User[]>([])
+    const [loading, setLoading] = React.useState(false)
     const state = searchParams.get('state') as 'open' | 'closed' ?? 'open'
     const prType = searchParams.get('prType') ?? 'created'
     const page = searchParams.get('page') ?? '1'
     const theme = useTheme()
-    const authors = useUsers()
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -41,27 +43,53 @@ export const Tickets = () => {
         return () => {
             clearTimeout(handler);
         };
-    }, [inputValue]);
-
-    const handleInputChange = (event: any) => {
-        setInputValue(event.target.value);
-    };
-
-    const handleSelectChange = (event: SelectChangeEvent) => {
-        setAuthor(event.target.value)
-
-        searchParams.set('author', event.target.value)
-
-        setSearchParams(searchParams)
-    };
+    }, [inputValue])
 
     useEffect(() => {
-        if(!authUser) {
+        if (!authUser) {
             return
         }
 
         getPeerReviews()
     }, [searchParams, refresh, query, author])
+
+    const handleOpen = () => {
+        setOpen(true)
+
+        if (!options.length) {
+            ;(async () => {
+                setLoading(true)
+
+                const users = await getUsers()
+
+                setLoading(false)
+
+                setOptions([...users])
+            })()
+        }
+    }
+
+    const handleClose = () => {
+        setOpen(false)
+    };
+
+    const handleInputChange = (event: any) => {
+        setInputValue(event.target.value);
+    };
+
+    const handleSelectChange = (value: null | User[]) => {
+        if (!value || !value.length) {
+            return
+        }
+
+        const logins = value.map(v => v.login)
+
+        setAuthor(logins)
+
+        searchParams.set('author', logins.join(','))
+
+        setSearchParams(searchParams)
+    };
 
     const getPeerReviews = async () => {
         setTickets({
@@ -70,8 +98,15 @@ export const Tickets = () => {
         })
 
         const response  = await getPullRequests({
-            q: `author:${author}+is:${state} ${query}`,
+            q: `${author.map(a => `author:${a}`).join('+')}+is:${state} ${query}`,
             page: parseInt(page, 10)
+        }).catch(e => {
+            console.log(e)
+
+            return {
+                items: [],
+                totalCount: 0
+            }
         })
 
         setTickets({
@@ -99,26 +134,40 @@ export const Tickets = () => {
                 <div>
                     {
                         authUser && (
-                            <Select
-                                value={author}
-                                onChange={handleSelectChange}
-                                size="small"
-                                disabled={authors.length === 0 || tickets.items === null}
-                            >
-                                <MenuItem
-                                    key={authUser.login}
-                                    value={authUser.login}
-                                >
-                                    {authUser.name}
-                                </MenuItem>
-                                {
-                                    authors
-                                        .filter(author => author.username !== authUser.login)
-                                        .map(author => (
-                                            <MenuItem key={author.username} value={author.username}>{author.name}</MenuItem>
-                                        ))
-                                }
-                            </Select>
+                            <Autocomplete
+                                sx={{ width: 300 }}
+                                size='small'
+                                multiple={true}
+                                limitTags={1}
+                                open={open}
+                                onOpen={handleOpen}
+                                onClose={handleClose}
+                                disabled={tickets.items === null}
+                                defaultValue={[authUser]}
+                                isOptionEqualToValue={(option, value) => option.login === value.login}
+                                getOptionLabel={(option) => option.name || option.login}
+                                onChange={(_, value) => handleSelectChange(value)}
+                                // onInputChange={(_, value) => setAuthorInputValue(value)}
+                                options={options}
+                                loading={loading}
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Author"
+                                        slotProps={{
+                                            input: {
+                                            ...params.InputProps,
+                                            endAdornment: (
+                                                <React.Fragment>
+                                                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                                                {params.InputProps.endAdornment}
+                                                </React.Fragment>
+                                            ),
+                                            },
+                                        }}
+                                    />
+                                )}
+                                />
                         )
                     }
                 </div>

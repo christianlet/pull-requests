@@ -1,8 +1,10 @@
 
 import { RequestHandler } from 'express'
+import { WithId } from 'mongodb'
 import { MongoDb } from '../../../clients/mongo-db'
 import { OctokitClient } from '../../../clients/octokit-client'
 import { CollectionName } from '../../../enums/collection-name'
+import { User } from '../../../types/collections'
 import { GitHubRequest } from '../types'
 
 export const search: RequestHandler = async (req: GitHubRequest, res) => {
@@ -41,28 +43,31 @@ export const search: RequestHandler = async (req: GitHubRequest, res) => {
 
         await Promise.all(
             allMembers.map(async member => {
-
-                const existingMember = existingMembers.find(em => em.login === member.login)
+                let memberData = existingMembers.find(em => em.login === member.login)
 
                 try {
                     const userInfo = await octokit.users.getByUsername({
                         username: member.login,
                         headers: hardFetch ? {} : {
-                            'If-Modified-Since': existingMember?.lastModifiedDate
+                            'If-Modified-Since': memberData?.lastModifiedDate
                         }
                     })
 
-                    usersToUpdate.push({
+                    memberData = {
                         ...userInfo.data,
                         lastModifiedDate: userInfo.headers['last-modified']
-                    })
+                    } as WithId<User>
+
+                    usersToUpdate.push(memberData)
                 } catch (error) {
                     if (error.status === 304) {
-                        console.log(`User ${member.login} has no changes since last fetch ${existingMember?.lastModifiedDate}`)
+                        console.log(`User ${member.login} has no changes since last fetch ${memberData?.lastModifiedDate}`)
                     } else {
                         console.error(error)
                     }
                 }
+
+                return memberData
             })
         )
 
@@ -82,9 +87,36 @@ export const search: RequestHandler = async (req: GitHubRequest, res) => {
             console.log(response)
         }
 
+        const params = req.query
+        const size = params.size ? parseInt(params.size as string) : 1000
+        const page = params.page ? parseInt(params.page as string) : 1
+        const q = params.q as string
+        let filters = {}
+
+        if (q) {
+            filters = {
+                $or: [
+                    {
+                        name: new RegExp(q, 'i')
+                    },
+                    {
+                        login: new RegExp(q, 'i')
+                    }
+                ]
+            }
+        }
+
+        const result = await usersCollection.find(filters)
+            .limit(size)
+            .skip((page - 1) * size)
+            .sort({
+                name: 'asc',
+                login: 'asc'
+            })
+            .toArray()
 
         return res.status(200).json({
-            items: allMembers
+            items: result
         })
     } catch (error) {
         return res.status(500).json({

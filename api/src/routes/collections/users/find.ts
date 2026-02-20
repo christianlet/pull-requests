@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express'
-import { MongoDb } from '../../clients/mongo-db'
-import { CollectionName } from '../../enums/collection-name'
+import { MongoDb } from '../../../clients/mongo-db'
+import { CollectionName } from '../../../enums/collection-name'
 
 
 export const find: RequestHandler<{ id: string }> = async (

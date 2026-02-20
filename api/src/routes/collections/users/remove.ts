@@ -1,12 +1,12 @@
 import { RequestHandler } from 'express'
-import { MongoDb } from '../../clients/mongo-db'
-import { CollectionName } from '../../enums/collection-name'
+import { MongoDb } from '../../../clients/mongo-db'
+import { CollectionName } from '../../../enums/collection-name'
 
-export const remove: RequestHandler = async (req, res) => {
+export const remove: RequestHandler<{ id: string }> = async (req, res) => {
     try {
-        const collection = MongoDb.getCollection(CollectionName.TEAMS)
+        const collection = MongoDb.getCollection(CollectionName.USERS)
         const result = await collection.deleteOne(
-            { id: req.params.id }
+            { id: parseInt(req.params.id) }
         )
 
         if (!result.deletedCount) {

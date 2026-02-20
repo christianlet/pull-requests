@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express-serve-static-core'
-import { MongoDb } from '../../clients/mongo-db'
-import { CollectionName } from '../../enums/collection-name'
+import { MongoDb } from '../../../clients/mongo-db'
+import { CollectionName } from '../../../enums/collection-name'
 
 export const remove: RequestHandler = async (req, res) => {
     try {
