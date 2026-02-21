@@ -5,9 +5,9 @@ import { MongoDb } from '../../../clients/mongo-db'
 import { OctokitClient } from '../../../clients/octokit-client'
 import { CollectionName } from '../../../enums/collection-name'
 import { User } from '../../../types/collections'
-import { GitHubRequest } from '../types'
+import { WithUserRequest } from '../../types'
 
-export const search: RequestHandler = async (req: GitHubRequest, res) => {
+export const search: RequestHandler = async (req: WithUserRequest, res) => {
     const hardFetch = req.query.hardFetch === 'true'
 
     try {

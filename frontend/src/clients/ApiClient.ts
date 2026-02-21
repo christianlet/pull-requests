@@ -21,7 +21,7 @@ export class ApiClient {
         this.baseUrl = import.meta.env.VITE_API_URL
         this.requiredHeaders = {
             'Content-Type': 'application/json',
-            'token': import.meta.env.VITE_PAT
+            'Authorization': import.meta.env.VITE_PAT
         }
     }
 

@@ -9,7 +9,13 @@ export class OctokitClient {
             throw new Error('Missing auth token')
         } else if (!this.instance) {
             this.instance = new Octokit({
-                auth: token
+                auth: token,
+                log: {
+                    debug: () => { },
+                    info: () => { },
+                    warn: () => console.warn,
+                    error: () => console.error
+                }
             })
         }
 

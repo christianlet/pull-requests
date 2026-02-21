@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import { githubSearchRouter } from './search'
-import { githubUsersRouter } from './users'
+import { jiraIssueRouter } from './issues'
 
-export const githubRouter = Router()
 
-githubRouter.use((req, res, next) => {
+export const jiraRouter = Router()
+
+jiraRouter.use((req, res, next) => {
     const token = req.headers.authorization
 
     if (!token) {
@@ -19,5 +19,4 @@ githubRouter.use((req, res, next) => {
     next()
 })
 
-githubRouter.use('/users', githubUsersRouter)
-githubRouter.use('/search', githubSearchRouter)
+jiraRouter.use('/issues', jiraIssueRouter)

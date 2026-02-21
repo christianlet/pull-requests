@@ -1,9 +1,9 @@
 import { RequestHandler } from 'express'
 import { OctokitClient } from '../../../clients/octokit-client'
-import { GitHubRequest } from '../types'
+import { WithUserRequest } from '../../types'
 
 
-export const authenticated: RequestHandler = async (req: GitHubRequest, res) => {
+export const authenticated: RequestHandler = async (req: WithUserRequest, res) => {
     const client = OctokitClient.getInstance(req.user)
     const { data } = await client.users.getAuthenticated()
 

@@ -49,9 +49,7 @@ export const getFullPullRequests = async (
 
                 writeToCollection.push(existingLocalData)
             } catch (error) {
-                if (error.status === 304) {
-                    console.log(`PR ${owner}/${repo}/${pullNumber} has no changes since last fetch ${existingLocalData?.lastModifiedDate}`)
-                } else {
+                if (error.status !== 304) {
                     console.error(error)
                 }
             }

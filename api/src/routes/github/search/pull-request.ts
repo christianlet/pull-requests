@@ -2,10 +2,10 @@ import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 import { RequestHandler } from 'express'
 import { OctokitClient } from '../../../clients/octokit-client'
 import { getFullPullRequests } from '../../../utilities/github'
-import { GitHubRequest } from '../types'
+import { WithUserRequest } from '../../types'
 
 export const pullRequest: RequestHandler = async (
-    req: GitHubRequest,
+    req: WithUserRequest,
     res
 ) => {
     const octokit = OctokitClient.getInstance(req.user)
