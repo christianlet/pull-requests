@@ -1,16 +1,15 @@
-import { join } from 'path'
 
 
-export class Api<Type extends Record<string, unknown> = Record<string, unknown>> {
+export class CollectionsClient<Type extends Record<string, unknown> = Record<string, unknown>> {
     private url: string
 
     public constructor(
         storageName: string
     ) {
-        this.url = import.meta.env.VITE_API_URL + '/' + storageName
+        this.url = import.meta.env.VITE_API_URL + '/collections/' + storageName
     }
 
-    public async create(key: string|number, data: Type): Promise<void> {
+    public async create(key: string | number, data: Type): Promise<void> {
         await fetch(this.url, {
             method: 'POST',
             headers: {
@@ -20,7 +19,7 @@ export class Api<Type extends Record<string, unknown> = Record<string, unknown>>
         })
     }
 
-    public async update(key: string|number, data: Type): Promise<void> {
+    public async update(key: string | number, data: Type): Promise<void> {
         await fetch(this.url + '/' + key, {
             method: 'PUT',
             headers: {
@@ -30,7 +29,7 @@ export class Api<Type extends Record<string, unknown> = Record<string, unknown>>
         })
     }
 
-    public async get(key: string|number): Promise<Type | null> {
+    public async get(key: string | number): Promise<Type | null> {
         const response = await fetch(this.url + '/' + key.toString(), {
             headers: {
                 'Content-Type': 'application/json'
@@ -51,7 +50,7 @@ export class Api<Type extends Record<string, unknown> = Record<string, unknown>>
         return response.json()
     }
 
-    public async delete(key: string|number): Promise<void> {
+    public async delete(key: string | number): Promise<void> {
         await fetch(this.url + '/' + key.toString(), {
             method: 'DELETE',
             headers: {

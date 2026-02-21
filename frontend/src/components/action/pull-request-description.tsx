@@ -1,16 +1,16 @@
+import { LoadingButton } from '@mui/lab'
 import { Button, TextField } from '@mui/material'
 import { useEffect, useState } from 'react'
-import './styles.scss'
+import { useNavigate } from 'react-router-dom'
+import { CollectionsClient } from '../../clients/collections-client'
+import { Release } from '../../types/releases/release'
 import { getCommit } from '../../utilities/git-api/pulls/get-commits'
 import { jiraTicket } from '../../utilities/jira-ticket'
-import { ActionProps } from './types/action-props'
 import { OctokitClient } from '../../utilities/octokit-client'
-import { useNavigate } from 'react-router-dom'
-import { BranchTable } from '../branch-table'
 import { sleep } from '../../utilities/sleep'
-import { Api } from '../../utilities/git-api/storage/api'
-import { Release } from '../../types/releases/release'
-import { LoadingButton } from '@mui/lab'
+import { BranchTable } from '../branch-table'
+import './styles.scss'
+import { ActionProps } from './types/action-props'
 
 export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefreshRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
@@ -32,7 +32,7 @@ export const PullRequestDescription = ({ repos, selectedRepos, branch, setRefres
         if(isPersonalBranch) {
             message = '## PR Does\n\n'
         } else if (isReleaseBranch) {
-            const releases = new Api<Release>('releases')
+            const releases = new CollectionsClient<Release>('releases')
             const releaseData = await releases.get(`${team}-${release}`)
             const releaseUrl = releaseData?.url
 

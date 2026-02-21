@@ -1,16 +1,16 @@
 import { AddTask, Edit, Launch } from '@mui/icons-material'
 import { Box, Button, Card, CardHeader, Chip, IconButton, Typography } from '@mui/material'
-import { Link, NavLink } from 'react-router-dom'
-import { Api } from '../../utilities/git-api/storage/api'
-import { Release } from '../../types/releases/release'
 import { useEffect, useState } from 'react'
+import { Link, NavLink } from 'react-router-dom'
+import { CollectionsClient } from '../../clients/collections-client'
+import { Release } from '../../types/releases/release'
 import { getTeam } from '../../utilities/teams'
 
 export const Releases = () => {
     const [releases, setReleases] = useState<Release[]>([])
 
     useEffect(() => {
-        const releaseStorage = new Api<Release>('releases')
+        const releaseStorage = new CollectionsClient<Release>('releases')
 
         releaseStorage.getAll().then(r => {
             setReleases(r.items)

@@ -1,7 +1,17 @@
-import { User } from '../types/api-types'
+import { RestEndpointMethodTypes } from '@octokit/rest'
+import { PullRequestFull, User } from '../types/api-types'
 
 interface ApiRequestInit extends RequestInit {
     searchParams?: Record<string, unknown>
+}
+
+interface PullRequestWithPagination {
+    items: PullRequestFull[],
+    totalCount: number
+}
+
+type Arguments = RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["parameters"] & {
+    hardFetch?: boolean
 }
 
 export class GitHubClient {
@@ -37,6 +47,14 @@ export class GitHubClient {
         }))
 
         return users
+    }
+
+    public async getPullRequests(args: Arguments): Promise<PullRequestWithPagination> {
+        const response = await this.request<PullRequestWithPagination>('/github/search/pull-requests', {
+            searchParams: args
+        })
+
+        return response
     }
 
     private async request<Type>(endpoint: string, requestInit?: ApiRequestInit): Promise<Type> {

@@ -1,14 +1,14 @@
-import { Box, Button, Chip, Divider, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from '@mui/material'
-import { FormEvent, useEffect, useMemo, useState } from 'react'
-import './styles.scss'
-import { BranchTable } from '../branch-table'
-import { ActionProps } from './types/action-props'
-import { useNavigate } from 'react-router-dom'
-import { setTargetBranch } from '../../utilities/set-target-branch'
 import { LoadingButton } from '@mui/lab'
-import { Api } from '../../utilities/git-api/storage/api'
+import { Box, Button, Chip, FormControl, FormControlLabel, FormGroup, FormLabel, InputAdornment, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField } from '@mui/material'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { CollectionsClient } from '../../clients/collections-client'
 import { Release } from '../../types/releases/release'
+import { setTargetBranch } from '../../utilities/set-target-branch'
 import { getTeam } from '../../utilities/teams'
+import { BranchTable } from '../branch-table'
+import './styles.scss'
+import { ActionProps } from './types/action-props'
 
 const releaseTeamChipColors = (context: string) => {
     const team = getTeam(context)
@@ -20,7 +20,7 @@ const DEFAULT_TEAM = 'cms3'
 
 export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: ActionProps) => {
     const navigate = useNavigate()
-    const releaseStorage = useMemo(() => new Api<Release>('releases'), [])
+    const releaseStorage = useMemo(() => new CollectionsClient<Release>('releases'), [])
     const [formState, setFormState] = useState({
         branchType: 'release',
         team: DEFAULT_TEAM,
@@ -46,7 +46,7 @@ export const TargetBranch = ({ selectedRepos, setSelectedRepos, ...props }: Acti
         if(!newRelease) {
             setAip(true)
 
-            const releaseStorage = new Api<Release>('releases')
+            const releaseStorage = new CollectionsClient<Release>('releases')
             const releaseKey = `${formState.team}-${branch}`
             const release = await releaseStorage.get(releaseKey)
 

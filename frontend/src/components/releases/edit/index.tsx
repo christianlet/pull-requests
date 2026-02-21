@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Alert, AlertProps, Button, Chip, FormControl, FormGroup, FormHelperText, InputLabel, MenuItem, Paper, Select, Snackbar, TextField } from '@mui/material'
-import { useNavigate, useParams } from 'react-router-dom'
-import { Release } from '../../../types/releases/release'
-import './styles.scss'
-import { Api } from '../../../utilities/git-api/storage/api'
 import { useEffect, useState } from 'react'
-import { getTeam, teams } from '../../../utilities/teams'
+import { useNavigate, useParams } from 'react-router-dom'
+import { CollectionsClient } from '../../../clients/collections-client'
+import { Release } from '../../../types/releases/release'
+import { teams } from '../../../utilities/teams'
+import './styles.scss'
 
 interface FeedbackState {
     severity: AlertProps['severity']
@@ -27,7 +27,7 @@ export const Edit = () => {
     })
 
     const handleSubmit = async () => {
-        const releaseStorage = new Api<Release>('releases')
+        const releaseStorage = new CollectionsClient<Release>('releases')
         const releaseId = `${formData.team}-${formData.version}`
 
         await releaseStorage[id ? 'update' : 'create'](releaseId, {
@@ -45,7 +45,7 @@ export const Edit = () => {
 
     useEffect(() => {
         if(id) {
-            const releaseStorage = new Api<Release>('releases')
+            const releaseStorage = new CollectionsClient<Release>('releases')
 
             releaseStorage.get(id).then((release) => {
                 console.log(release);
