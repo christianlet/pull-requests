@@ -5,8 +5,8 @@ interface ApiRequestInit extends RequestInit {
     searchParams?: Record<string, unknown>
 }
 
-interface PullRequestWithPagination {
-    items: PullRequestFull[],
+interface WithPagination<T> {
+    items: T[],
     totalCount: number
 }
 
@@ -49,8 +49,16 @@ export class GitHubClient {
         return users
     }
 
-    public async getPullRequests(args: Arguments): Promise<PullRequestWithPagination> {
-        const response = await this.request<PullRequestWithPagination>('/github/search/pull-requests', {
+    public async getPullRequests(args: Arguments): Promise<WithPagination<PullRequestFull>> {
+        const response = await this.request<WithPagination<PullRequestFull>>('/github/search/pull-requests', {
+            searchParams: args
+        })
+
+        return response
+    }
+
+    public async getRepositories(args: Arguments): Promise<WithPagination<RestEndpointMethodTypes['repos']['get']['response']['data']>> {
+        const response = await this.request<WithPagination<RestEndpointMethodTypes['repos']['get']['response']['data']>>('/github/search/repositories', {
             searchParams: args
         })
 

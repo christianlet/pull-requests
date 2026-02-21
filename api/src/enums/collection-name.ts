@@ -3,4 +3,5 @@ export enum CollectionName {
     USERS = 'users',
     RELEASES = 'releases',
     TEAMS = 'teams',
+    REPOSITORY = 'repository'
 }

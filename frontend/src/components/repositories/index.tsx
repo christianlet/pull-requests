@@ -1,14 +1,14 @@
 import { CopyAll, Search } from '@mui/icons-material'
 import { Box, Button, Checkbox, Chip, CircularProgress, InputAdornment, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
-import { Endpoints } from '@octokit/types'
+import { RestEndpointMethodTypes } from '@octokit/rest'
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
+import { GitHubClient } from '../../clients/github-client'
 import { AuthenticatedUser } from '../../types/api-types'
-import { getRepositories } from '../../utilities/git-api/search/get-repositories'
 
 interface Repos {
     total: number
-    items: Endpoints['GET /search/repositories']['response']['data']['items']
+    items: RestEndpointMethodTypes['repos']['get']['response']['data'][]
 }
 
 const localRepositoriesDirectory = '~/Repositories'
@@ -46,11 +46,9 @@ export const Repositories = () => {
         getRepos().then(async initialRes => {
             let data = initialRes.items
 
-            data.sort((a, b) => a.full_name.localeCompare(b.full_name))
-
             setRepos({
-                total: initialRes.total_count,
-                items: data
+                total: initialRes.totalCount,
+                items: initialRes.items
             })
 
             setAip(false)
@@ -59,7 +57,11 @@ export const Repositories = () => {
 
     const getRepos = async (page = 1) => {
         const query = `org:foxcorp org:foxnews org:${authUser.login} ${searchText}`
-        const { data } = await getRepositories(query, 100, page)
+        const client = GitHubClient.getInstance()
+        const data = await client.getRepositories({
+            q: query,
+            page
+        })
 
         return data
     }
