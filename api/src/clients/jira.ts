@@ -54,4 +54,18 @@ export class Jira {
         return result.json()
     }
 
+    public async searchTransitions(issue: string): Promise<unknown> {
+        const result = await fetch(
+            `${this.baseUrl}/rest/api/3/issue/${issue}/transitions`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: this.apiToken
+                }
+            }
+        )
+
+        return result.json()
+    }
+
 }

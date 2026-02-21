@@ -1,14 +1,15 @@
+import { User } from '../types/api-types'
 
 interface ApiRequestInit extends RequestInit {
     searchParams?: Record<string, unknown>
 }
 
-export class ApiClient {
-    private static instance: ApiClient
+export class GitHubClient {
+    private static instance: GitHubClient
 
-    public static getInstance(): ApiClient {
+    public static getInstance(): GitHubClient {
         if (!this.instance) {
-            this.instance = new ApiClient()
+            this.instance = new GitHubClient()
         }
 
         return this.instance
@@ -25,7 +26,20 @@ export class ApiClient {
         }
     }
 
-    public async request<Type>(endpoint: string, requestInit?: ApiRequestInit): Promise<Type> {
+    public async getUsers(params?: { q?: string; size?: number }) {
+        const response = await this.request<{ items: User[] }>('/github/users', {
+            searchParams: params
+        })
+        const users = response.items.map(item => ({
+            ...item,
+            username: item.login,
+            name: item.name || item.login
+        }))
+
+        return users
+    }
+
+    private async request<Type>(endpoint: string, requestInit?: ApiRequestInit): Promise<Type> {
         const url = new URL(this.baseUrl)
 
         url.pathname = endpoint

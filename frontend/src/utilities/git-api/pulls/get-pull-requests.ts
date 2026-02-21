@@ -1,5 +1,5 @@
 import { RestEndpointMethodTypes } from '@octokit/rest'
-import { ApiClient } from '../../../clients/ApiClient'
+import { GitHubClient } from '../../../clients/GitHubClient'
 import { PullRequestFull } from '../../../types/api-types'
 
 
@@ -13,7 +13,7 @@ type Arguments = RestEndpointMethodTypes["search"]["issuesAndPullRequests"]["par
 }
 
 export const getPullRequests = async (args: Arguments): Promise<PullRequestWithPagination> => {
-    const client = ApiClient.getInstance()
+    const client = GitHubClient.getInstance()
 
     return client.request('/github/search/pull-requests', {
         searchParams: args

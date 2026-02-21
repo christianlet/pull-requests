@@ -4,9 +4,9 @@ import { Autocomplete, CircularProgress, IconButton, InputAdornment, Pagination,
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
+import { GitHubClient } from '../../clients/GitHubClient'
 import { AuthenticatedUser, TicketsState, User } from '../../types/api-types'
 import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
-import { getUsers } from '../../utilities/git-api/users/get-users'
 import { groupPullRequests } from '../../utilities/group-pull-requests'
 import './styles.scss'
 import { Ticket } from './ticket'
@@ -60,7 +60,8 @@ export const Tickets = () => {
             ;(async () => {
                 setLoading(true)
 
-                const users = await getUsers()
+                const client = GitHubClient.getInstance()
+                const users = await client.getUsers()
 
                 setLoading(false)
 
