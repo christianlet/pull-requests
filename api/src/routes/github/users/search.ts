@@ -37,9 +37,11 @@ export const search: RequestHandler = async (req: WithUserRequest, res) => {
 
         const existingMembers = await usersCollection.find({
             $or: allMembers.map(m => ({
-                login: m.login
+                id: m.id
             }))
-        }).toArray()
+        })
+            .limit(1000)
+            .toArray()
 
         await Promise.all(
             allMembers.map(async member => {
@@ -60,9 +62,7 @@ export const search: RequestHandler = async (req: WithUserRequest, res) => {
 
                     usersToUpdate.push(memberData)
                 } catch (error) {
-                    if (error.status === 304) {
-                        console.log(`User ${member.login} has no changes since last fetch ${memberData?.lastModifiedDate}`)
-                    } else {
+                    if (error.status !== 304) {
                         console.error(error)
                     }
                 }

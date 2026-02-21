@@ -2,8 +2,8 @@ import { TabContext, TabList, TabPanel } from '@mui/lab'
 import { Box, Divider, FormControlLabel, Paper, Switch, Tab } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { GitHubClient } from '../../clients/github-client'
 import { useAuthenticatedUser } from '../../hooks/authenticated-user'
-import { getPullRequests } from '../../utilities/git-api/pulls/get-pull-requests'
 import { MergePRs } from '../action/merge-prs'
 import { PullRequestDescription } from '../action/pull-request-description'
 import { Releases } from '../action/releases'
@@ -30,7 +30,9 @@ export const BranchDetail = () => {
         setRepos(null)
         setSelectedRepos([])
 
-        getPullRequests({
+        const client = GitHubClient.getInstance()
+
+        client.getPullRequests({
             q: `${showClosed ? '' : 'is:open'} head:${branch}`,
             per_page: 100,
             hardFetch: true

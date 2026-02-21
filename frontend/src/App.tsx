@@ -52,6 +52,10 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Header darkMode={darkMode} setDarkMode={setDarkMode} />}>
                         <Route
+                            index
+                            element={<div>Home page</div>}
+                        />
+                        <Route
                             path="prs"
                         >
                             <Route

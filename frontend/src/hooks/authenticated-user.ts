@@ -4,7 +4,7 @@ import { getAuthenticatedUser } from '../utilities/git-api/users/get-authenticat
 
 
 export const useAuthenticatedUser = () => {
-    const [user, setUser] = useState<null|AuthenticatedUser>(null)
+    const [user, setUser] = useState<null | AuthenticatedUser>(null)
 
     useEffect(() => {
         setUser(null)
@@ -13,10 +13,10 @@ export const useAuthenticatedUser = () => {
             try {
                 const user = await getAuthenticatedUser()
 
-                if(user) {
+                if (user) {
                     setUser(user)
                 }
-            } catch(e){}
+            } catch (e) { }
         }
 
         getUser()

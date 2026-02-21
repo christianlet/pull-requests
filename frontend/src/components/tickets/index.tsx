@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { Refresh, Search } from '@mui/icons-material'
-import { Autocomplete, CircularProgress, IconButton, InputAdornment, Pagination, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { CircularProgress, IconButton, InputAdornment, Pagination, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { Box, useTheme } from '@mui/system'
 import React, { useEffect, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import { GitHubClient } from '../../clients/github-client'
 import { AuthenticatedUser, TicketsState, User } from '../../types/api-types'
 import { groupPullRequests } from '../../utilities/group-pull-requests'
+import { AuthorDropdown } from './author-dropdown'
 import './styles.scss'
 import { Ticket } from './ticket'
 
@@ -26,9 +27,6 @@ export const Tickets = () => {
         total: 0
     })
     const [author, setAuthor] = useState(searchParams.get('author')?.split(',') ?? [authUser.login])
-    const [open, setOpen] = React.useState(false)
-    const [options, setOptions] = React.useState<readonly User[]>([])
-    const [loading, setLoading] = React.useState(false)
     const state = searchParams.get('state') as 'open' | 'closed' ?? 'open'
     const prType = searchParams.get('prType') ?? 'created'
     const page = searchParams.get('page') ?? '1'
@@ -50,28 +48,7 @@ export const Tickets = () => {
         }
 
         getPeerReviews()
-    }, [searchParams, refresh, query, author])
-
-    const handleOpen = () => {
-        setOpen(true)
-
-        if (!options.length) {
-            ;(async () => {
-                setLoading(true)
-
-                const client = GitHubClient.getInstance()
-                const users = await client.getUsers()
-
-                setLoading(false)
-
-                setOptions([...users])
-            })()
-        }
-    }
-
-    const handleClose = () => {
-        setOpen(false)
-    };
+    }, [searchParams, refresh, query])
 
     const handleInputChange = (event: any) => {
         setInputValue(event.target.value);
@@ -133,44 +110,11 @@ export const Tickets = () => {
                 }}
             >
                 <div>
-                    {
-                        authUser && (
-                            <Autocomplete
-                                sx={{ width: 300 }}
-                                size='small'
-                                multiple={true}
-                                limitTags={1}
-                                open={open}
-                                onOpen={handleOpen}
-                                onClose={handleClose}
-                                disabled={tickets.items === null}
-                                defaultValue={[authUser]}
-                                isOptionEqualToValue={(option, value) => option.login === value.login}
-                                getOptionLabel={(option) => option.name || option.login}
-                                onChange={(_, value) => handleSelectChange(value)}
-                                // onInputChange={(_, value) => setAuthorInputValue(value)}
-                                options={options}
-                                loading={loading}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Author"
-                                        slotProps={{
-                                            input: {
-                                            ...params.InputProps,
-                                            endAdornment: (
-                                                <React.Fragment>
-                                                {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                                                {params.InputProps.endAdornment}
-                                                </React.Fragment>
-                                            ),
-                                            },
-                                        }}
-                                    />
-                                )}
-                                />
-                        )
-                    }
+                    <AuthorDropdown
+                        handleSelectChange={handleSelectChange}
+                        authUser={authUser}
+                        disabled={tickets.items === null}
+                    />
                 </div>
                 <div style={{
                     flexGrow: 1
@@ -202,7 +146,7 @@ export const Tickets = () => {
                     <div>
                         <ToggleButtonGroup
                             size="small"
-                            color="info"
+                            color="standard"
                             value={state}
                             exclusive={true}
                             onChange={handlePrState}
