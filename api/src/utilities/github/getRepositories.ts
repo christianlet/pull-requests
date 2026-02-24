@@ -49,7 +49,7 @@ export const getRepositories = async (
     )
 
     if (writeToCollection.length) {
-        await collection.bulkWrite(
+        const bulkResponse = await collection.bulkWrite(
             writeToCollection.map(pr => ({
                 updateOne: {
                     filter: { node_id: pr.node_id },
@@ -58,6 +58,9 @@ export const getRepositories = async (
                 }
             }))
         )
+
+        console.log(bulkResponse)
+
     }
 
     return reposFull.filter((repo): repo is WithId<Repository> => !!repo)
